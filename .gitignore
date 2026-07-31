@@ -1,0 +1,25 @@
+# ATENÇÃO: este repositório é PÚBLICO.
+#
+# A pasta material/ tem conteúdo interno que não pode ser publicado:
+#  - DigiThree_Lancamento_DigiLab.docx — o plano de lançamento completo
+#    (preços, estratégia das sete semanas, nomes dos clientes do beta)
+#  - Identidade Visual - Digi IA.pdf — manual de marca, 95 MB
+#    (acima do limite de 100 MB do GitHub e de uso interno)
+#  - PDFs de logo e ativos de origem
+#
+# Os arquivos que a página realmente precisa ficam versionados na raiz.
+material/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.code-workspace
+
+# Ferramentas locais
+.claude/
+node_modules/
