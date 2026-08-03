@@ -127,7 +127,11 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   height:100%;
   z-index:0;
   pointer-events:none;
-  opacity:.9;
+  /* Era .9. Baixou quando o objeto do hero entrou à direita: com as
+     metaballs no volume antigo, elas disputavam a atenção com o cérebro
+     em vez de servirem de fundo. Vale para a página inteira — voltar
+     para .9 desfaz. */
+  opacity:.6;
 }
 /* Leito escuro sob a coluna de texto: preserva o contraste da tipografia
    e deixa o campo de metaballs respirar à direita. */
@@ -136,10 +140,10 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   background:
     linear-gradient(102deg,
       rgba(0,0,0,.94) 0%,
-      rgba(0,0,0,.90) 30%,
-      rgba(0,0,0,.66) 52%,
-      rgba(0,0,0,.30) 74%,
-      rgba(0,0,0,.16) 100%),
+      rgba(0,0,0,.91) 30%,
+      rgba(0,0,0,.74) 52%,
+      rgba(0,0,0,.52) 74%,
+      rgba(0,0,0,.42) 100%),
     radial-gradient(140% 70% at 50% 100%, rgba(0,0,0,.55), transparent 60%);
 }
 .page{position:relative; z-index:2}
@@ -152,6 +156,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   gap:16px;
   padding-block:22px;
 }
+.brand-group{display:flex; align-items:center; gap:11px; min-width:0}
 .brand{display:flex; align-items:center; gap:11px}
 .brand svg{display:block; flex:none}
 /* Logotipo oficial. Trocar por SVG assim que houver o vetor. */
@@ -186,19 +191,72 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   white-space:nowrap;
 }
 
+/* Links no meio e botão à direita — a faixa superior do layout de
+   referência. Abaixo de 900px os links saem; o botão fica. */
+.nav-links{display:flex; gap:clamp(16px,2.2vw,34px)}
+.nav-links a{
+  font-size:13.5px;
+  color:var(--paper-80);
+  text-decoration:none;
+  transition:color .22s var(--ease);
+}
+.nav-links a:hover{color:var(--paper); text-decoration:none}
+.nav-cta{
+  font-family:var(--font-display);
+  font-weight:600; font-size:13.5px; letter-spacing:-.01em;
+  color:var(--paper);
+  text-decoration:none;
+  border:1px solid var(--rule-hi);
+  background:var(--surface);
+  padding:9px 18px;
+  border-radius:999px;
+  white-space:nowrap;
+  transition:background .22s var(--ease), border-color .22s var(--ease);
+}
+.nav-cta:hover{background:rgba(248,240,255,.10); border-color:var(--lilac); text-decoration:none}
+
 /* ============================================================
-   HERO
+   HERO — texto à esquerda, objeto à direita
    ============================================================ */
 .hero{
-  padding-top:clamp(22px,4vh,56px);
-  padding-bottom:clamp(56px,10vh,120px);
+  padding-top:clamp(18px,3vh,44px);
+  padding-bottom:clamp(48px,8vh,104px);
 }
-.hero-in{max-width:780px}
+/* 1.06/0.94 é o ponto em que o H1 fecha em três linhas em toda a faixa
+   de duas colunas, sem espremer o objeto. Medido, não chutado. */
+.hero-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);
+  align-items:center;
+  gap:clamp(24px,4vw,64px);
+}
+.hero-col{min-width:0}
+
+/* Selo do topo */
+.badge{
+  display:inline-flex; align-items:center; gap:9px;
+  margin:0;
+  padding:7px 15px 7px 12px;
+  border:1px solid var(--rule-hi);
+  border-radius:999px;
+  background:var(--surface);
+  font-family:var(--font-mono);
+  font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--paper-80);
+}
+.badge i{
+  width:7px; height:7px; flex:none;
+  border-radius:50%;
+  background:var(--lilac);
+  box-shadow:0 0 10px var(--lilac);
+  animation:pulso 2.6s var(--ease) infinite;
+}
+@keyframes pulso{0%,100%{opacity:1} 50%{opacity:.35}}
 
 .hero h1{
-  font-size:clamp(34px,5.4vw,62px);
-  line-height:1.04;
-  margin:18px 0 0;
+  font-size:clamp(30px,3.6vw,52px);
+  line-height:1.03;
+  margin:20px 0 0;
 }
 .hero h1 .glow{
   background:linear-gradient(96deg,var(--lilac) 0%, var(--mid) 45%, var(--violet) 100%);
@@ -207,16 +265,98 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   color:transparent;
 }
 .hero p.sub{
-  font-size:clamp(15.5px,.8vw + 13px,18.5px);
+  font-size:clamp(15.5px,.55vw + 13.6px,17.5px);
   color:var(--paper-80);
-  max-width:54ch;
-  margin:18px 0 0;
+  max-width:46ch;
+  margin:20px 0 0;
 }
 .hero .offer{
   color:var(--paper);
   border-bottom:1px solid var(--lilac);
   padding-bottom:1px;
 }
+
+/* Par de botões da dobra. O primário leva ao formulário, que agora
+   vive só no fim da página. */
+.hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:30px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:14px 24px;
+  border-radius:999px;
+  font-family:var(--font-display);
+  font-weight:600; font-size:15px; letter-spacing:-.01em;
+  text-decoration:none; white-space:nowrap;
+  transition:transform .22s var(--ease), box-shadow .22s var(--ease),
+             background .22s var(--ease), border-color .22s var(--ease);
+}
+.btn:hover{text-decoration:none; transform:translateY(-1px)}
+.btn-primary{background:var(--paper); color:var(--ink)}
+.btn-primary:hover{box-shadow:0 14px 38px rgba(248,240,255,.20)}
+.btn-ghost{border:1px solid var(--rule-hi); background:var(--surface); color:var(--paper)}
+.btn-ghost:hover{border-color:var(--lilac); background:rgba(248,240,255,.08)}
+
+/* ============================================================
+   OBJETO DA HERO — o cérebro sustentado pela mão
+   Três camadas empilhadas: segurar levanta o cérebro e afrouxa a mão.
+   É ilustração. Não carrega nenhuma informação que só ela dê, por isso
+   não é focável nem anunciada como controle.
+   ============================================================ */
+.hero-obj{position:relative; min-width:0}
+.hero-obj::before{           /* halo por trás do objeto */
+  content:"";
+  position:absolute; inset:-14% -8%;
+  z-index:0; pointer-events:none;
+  background:
+    radial-gradient(46% 46% at 54% 48%, rgba(142,71,251,.42), transparent 68%),
+    radial-gradient(34% 34% at 60% 40%, rgba(205,130,255,.26), transparent 70%);
+  filter:blur(6px);
+}
+.palco{
+  position:relative; z-index:1;
+  width:100%; max-width:620px;
+  margin-inline:auto;
+  isolation:isolate;
+  border-radius:16px;
+  overflow:hidden;
+  /* pan-y mantém o scroll da página possível sobre a cena; o resto
+     evita menu de imagem e seleção no toque longo */
+  touch-action:pan-y;
+  user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+}
+.camada{display:block; width:100%; height:auto; pointer-events:none}
+.camada--fundo{position:relative; z-index:0; transition:filter .7s var(--ease)}
+.camada--mao{position:absolute; inset:0; z-index:1; transform-origin:50% 88%}
+.camada--cerebro{position:absolute; inset:0; z-index:2; transform-origin:50% 62%}
+.camada--mao,.camada--cerebro{
+  will-change:transform, filter;
+  transition:transform .38s cubic-bezier(.22,1,.36,1), filter .38s var(--ease);
+}
+.camada--cerebro{animation:flutua 7s ease-in-out infinite}
+
+/* fecha devagar enquanto o dedo está pressionado */
+.palco.segurando .camada--cerebro,
+.palco.segurando .camada--mao{
+  transition:transform 1.4s cubic-bezier(.16,1,.3,1), filter .8s var(--ease);
+}
+/* abre um pouco mais rápido: a mão relaxa, não empurra */
+.palco.soltando .camada--cerebro,
+.palco.soltando .camada--mao{
+  transition:transform 1s cubic-bezier(.4,0,.2,1), filter .7s var(--ease);
+}
+.palco.segurando .camada--cerebro{filter:brightness(1.35) saturate(1.15); animation-play-state:paused}
+.palco.segurando .camada--mao{filter:brightness(1.1)}
+.palco.segurando .camada--fundo{filter:brightness(1.4)}
+
+.onda{
+  position:absolute; z-index:3;
+  width:18px; height:18px; margin:-9px 0 0 -9px;
+  border-radius:50%;
+  border:2px solid var(--lilac);
+  pointer-events:none;
+  animation:onda .7s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes flutua{0%,100%{translate:0 0} 50%{translate:0 -10px}}
+@keyframes onda{0%{transform:scale(1); opacity:.95} 100%{transform:scale(16); opacity:0}}
 
 /* --- Formulário --- */
 .form-block{margin-top:26px; max-width:560px}
@@ -838,24 +978,39 @@ footer{
 }
 .ghost:hover{border-color:var(--lilac); background:rgba(69,0,249,.14); text-decoration:none}
 
+/* Duas colunas só onde há largura para elas. Abaixo disso o objeto
+   desce para baixo do texto e encolhe. */
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr; gap:clamp(20px,5vw,40px)}
+  .palco{max-width:460px}
+  .hero-obj::before{inset:-8% -4%}
+  .hero p.sub{max-width:56ch}
+}
+@media (max-width:900px){
+  .nav-links{display:none}
+}
+@media (max-width:620px){
+  .palco{max-width:340px}
+  .hero-actions{margin-top:24px}
+  .btn{flex:1 1 auto; justify-content:center}
+}
+
 /* Telas de pouca altura (notebooks 720p, celulares baixos):
-   comprime o hero para o botão continuar visível sem rolar. */
+   comprime o hero para os botões continuarem visíveis sem rolar. */
 @media (max-height:790px){
   .nav{padding-block:14px}
   .hero{padding-top:12px}
   .hero h1{font-size:clamp(29px,4.3vw,45px); margin-top:14px}
   .hero p.sub{margin-top:13px; font-size:15.5px}
-  .form-block{margin-top:18px}
-  .consent{margin-top:12px}
-  .cta{margin-top:14px; padding-block:15px}
-  .nocard{margin-top:11px}
+  .hero-actions{margin-top:22px}
   .meter{margin-top:32px; padding-top:22px}
 }
 @media (max-height:680px){
   .hero h1{font-size:clamp(26px,4vw,38px)}
   .hero p.sub{font-size:14.5px; margin-top:11px}
-  .cta{padding-block:14px}
-  .consent{margin-top:10px; font-size:12.5px}
+  .hero-actions{margin-top:18px}
+  .btn{padding-block:12px}
+  .meter{margin-top:24px; padding-top:18px}
 }
 
 /* ============================================================
@@ -871,6 +1026,11 @@ footer{
   .rv{opacity:1; transform:none}
   .stagger > *{opacity:1; transform:none}
   #field{display:none}
+  /* O objeto da hero fica parado: sem flutuação, sem paralaxe, sem onda.
+     O JS também não aplica transform nenhuma neste modo. */
+  .camada--cerebro{animation:none}
+  .camada--cerebro,.camada--mao{transform:none !important}
+  .onda{display:none}
 }
 </style>
 </head>
@@ -887,16 +1047,30 @@ footer{
 
   <!-- ===================== NAV ===================== -->
   <nav class="nav">
-    <a class="brand" href="#cadastro" aria-label="Digi.IA — ir para o cadastro">
+    <div class="brand-group">
+      <a class="brand" href="#topo" aria-label="Digi.IA — início">
       <img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAasAAACVCAMAAADRyCU2AAADAFBMVEX/AP/48P/Mgf9MB/mxZ/2ORvtwKfqkW/zTzNrDef2bU/y8cvp5MvmrprVzb3uEPPtzb4JaFfgkBHZiHPqLWK4pGTnw6Pc1NEZXNnBiX21xR5CQi5m/ucfd1uTn3+6rbNadY8Y2B6xOTFtoN6yCfoydmKVAKFMtF1FGFquSVs1GJnFxNs0zFWxQJ5F4RqyGStAcDTouBpE6IlFjKcxZKK1lOpJEG5FbM41bI8YjDVI9BMs6E4xSG8Z8RMRCC8ZPTGAeDEVAHnaATLHAuckjDFU1AMsfBGYlDF0iBW0vDYMpA44jAIQvArNEDtZXDf9jL7isFP//L/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACht1rvAAAAyHRSTlMA///////////////////////////////////////////////////////////////7////////////////////0////6xo/53BcJTEdUY3/xkFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABerXx4AAA3wSURBVHja7d15Q+K6FgDwwAUMYpHro5TS0jIIIqLirnNnn7n37ev3/zIPUJaeJmm2tsDk/DcjUOnPpCdLT5HFG4NGw0EmJOPiFMSFxIcUhCLAP6zGl5/g3HZ6teIswl5bz+dNym9xuIzUrV6jha39bmOdBdRr1Jo6mlU5ZvWcjdUiulZjT6XaG1ILrba+ZrW2mmZotWhf3h42r3a1CKLaUfzIUTludXCRqdU8sKdywEwRClyHjlPNQhHrlGT1KXOrWeuyvuyRlU2iKlbPVA58UyZZHYyyt5o3rsbeWIVFYoQqB74iW53mYiWitd1W7SIlVPKLMtnqMCermZa7D1Y9mpVCw7qgWB0852VVKFjO7lsVqWFrSNiB1WF+VoVgsOtWbbqVdCo4KtOsRNP2yO//gz4diDFuaWlaW23VpFuFWppV1Gqq8AWSEgS3Yf3osmcz3H21Kkqm7TdlupVg2i5k9RoNCzNGW4N9terJHfWBZfUpbat5DKyApjXcUyvJhnXMsjq0M7Cad4gW5QLm76mV1BXrqsyyEhsPy1vNwsPiWFtt1WFZSY2Hj9hWh5lZza5dWBRrq61splVN/Jjfymyrg8fsrGZagXA3uMURMrHElx0nSVbTLK0QsvYIi90JCveCI0hVngIrkfGwBivkEsZc3o5i1bT2gv+BVFdX0GqarRVCfhxrsJtW7aLGXvDmGFrZqAysBMbDeqyQFx8U900vCBP28ixFv4JW11lboUZssNVN40zW5+HmiFUVGb3ChL08a0N2GVgd2FlbITeGZWk8gc7AwjiyLce36mlhVTWNiK9gFziZ/+8ptHrM3IqA1dB08gYWZcIYW25CYip1vLOenkvWBFotcr4RtDrM3iqOFeiA6lvMtZhg6LAyHcmDnjVr6itZo2No9UYIrErP2Vuhhv5esI6TF818mMVgLRMj7XanGVYV8ot7aHX1+v8X0Gqcg1UsG2wpbvXsY74FaT96nK7GSaw2oYVVubBujqHV8idTYFUa5WAVG2cpTV84Fv8exSHlO+noheMdYo0ndXuAVqs59WdoNc3DCsEkQGGQ5QZC26jWR3L0Tw53QnGsI2i1fk8ZWJXsPKxcbVesoej231UKX6dYOfWNEB2jgdwwGevqGFhN1j87hVbXeVjBidz4FQtzrYk4vvg2quUU5IBygHqkHSpm8j2eZnUMxsHLsKHVQS5WKEiYw+WycrpSGxTjfy4arYBWAtblMbCabP70E7AqPeZi5SXMNPFYsajwPLqs3QOpWc2ywpAXawKtImsfI2h1mIsVbFh9cSsKVdcabFxl6kM/IHeDOD2ryI10PfY4GFhFfz4FVqWLXKw89rYmDivSqKo7JKSUbmw31QDkotqtEGpWObAeoNVV9OcX0GqcixVqMTvBZCvCsApT52m9ILYSU0jXCp2FiVg3R9DqBrwCWpXucrEC59oRtBrE5/yYM+peK/qn4aha/fEOxF+pM/GhzWxWx/Fx8Go8DK2uc7HqMzPBJCtHeG3FiXykVVe1OvkFxEnsJXbIHmcdQavYLJJ9CKw4xsNpLGJ0WfNMSVZYdNM1uES2vAys1k2LiPV0DKwm8decQqvrXKws1gUrwaoOqbgmGFzauklqVqurFmkidwKtCFneCFod5GLlsnZNJlgFMlR0rPSsVhuq41iXx8BqQnr7J2CVvIyVykJu9MTVBaw8Oar4RGQGVquxVie+cBW1uiK9+wJajXOxwowRFtsqaYaKf+0sA6tVitEkJuxrK/K7p8AqcTycipXFyOOYVp7CLD3O3mrVD/Y2M4wRtHogv/cZWo3zsIoOkTC/VfR8B0LLyk4rB6tlmZlIOjgCucUN5b2HwCopbU/FymUkgiwrMDIT3FTm5WGF7Bohw4iMhSe0t55Cq+scrFi3z7CsrILSNBDOw2pVEyOSYVwera2ouynexsNrq1IeVoGcVaDSrEizU5lYES9aNw9Lqwn9jZ+g1WMOVtG/cJfTylXdYx3kY7W6aLVh05pbfWOsnECrUu5WdU6roepdQcOcrJYjLVBo8GFudcx63xRatbO3sqSsMGt+XmLWODurZYYR7QdnCSFlHBwZD29ajXfFqqW8wNTNywrZPWLB1W8T9tsOgRVzGWuLrFyRMhk8x83Sal0iTeh2ukdoNc7ZashnNaAnJLxRz9FqVRwjFClaAq1Y4+EsrCw+K0tDOYU8rVZ32VUFmtYptLrO2sqTscIa9kN087Ra3xLJ37RsaFXaiXaFNWyuxrlabdy/yt20ptDqMVerAZ9VoMHKytdqA4u3Av8FtBrvQh6oo+TCMGerzfLunB3hGFjRl7G21Uryxu163laR2/h7PPfqPJd4G5ax0mwVwao2ObQOIdadscrIKlogg0PrFFpd5zh36/xcVqCaSbV3lpS2Qyw7Pyv0k1nFynuG7DIL19Cqk6VVdOPYz2F1/xSfG9zoChkp/AhalTK0cqT2xuy21ftKZQOLUDOy2uvQvKbQqp2dVSM3Ky83q5dK5WiNZVPqzoRh2OzELkcX0KqXndVQan9gYUvmLZCM1dfKzOrocvXvM0YBrni2AdP22l1mVj5jCiLd+cDcrM4XVhtYbZGakY/QapyZVcBYiUp3nh3nZVV5tdrAYtZ6h3fZgbS9Rkzb07Dqy90nYmmokdbSYfWbuNXT0qpyw8ovqNVMQNpeq33PyMpjbcmkWw1Vt8YQNsdIWb0Tt7pfWh1VEvML0s3GNrQqZWSFWVkC3aquPtE+0GJ1K2x1WVlZHd1zXrKiG3WnwKrWycTKYe5KZ+xjUk8EfS1W/xC2etmwOrrivGRFCojfQaswEyuP+TAIhlVX+YIVaLFColbvK5tW6/wioReMNJ0xsCKsVaZghZl3EDCsLNWNTG5Bj9VvglbnUaujG75eMKQuY82txhlYsUsmsKwGqnUifU1Wt2JWv1eA1T19YjAS1LR9bhUfD+u38uXrMSkWYCXcLSdn9YeY1RO0euCavgCFcx+hVTN1K9CsMBKwwmrZhVXQZIXErCrQaoT40osmLW1fWMVKZ2i3wgr1Az2lhkW6CVXS6p2I1Qdodb8pUOWeafoOrTopW4G63y0kYgWmHSzlZiVr9U8Rq3todbn50ya31R20KqVr5QRJd9IzrcDpFkoF3YI+q2gmeMKTsK+t7iM/tovcVfnHwKr6mKoVzMQcMat+QfrWRnKBSFmrW36rj9AK3HHV437oTxtahWlaecklyti1SHzpAhd+QacV4rb6vQKtwAvoz/2pws8aA6vqXXpWsCoSKTtgW/ULkoVjhgW9Vu94rc6hFaw8YvM/XfoRWo1Ts+q3OCr/JdTO8uWwvIJmq//xWlWg1Q18RY//uWfQKvq0LY1WsStGgMStYt6eQqtSqaH6js/qA7S6j73kjP9JWtfQqpmOVfziXpewip92S+xa1dVkhfisKtCKUHmkyf04QRta1VKxilNZSMYqXv2lm/BQkuhjWF1dVrc8VpfQ6p70qhr3Y7TGwCpShUGXVfxJLV1Hzqofn36wGDMYDrwvT5cV+sxh9RFaXZJeRVob6RE/7w5alfRbDWInmFamMbnmN6FUT4umBZ86h5E+q78nW72vAKsK+XV2yPtwujGw2qzJpceKML3jIVkrcqaAvRiX48H+cl7FTpvVqhc84UnYX62eaK9sRuYFQ+qO6Ta0CvVa9QlTBhaSt6KMawtda1h/y1fqdcuPH3XRlvVZLWeaqFZ/qUCrr9TPstdPPAtZt6dCq43xsAYr0pypj1SskMQTlVbdrkar/yZYnUOrB+bHnXWas0i4j/gRWjX1WXmBEBXn8698aSqdVujPbKsKtBoh5bCh1XoZS9GKKMU8EXxW1IkIeixTe51Wr5esE45x8MLqRcP632I8vGlVvdZh9cUiP1LRR+pWqN4So1o9C1XYqt1sds5YWJ/XjxY534xfodWlDqs7aFVTtnKHtAeKsTe18FqBx4Qk9X8euVfnsVpMK9SaZ4z84teN+NNrVOJxj7TEGFitxsNSVs7Apz+kNGFOiNtqNtDifhIqdpCi1XyV1qZi8Vk96bG6gFahpJXTGPoB3x+4shVyLK6OMPp0LGkrWFZzYxaXzwohXQ0rarUcD3NauY1GY2j5OOncBYnL7iJWc61ATErFijabcMtnda7LqgOteoRvphx+8tYjMat5Rsi6bgVWbGJXxYpS8iqCRbX6qssKQau3ZSydUjyPqhK3ms8lkbtdbJFasZIVpWWd/JJs9aKNCl1Dq6ZuK4trP5+E1cKrblkYv5FhjC2P1tuqWVXJ6eC/PydavddnZZeAVVWvFe7z/R6SVvyhZkVarX3tBxOsXnR+hzG06mi0wtxDs223KtLm6/71mWl1qfM73EGrmjYrX2DT5dZbhdRPPmFZ6f0SY2C1SNvVobpDoX3nW29VZJS6uqVaPen9Em1oFapbER+nveNWzFK1txQr3d+iBKzmOY9Kio69vvgvsf1WIfvzTz7+Grc61/0tOtCqJ23VwkNX7pfYeSuE/vbhI7R6j1JoWBGr2XhYnCnA1uCL/O+w/VZFnqN8iKyIvOj/Gt+B1axr5s/KMfatYcNV/R32xGoelx/OP77oT9jfxsPQqob2Lwpp/zGYMFbGyoSxMmGsjJUJY2XCWBkrE8bKhLEyViaMlQljZaxMGCsTxspYmTBWJozVfkXdWO1KgBpe5oRkduKxcBQKxmoL+jOZMOdwZ6wCcw53xso353BnrAbmHO6KVdecwp2xcs0p3BUrz5zBXbEyVLtihU0HuBtWXb++f2fj/6IHahR0QHgFAAAAAElFTkSuQmCC" alt="Digi.IA" width="427" height="149" decoding="async">
-    </a>
-    <span class="by">por DigiThree</span>
+      </a>
+      <span class="by">por DigiThree</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="#video">Demonstração</a>
+      <a href="#metodo">O que ela faz</a>
+      <a href="#oferta">A oferta</a>
+      <a href="#perguntas">Perguntas</a>
+    </div>
+
+    <a class="nav-cta" href="#cadastro">Entrar na lista</a>
   </nav>
 
   <!-- ===================== HERO ===================== -->
-  <header class="hero" id="cadastro">
-    <div class="hero-in stagger">
-      <p class="tag">Lançamento &nbsp;•&nbsp; 14 de setembro</p>
+  <header class="hero" id="topo">
+    <div class="hero-grid">
+
+    <!-- Coluna da esquerda: texto, botões e contagem regressiva -->
+    <div class="hero-col stagger">
+      <p class="badge"><i aria-hidden="true"></i>Lançamento · 14 de setembro</p>
 
       <h1>Conteúdo e campanhas prontos <span class="glow">antes do café esfriar.</span></h1>
 
@@ -906,79 +1080,14 @@ footer{
         <span class="offer">você recebe o preço antes de todo mundo</span>.
       </p>
 
-      <!-- Formulário principal -->
-      <div class="form-block" data-form>
-        <div class="form-live">
-          <form novalidate>
-            <div class="fields">
-              <div class="field">
-                <label for="email-1">E-mail</label>
-                <input id="email-1" name="email" type="email" autocomplete="email" required placeholder="voce@empresa.com.br" aria-describedby="err-1">
-                <span class="err" id="err-1" data-err></span>
-              </div>
-
-              <!-- "Cem empresários locais valem mais que mil curiosos" — o campo
-                   de tipo de negócio existe para qualificar a lista, e por isso
-                   fica aberto, não escondido atrás do "+ adicionar". -->
-              <div class="field">
-                <label for="negocio-1">Que tipo de negócio você tem</label>
-                <input id="negocio-1" name="tipo_negocio" type="text" list="tipos-negocio" placeholder="Ex.: restaurante, clínica, agência, loja">
-                <datalist id="tipos-negocio">
-                  <option value="Agência de marketing"></option>
-                  <option value="Social media / freelancer"></option>
-                  <option value="Comércio ou loja"></option>
-                  <option value="Restaurante ou bar"></option>
-                  <option value="Clínica ou consultório"></option>
-                  <option value="Serviços"></option>
-                  <option value="Indústria"></option>
-                </datalist>
-              </div>
-
-              <details class="extra" data-extra>
-                <summary>+ Adicionar nome e WhatsApp</summary>
-                <div class="row2">
-                  <div class="field">
-                    <label for="nome-1">Nome <span style="text-transform:none;letter-spacing:0">(opcional)</span></label>
-                    <input id="nome-1" name="nome" type="text" autocomplete="given-name" placeholder="Como te chamamos">
-                  </div>
-                  <div class="field">
-                    <label for="fone-1">WhatsApp <span style="text-transform:none;letter-spacing:0">(opcional)</span></label>
-                    <input id="fone-1" name="whatsapp" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(11) 90000-0000" data-mask>
-                  </div>
-                </div>
-              </details>
-            </div>
-
-            <label class="consent">
-              <input type="checkbox" name="lgpd" required>
-              <span>Quero receber avisos sobre o lançamento. Li a <a href="/privacidade">política de privacidade</a> e autorizo o uso dos meus dados conforme a LGPD.</span>
-            </label>
-
-            <button class="cta" type="submit">
-              <span>Entrar na lista</span>
-              <div class="spinner" aria-hidden="true"></div>
-            </button>
-
-            <p class="nocard">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#CD82FF" stroke-width="1.6" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="M1.5 7h13M3 15L14 1"/></svg>
-              <b>Não pedimos cartão agora.</b> Só o e-mail.
-            </p>
-          </form>
-        </div>
-
-        <!-- Estado de sucesso -->
-        <div class="success" role="status" aria-live="polite">
-          <h3>Pronto. Você está na lista.</h3>
-          <!-- Só aparece quando CONFIG.KIWIFY_CHECKOUT estiver preenchido. -->
-          <a class="ghost" data-checkout hidden href="#" target="_blank" rel="noopener" style="margin-bottom:16px">
-            Garantir meu acesso agora
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-          </a>
-          <p>Enviamos uma confirmação para o seu e-mail. No dia 14 de setembro você recebe o acesso e a tabela de preços antes da abertura pública.</p>
-        </div>
+      <!-- O formulário saiu daqui e vive agora só no fim da página.
+           Este botão leva até ele. -->
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#cadastro">Entrar na lista</a>
+        <a class="btn btn-ghost" href="#video">Ver a demonstração</a>
       </div>
 
-      <!-- Contador + prova social -->
+      <!-- Contador -->
       <div class="meter">
         <div>
           <p class="tag" style="margin-bottom:14px">Faltam</p>
@@ -998,7 +1107,32 @@ footer{
              pela capacidade de onboarding — não é escassez inventada". Quando
              houver contagem verdadeira, ela entra aqui. -->
       </div>
-    </div>
+    </div><!-- /hero-col -->
+
+    <!-- Coluna da direita: o objeto. É uma ilustração composta de três
+         camadas, então o contêiner inteiro é um role="img" com um rótulo só e
+         as camadas ficam escondidas do leitor de tela. Segurar levanta o
+         cérebro; é deleite, não informação.
+
+         ATENÇÃO: os três src abaixo são um SVG vazio de 1600×1195 — só reserva a
+         proporção — até que as imagens reais sejam injetadas por
+         tools/injetar-cerebro.ps1. -->
+    <div class="hero-obj">
+      <div class="palco" id="palco" role="img"
+           aria-label="Uma mão robótica sustenta um cérebro luminoso, atravessado por trilhas de circuito.">
+        <img class="camada camada--fundo" data-camada="fundo"
+             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1195'%3E%3C/svg%3E"
+             alt="" aria-hidden="true" draggable="false" width="1600" height="1195" decoding="async">
+        <img class="camada camada--mao" data-camada="mao"
+             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1195'%3E%3C/svg%3E"
+             alt="" aria-hidden="true" draggable="false" width="1600" height="1195" decoding="async">
+        <img class="camada camada--cerebro" data-camada="cerebro"
+             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1195'%3E%3C/svg%3E"
+             alt="" aria-hidden="true" draggable="false" width="1600" height="1195" decoding="async">
+      </div>
+    </div><!-- /hero-obj -->
+
+    </div><!-- /hero-grid -->
   </header>
 
   <!-- ===================== VÍDEO ===================== -->
@@ -1034,7 +1168,7 @@ footer{
   </section>
 
   <!-- ===================== O QUE FAZ ===================== -->
-  <section>
+  <section id="metodo">
     <div class="sec-head rv">
       <p class="tag">O que ela faz</p>
       <h2>O método da DigiThree, agora do seu lado.</h2>
@@ -1129,7 +1263,7 @@ footer{
   </section>
 
   <!-- ===================== OFERTA ===================== -->
-  <section>
+  <section id="oferta">
     <div class="sec-head rv">
       <p class="tag">A oferta</p>
       <h2>O preço da lista não volta depois.</h2>
@@ -1175,7 +1309,7 @@ footer{
   </section>
 
   <!-- ===================== FAQ ===================== -->
-  <section>
+  <section id="perguntas">
     <div class="sec-head rv">
       <p class="tag">Perguntas</p>
       <h2>O que costumam perguntar antes de entrar.</h2>
@@ -1221,8 +1355,10 @@ footer{
     </div>
   </section>
 
-  <!-- ===================== CTA FINAL ===================== -->
-  <section>
+  <!-- ===================== CTA FINAL =====================
+       Recebeu o id "cadastro" quando o formulário saiu do hero: é o
+       destino do link de pular, do botão do hero e do botão do topo. -->
+  <section id="cadastro">
     <div class="final rv">
       <p class="tag" style="color:rgba(248,240,255,.72)">Últimas vagas com desconto</p>
       <h2>Entre agora e o preço fica travado.</h2>
@@ -1909,6 +2045,84 @@ function marcarConversao(){
     });
   }, { threshold: .3 });
   io.observe(saida);
+})();
+
+/* ============================================================
+   8. OBJETO DO HERO — o cérebro sustentado pela mão
+   Segurar levanta o cérebro e afrouxa a mão; soltar devolve. O cursor
+   inclina a cena de leve. É deleite: nenhuma informação da página
+   depende disso, e com "movimento reduzido" nada aqui roda.
+   ============================================================ */
+(function objetoHero(){
+  const palco = document.getElementById('palco');
+  if (!palco || reduzido) return;
+
+  const cerebro = palco.querySelector('[data-camada="cerebro"]');
+  const mao     = palco.querySelector('[data-camada="mao"]');
+  if (!cerebro || !mao) return;
+
+  const ABRE = 1000;          // quanto a mão leva para relaxar de volta
+  let preso = false, timer = null;
+  let par = { x: 0, y: 0 };   // paralaxe: -1 a 1 em cada eixo
+
+  function aplicar(){
+    const alto = palco.classList.contains('segurando');
+    cerebro.style.transform =
+      `translate3d(${par.x * 16}px, ${par.y * 12 + (alto ? -46 : 0)}px, 0) scale(${alto ? 1.06 : 1})`;
+    mao.style.transform =
+      `translate3d(${par.x * -6}px, ${par.y * -4 + (alto ? -9 : 0)}px, 0)`
+      + ` rotate(${alto ? -1.4 : 0}deg) scaleX(${alto ? 0.93 : 1})`;
+  }
+
+  function marcar(fase){
+    palco.classList.remove('segurando', 'soltando');
+    if (fase) palco.classList.add(fase);
+    aplicar();
+  }
+
+  function segurar(ev){
+    if (preso) return;
+    preso = true;
+    clearTimeout(timer);
+
+    // a onda sai de onde o dedo tocou
+    const r = palco.getBoundingClientRect();
+    const temPonto = typeof ev?.clientX === 'number';
+    const o = document.createElement('span');
+    o.className = 'onda';
+    o.style.left = (temPonto ? (ev.clientX - r.left) / r.width  * 100 : 50) + '%';
+    o.style.top  = (temPonto ? (ev.clientY - r.top)  / r.height * 100 : 30) + '%';
+    palco.appendChild(o);
+    setTimeout(() => o.remove(), 800);
+
+    marcar('segurando');
+  }
+
+  function soltar(){
+    if (!preso) return;
+    preso = false;
+    marcar('soltando');
+    clearTimeout(timer);
+    timer = setTimeout(() => marcar(null), ABRE);
+  }
+
+  palco.addEventListener('pointerdown', segurar);
+  window.addEventListener('pointerup', soltar);
+  window.addEventListener('pointercancel', soltar);
+
+  // A inclinação é só do mouse: no toque ela brigaria com o scroll.
+  palco.addEventListener('pointermove', ev => {
+    if (ev.pointerType !== 'mouse') return;
+    const r = palco.getBoundingClientRect();
+    par = {
+      x: ((ev.clientX - r.left) / r.width  - 0.5) * 2,
+      y: ((ev.clientY - r.top)  / r.height - 0.5) * 2
+    };
+    aplicar();
+  });
+  palco.addEventListener('pointerleave', () => { par = { x: 0, y: 0 }; aplicar(); });
+
+  aplicar();
 })();
 </script>
 </body>
