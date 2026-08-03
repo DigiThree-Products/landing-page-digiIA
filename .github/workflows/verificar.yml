@@ -1,0 +1,32 @@
+name: Verificar
+
+# Roda a cada push e a cada PR. É a única automação do repositório, e existe
+# para uma coisa só: impedir que a landing vá ao ar quebrada.
+#
+# Não há passo de build porque o site não tem build — são arquivos estáticos
+# servidos direto pela Vercel. Adicionar build aqui criaria uma etapa que pode
+# falhar sem que nada no site tenha mudado.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Push seguido de push cancela a execução anterior: só o último commit importa.
+concurrency:
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # Sem `npm ci`: o verificar.mjs não tem dependência nenhuma, só node.
+      - name: Verificar a landing
+        run: node verificar.mjs
