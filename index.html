@@ -231,7 +231,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   margin:0;
   padding:0;
   font-family:var(--font-mono);
-  font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase;
   color:var(--paper-80);
 }
 .badge i{
@@ -244,9 +244,9 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
 @keyframes pulso{0%,100%{opacity:1} 50%{opacity:.35}}
 
 .hero h1{
-  font-size:clamp(30px,3.6vw,52px);
-  line-height:1.03;
-  margin:20px 0 0;
+  font-size:clamp(26px,2.9vw,42px);
+  line-height:1.04;
+  margin:18px 0 0;
 }
 .hero h1 .glow{
   background:linear-gradient(96deg,var(--lilac) 0%, var(--mid) 45%, var(--violet) 100%);
@@ -255,10 +255,10 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   color:transparent;
 }
 .hero p.sub{
-  font-size:clamp(15.5px,.55vw + 13.6px,17.5px);
+  font-size:clamp(14.5px,.4vw + 13px,16px);
   color:var(--paper-80);
   max-width:46ch;
-  margin:20px 0 0;
+  margin:16px 0 0;
 }
 .hero .offer{
   color:var(--paper);
@@ -268,13 +268,13 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
 
 /* Par de botões da dobra. O primário leva ao formulário, que agora
    vive só no fim da página. */
-.hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:30px}
+.hero-actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:24px}
 .btn{
   display:inline-flex; align-items:center; gap:9px;
-  padding:14px 24px;
+  padding:12px 20px;
   border-radius:999px;
   font-family:var(--font-display);
-  font-weight:600; font-size:15px; letter-spacing:-.01em;
+  font-weight:600; font-size:14px; letter-spacing:-.01em;
   text-decoration:none; white-space:nowrap;
   transition:transform .22s var(--ease), box-shadow .22s var(--ease),
              background .22s var(--ease), border-color .22s var(--ease);
@@ -561,7 +561,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
 .unit b{
   display:block;
   font-family:var(--font-mono); font-weight:500;
-  font-size:clamp(26px,3.4vw,36px);
+  font-size:clamp(21px,2.5vw,28px);
   letter-spacing:-.02em;
   line-height:1;
   font-variant-numeric:tabular-nums;
@@ -573,7 +573,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   font-family:var(--font-mono); font-size:10px; letter-spacing:.14em;
   text-transform:uppercase; color:var(--paper-38);
 }
-.sep{font-family:var(--font-mono); font-size:26px; color:var(--paper-38); line-height:1.15}
+.sep{font-family:var(--font-mono); font-size:21px; color:var(--paper-38); line-height:1.15}
 
 .social{font-size:14px; color:var(--paper-56)}
 .social b{color:var(--paper); font-weight:500; font-family:var(--font-mono)}
@@ -991,7 +991,6 @@ footer{
 }
 @media (max-width:620px){
   .palco{max-width:340px}
-  .hero-actions{margin-top:24px}
   .btn{flex:1 1 auto; justify-content:center}
 }
 
@@ -1000,16 +999,16 @@ footer{
 @media (max-height:790px){
   .nav{padding-block:14px}
   .hero{padding-top:12px}
-  .hero h1{font-size:clamp(29px,4.3vw,45px); margin-top:14px}
-  .hero p.sub{margin-top:13px; font-size:15.5px}
-  .hero-actions{margin-top:22px}
+  .hero h1{font-size:clamp(24px,2.6vw,38px); margin-top:14px}
+  .hero p.sub{margin-top:13px; font-size:15px}
+  .hero-actions{margin-top:20px}
   .meter{margin-top:16px}
 }
 @media (max-height:680px){
-  .hero h1{font-size:clamp(26px,4vw,38px)}
-  .hero p.sub{font-size:14.5px; margin-top:11px}
-  .hero-actions{margin-top:18px}
-  .btn{padding-block:12px}
+  .hero h1{font-size:clamp(22px,2.3vw,33px)}
+  .hero p.sub{font-size:14px; margin-top:11px}
+  .hero-actions{margin-top:16px}
+  .btn{padding-block:10px}
   .meter{margin-top:12px}
 }
 
