@@ -309,20 +309,26 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
   width:100%; max-width:620px;
   margin-inline:auto;
   isolation:isolate;
-  /* As imagens trazem o próprio fundo escuro, o que desenhava um retângulo
-     visível sobre a página. A máscara dissolve as bordas para o objeto
-     flutuar, como na referência. O raio vertical é 54% de propósito: é o
-     que faz o esmaecimento terminar exatamente na borda da caixa, em vez
-     de deixar uma linha dura embaixo. */
-  -webkit-mask-image:radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0,0,0,.55) 72%, transparent 100%);
-          mask-image:radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0,0,0,.55) 72%, transparent 100%);
   /* pan-y mantém o scroll da página possível sobre a cena; o resto
      evita menu de imagem e seleção no toque longo */
   touch-action:pan-y;
   user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
 }
 .camada{display:block; width:100%; height:auto; pointer-events:none}
-.camada--fundo{position:relative; z-index:0; transition:filter .7s var(--ease)}
+/* Só o fundo é mascarado. Ele é a única camada com o retângulo escuro
+   embutido, que desenhava uma moldura visível sobre a página; mão e
+   cérebro têm transparência própria e não precisam.
+   A máscara mora aqui, e não no .palco, porque no palco ela recortava o
+   cérebro: ao subir os 46px do gesto de segurar, o topo dele entrava na
+   zona transparente e sumia. O raio vertical de 54% é medida — é o que
+   faz o esmaecimento terminar na borda da caixa em vez de deixar uma
+   linha dura embaixo. */
+.camada--fundo{
+  position:relative; z-index:0;
+  transition:filter .7s var(--ease);
+  -webkit-mask-image:radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0,0,0,.55) 72%, transparent 100%);
+          mask-image:radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0,0,0,.55) 72%, transparent 100%);
+}
 .camada--mao{position:absolute; inset:0; z-index:1; transform-origin:50% 88%}
 .camada--cerebro{position:absolute; inset:0; z-index:2; transform-origin:50% 62%}
 .camada--mao,.camada--cerebro{
