@@ -229,10 +229,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
 .badge{
   display:inline-flex; align-items:center; gap:9px;
   margin:0;
-  padding:7px 15px 7px 12px;
-  border:1px solid var(--rule-hi);
-  border-radius:999px;
-  background:var(--surface);
+  padding:0;
   font-family:var(--font-mono);
   font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
   color:var(--paper-80);
@@ -556,8 +553,7 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
 /* --- Contador + prova social --- */
 .meter{
   display:flex; flex-wrap:wrap; align-items:center; gap:clamp(18px,3vw,40px);
-  margin-top:44px; padding-top:26px;
-  border-top:1px solid var(--rule);
+  margin-top:20px;
   max-width:720px;
 }
 .count{display:flex; gap:8px}
@@ -1007,14 +1003,14 @@ footer{
   .hero h1{font-size:clamp(29px,4.3vw,45px); margin-top:14px}
   .hero p.sub{margin-top:13px; font-size:15.5px}
   .hero-actions{margin-top:22px}
-  .meter{margin-top:32px; padding-top:22px}
+  .meter{margin-top:16px}
 }
 @media (max-height:680px){
   .hero h1{font-size:clamp(26px,4vw,38px)}
   .hero p.sub{font-size:14.5px; margin-top:11px}
   .hero-actions{margin-top:18px}
   .btn{padding-block:12px}
-  .meter{margin-top:24px; padding-top:18px}
+  .meter{margin-top:12px}
 }
 
 /* ============================================================
@@ -1076,25 +1072,12 @@ footer{
     <div class="hero-col stagger">
       <p class="badge"><i aria-hidden="true"></i>Lançamento · 14 de setembro</p>
 
-      <h1>Conteúdo e campanhas prontos <span class="glow">antes do café esfriar.</span></h1>
-
-      <p class="sub">
-        A Digi.IA escreve posts, monta calendário editorial e gera campanhas inteiras
-        já falando com a voz da sua marca. Entre na lista antes do lançamento e
-        <span class="offer">você recebe o preço antes de todo mundo</span>.
-      </p>
-
-      <!-- O formulário saiu daqui e vive agora só no fim da página.
-           Este botão leva até ele. -->
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#cadastro">Entrar na lista</a>
-        <a class="btn btn-ghost" href="#video">Ver a demonstração</a>
-      </div>
-
-      <!-- Contador -->
+      <!-- Contador. Fica entre o selo e o titulo: a data no selo e o tempo
+           que falta ate ela sao a mesma informacao, e ler uma logo depois da
+           outra e o que faz a contagem significar alguma coisa. -->
       <div class="meter">
         <div>
-          <p class="tag" style="margin-bottom:14px">Faltam</p>
+          <p class="tag" style="margin-bottom:10px">Faltam</p>
           <div class="count" id="countdown" aria-label="Contagem regressiva para o lançamento">
             <div class="unit"><b data-cd="d">00</b><i>dias</i></div>
             <div class="sep">:</div>
@@ -1110,6 +1093,21 @@ footer{
              lançamento manda o contrário: "escassez real, a turma é limitada
              pela capacidade de onboarding — não é escassez inventada". Quando
              houver contagem verdadeira, ela entra aqui. -->
+      </div>
+
+      <h1>Conteúdo e campanhas prontos <span class="glow">antes do café esfriar.</span></h1>
+
+      <p class="sub">
+        A Digi.IA escreve posts, monta calendário editorial e gera campanhas inteiras
+        já falando com a voz da sua marca. Entre na lista antes do lançamento e
+        <span class="offer">você recebe o preço antes de todo mundo</span>.
+      </p>
+
+      <!-- O formulário saiu daqui e vive agora só no fim da página.
+           Este botão leva até ele. -->
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#cadastro">Entrar na lista</a>
+        <a class="btn btn-ghost" href="#video">Ver a demonstração</a>
       </div>
     </div><!-- /hero-col -->
 
@@ -2110,9 +2108,20 @@ function marcarConversao(){
     timer = setTimeout(() => marcar(null), ABRE);
   }
 
-  palco.addEventListener('pointerdown', segurar);
+  // A captura do ponteiro garante que o soltar chegue mesmo se o cursor sair
+  // da janela antes de largar o botao. Sem ela um pointerup perdido deixava o
+  // cerebro preso no ar e todo clique seguinte era engolido pelo guarda
+  // if (preso) return: a interacao morria ate um pointerup aparecer por acaso.
+  palco.addEventListener('pointerdown', ev => {
+    try { palco.setPointerCapture(ev.pointerId); } catch (e) { /* sem captura, os ouvintes de window seguram */ }
+    segurar(ev);
+  });
+  palco.addEventListener('lostpointercapture', soltar);
+  // Redundancia proposital: soltar e idempotente (if (!preso) return), entao
+  // nao ha risco em ouvir de varios lugares — so em ouvir de menos.
   window.addEventListener('pointerup', soltar);
   window.addEventListener('pointercancel', soltar);
+  window.addEventListener('blur', soltar);
 
   // A inclinação é só do mouse: no toque ela brigaria com o scroll.
   palco.addEventListener('pointermove', ev => {
