@@ -612,9 +612,13 @@ a:hover{text-decoration:underline; text-underline-offset:3px}
    SEÇÕES
    ============================================================ */
 section{padding-block:clamp(70px,11vh,130px)}
+/* A escala da pagina desce a partir do h1 do hero — clamp(26px,2.9vw,42px).
+   Nao basta o teto ser menor: o coeficiente vw tambem precisa ser, senao o
+   cabecalho ultrapassa a manchete nas larguras intermediarias, onde os dois
+   ainda sao fluidos. Dai 2.5vw aqui, 2.7vw no .final e 2.4vw no .stat. */
 .sec-head{max-width:640px; margin-bottom:clamp(38px,5vw,64px)}
-.sec-head h2{font-size:clamp(30px,4.4vw,50px); margin-top:16px}
-.sec-head p{color:var(--paper-56); margin:16px 0 0; font-size:17px}
+.sec-head h2{font-size:clamp(24px,2.5vw,36px); margin-top:16px}
+.sec-head p{color:var(--paper-56); margin:16px 0 0; font-size:16px}
 
 /* --- O que faz --- */
 .cards{
@@ -769,7 +773,7 @@ section{padding-block:clamp(70px,11vh,130px)}
 .stat b{
   display:block;
   font-family:var(--font-display); font-weight:600;
-  font-size:clamp(30px,4vw,46px); letter-spacing:-.04em; line-height:1;
+  font-size:clamp(24px,2.4vw,34px); letter-spacing:-.04em; line-height:1;
 }
 .stat i{
   font-style:normal; display:block; margin-top:9px;
@@ -811,7 +815,7 @@ details[open] .faq-body{grid-template-rows:1fr}
     linear-gradient(120deg, var(--abyss), var(--violet) 78%);
   overflow:hidden;
 }
-.final h2{font-size:clamp(30px,4.6vw,54px); max-width:16ch}
+.final h2{font-size:clamp(25px,2.7vw,38px); max-width:16ch}
 .final .assin{
   font-family:var(--font-display); font-weight:300;
   font-size:clamp(17px,1.6vw,22px);
