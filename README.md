@@ -13,7 +13,9 @@ Tudo que muda fica no objeto `CONFIG`, no topo do `<script>` ao final do arquivo
 | Chave | O que faz |
 |---|---|
 | `DATA_LANCAMENTO` | Data e hora da abertura. Alimenta a contagem regressiva. |
-| `FORM_ENDPOINT` | Para onde os cadastros são enviados (POST JSON). **Vazio = a página avisa que a lista ainda não abriu e não envia nada.** |
+| `SUPABASE_URL` | URL do projeto Supabase que guarda os cadastros. |
+| `SUPABASE_ANON_KEY` | Chave publicável. **Segura no repositório público porque a RLS da tabela `leads` só permite INSERT** — ninguém lê a lista com ela. |
+| `KIWIFY_CHECKOUT` | Link de pagamento. Vazio = o botão de checkout não aparece e a página segue só como lista de espera. |
 | `GA4_ID` | ID do Google Analytics 4. Vazio = nenhum script do Google é carregado. |
 | `META_PIXEL_ID` | ID do pixel da Meta. Vazio = nenhum script da Meta é carregado. |
 | `VIDEO` | Tipo, ID, capa, duração e legenda do vídeo de demonstração. |

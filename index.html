@@ -962,6 +962,11 @@ footer{
         <!-- Estado de sucesso -->
         <div class="success" role="status" aria-live="polite">
           <h3>Pronto. Você está na lista.</h3>
+          <!-- Só aparece quando CONFIG.KIWIFY_CHECKOUT estiver preenchido. -->
+          <a class="ghost" data-checkout hidden href="#" target="_blank" rel="noopener" style="margin-bottom:16px">
+            Garantir meu acesso agora
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
           <p>Enviamos uma confirmação para o seu e-mail. No dia 14 de setembro você recebe o acesso e a tabela de preços antes da abertura pública.</p>
         </div>
       </div>
@@ -1240,6 +1245,11 @@ footer{
 
         <div class="success" role="status" aria-live="polite" style="background:rgba(0,0,0,.30);border-color:rgba(248,240,255,.28)">
           <h3>Pronto. Você está na lista.</h3>
+          <!-- Só aparece quando CONFIG.KIWIFY_CHECKOUT estiver preenchido. -->
+          <a class="ghost" data-checkout hidden href="#" target="_blank" rel="noopener" style="margin-bottom:16px">
+            Garantir meu acesso agora
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
           <p style="color:rgba(248,240,255,.80)">Confirmação a caminho do seu e-mail. No dia 14 de setembro você recebe o acesso e a tabela de preços.</p>
         </div>
       </div>
@@ -1278,11 +1288,21 @@ const CONFIG = {
   // Lançamento: 14 de setembro de 2026, conforme o plano das sete semanas.
   DATA_LANCAMENTO : '2026-09-14T09:00:00-03:00',
 
-  // Destino real dos cadastros. ENQUANTO ESTIVER VAZIO o formulário avisa a
-  // pessoa que a lista ainda não abriu, em vez de fingir que deu certo. Antes
-  // ele gravava no localStorage do próprio visitante — o lead se perdia e a
-  // tela ainda dizia "desconto reservado".
-  FORM_ENDPOINT   : '',
+  // Destino dos cadastros: tabela `leads` no Supabase, via API REST.
+  // ENQUANTO ESTIVEREM VAZIOS o formulário avisa a pessoa que a lista ainda
+  // não abriu, em vez de fingir que deu certo. Antes ele gravava no
+  // localStorage do próprio visitante — o lead se perdia e a tela ainda dizia
+  // "desconto reservado".
+  //
+  // A chave abaixo é a publicável (anon). Ela é feita para ficar exposta: o que
+  // protege os dados é a política de RLS na tabela, que só permite INSERT.
+  // Sem essa política, esta chave leria a lista inteira de leads.
+  SUPABASE_URL      : '',   // ex.: 'https://serhbkigjqicuckjnudl.supabase.co'
+  SUPABASE_ANON_KEY : '',   // a chave "publishable" / "anon"
+
+  // Para onde a pessoa vai pagar. Vazio = o botão de checkout não aparece e a
+  // página segue funcionando só como lista de espera.
+  KIWIFY_CHECKOUT   : '',   // ex.: 'https://pay.kiwify.com.br/xxxxxxx'
 
   // Medição. Preencher com os IDs reais para o pixel começar a montar público.
   // O plano de lançamento marca isto como a tarefa de maior retorno e custo
@@ -1600,22 +1620,38 @@ function marcarConversao(){
       // Sem destino configurado, a página não finge que deu certo. Guardar o
       // cadastro no navegador do visitante perdia o lead e ainda exibia
       // "desconto reservado" — mentira para quem confiou o e-mail.
-      if (!CONFIG.FORM_ENDPOINT){
+      if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY){
         botao.classList.remove('loading');
         botao.disabled = false;
-        botao.querySelector('span').textContent = 'Garantir meu lugar';
+        botao.querySelector('span').textContent = 'Entrar na lista';
         if (erro) erro.textContent = 'A lista ainda não abriu. Volte em instantes — nada foi enviado.';
-        console.warn('[Digi.IA] CONFIG.FORM_ENDPOINT vazio: cadastro NÃO foi salvo.');
+        console.warn('[Digi.IA] Supabase não configurado: cadastro NÃO foi salvo.');
         return;
       }
 
       try {
-        const r = await fetch(CONFIG.FORM_ENDPOINT, {
+        const r = await fetch(CONFIG.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/leads', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
+          headers: {
+            'Content-Type' : 'application/json',
+            'apikey'       : CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON_KEY,
+            // A política de RLS permite INSERT e nada mais, então o banco não
+            // pode devolver a linha criada. Sem isto o PostgREST responde 401.
+            'Prefer'       : 'return=minimal'
+          },
+          body: JSON.stringify({
+            email       : dados.email,
+            nome        : dados.nome || null,
+            whatsapp    : dados.whatsapp || null,
+            tipo_negocio: dados.tipo_negocio || null,
+            origem      : dados.origem
+          })
         });
-        if (!r.ok) throw new Error('resposta ' + r.status);
+
+        // 409 = e-mail já cadastrado. Para quem preencheu, deu certo: a pessoa
+        // está na lista. Tratar como erro só geraria confusão.
+        if (!r.ok && r.status !== 409) throw new Error('resposta ' + r.status);
 
         marcarConversao();
         concluir(bloco, dados);
@@ -1635,6 +1671,15 @@ function marcarConversao(){
   // Nada disso tinha implementação atrás. Ficou só o que é verdade: o cadastro
   // foi recebido.
   function concluir(bloco){
+    // Cadastro salvo. Se já existe checkout aberto, oferece o pagamento aqui
+    // mesmo — quem acabou de levantar a mão é quem tem maior intenção. Sem
+    // checkout configurado, a página segue sendo só lista de espera.
+    if (CONFIG.KIWIFY_CHECKOUT){
+      bloco.querySelectorAll('[data-checkout]').forEach(a => {
+        a.href = CONFIG.KIWIFY_CHECKOUT;
+        a.hidden = false;
+      });
+    }
     bloco.classList.add('done');
     if (!reduzido) confete(bloco);
   }
