@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+  Fonte da imagem social (og-image.png), 1200x630.
+  Para regenerar depois de editar:
+
+  "/c/Program Files/Google/Chrome/Application/chrome.exe" --headless \
+    --disable-gpu --hide-scrollbars --window-size=1200,630 \
+    --screenshot=og-image.png og-image.html
+
+  Não é publicada como página: existe para o arquivo de imagem ser
+  reproduzível, em vez de um binário que ninguém sabe de onde veio.
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>og-image</title>
+<style>
+  :root{
+    --violet:#4500F9; --lilac:#CD82FF; --abyss:#01037A; --paper:#F8F0FF;
+  }
+  *{margin:0; padding:0; box-sizing:border-box}
+  html,body{width:1200px; height:630px; overflow:hidden}
+  body{
+    background:
+      radial-gradient(900px 520px at 82% 12%, rgba(205,130,255,.42), transparent 62%),
+      radial-gradient(700px 480px at 10% 96%, rgba(69,0,249,.55), transparent 60%),
+      linear-gradient(140deg, #01037A 0%, #2a06c9 52%, #4500F9 100%);
+    font-family:"Segoe UI",ui-sans-serif,system-ui,-apple-system,Roboto,sans-serif;
+    color:#fff; position:relative;
+  }
+  /* malha sutil, para a arte não ficar chapada */
+  body::after{
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(680px 420px at 50% 46%, #000 18%, transparent 78%);
+  }
+  .quadro{
+    position:relative; z-index:1;
+    height:100%; padding:74px 84px;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .topo{display:flex; align-items:center; gap:16px}
+  .ponto{
+    width:15px; height:15px; border-radius:50%;
+    background:var(--lilac); box-shadow:0 0 26px 7px rgba(205,130,255,.75);
+  }
+  .selo{
+    font-size:19px; letter-spacing:.24em; text-transform:uppercase;
+    color:#dcc9ff; font-weight:600;
+  }
+  h1{
+    font-size:132px; line-height:.94; letter-spacing:-.045em; font-weight:800;
+  }
+  h1 .ia{
+    background:linear-gradient(96deg, #FFFFFF 8%, var(--lilac) 92%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .frase{
+    margin-top:22px; font-size:41px; line-height:1.24; font-weight:600;
+    color:#f0e6ff; max-width:19ch; letter-spacing:-.014em;
+  }
+  .rodape{display:flex; align-items:flex-end; justify-content:space-between; gap:36px}
+  .data{
+    display:inline-flex; align-items:center; gap:13px;
+    background:rgba(255,255,255,.115);
+    border:1px solid rgba(255,255,255,.32);
+    padding:15px 27px; border-radius:999px;
+    font-size:25px; font-weight:700; letter-spacing:-.01em;
+  }
+  .assinatura{
+    text-align:right; font-size:21px; line-height:1.45; color:#c9b6ee;
+  }
+  .assinatura b{display:block; color:#fff; font-size:24px; letter-spacing:-.01em}
+</style>
+</head>
+<body>
+  <div class="quadro">
+
+    <div class="topo">
+      <span class="ponto"></span>
+      <span class="selo">Lista de espera aberta</span>
+    </div>
+
+    <div>
+      <h1>Digi<span class="ia">.IA</span></h1>
+      <p class="frase">Conteúdo e campanhas prontos antes do café esfriar.</p>
+    </div>
+
+    <div class="rodape">
+      <span class="data">Lançamento · 14 de setembro</span>
+      <span class="assinatura">
+        <b>onde as ideias ganham vida</b>
+        uma plataforma DigiThree
+      </span>
+    </div>
+
+  </div>
+</body>
+</html>
