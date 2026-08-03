@@ -1,11 +1,11 @@
 name: Verificar
 
-# Roda a cada push e a cada PR. É a única automação do repositório, e existe
-# para uma coisa só: impedir que a landing vá ao ar quebrada.
+# Roda a cada push e a cada PR. Existe para uma coisa só: impedir que a landing
+# vá ao ar quebrada.
 #
-# Não há passo de build porque o site não tem build — são arquivos estáticos
-# servidos direto pela Vercel. Adicionar build aqui criaria uma etapa que pode
-# falhar sem que nada no site tenha mudado.
+# A ordem importa. O `verificar` roda DEPOIS do build, sobre o HTML gerado em
+# out/ — é o que realmente vai ao ar. Verificar o código-fonte deixaria passar
+# qualquer coisa que o build introduzisse.
 
 on:
   push:
@@ -26,7 +26,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: npm
 
-      # Sem `npm ci`: o verificar.mjs não tem dependência nenhuma, só node.
-      - name: Verificar a landing
-        run: node verificar.mjs
+      - run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Verificar o HTML gerado
+        run: npm run verificar
