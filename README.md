@@ -57,6 +57,23 @@ Estas travam a página, não são melhorias:
 - [ ] **Vídeo de demonstração** — `CONFIG.VIDEO.id` está vazio; a seção mostra
       capa provisória.
 - [ ] **Domínio** — `digi.ia.com.br` não resolve hoje.
+- [ ] **Imagens do objeto do hero** — as três camadas do cérebro (fundo, mão e
+      cérebro) ainda são um SVG vazio que só reserva a proporção. Salve o HTML
+      de origem em `material/cerebro.html` e rode:
+      `powershell -ExecutionPolicy Bypass -File tools\injetar-cerebro.ps1`
+
+## O objeto do hero
+
+A coluna direita do hero é uma ilustração de três camadas empilhadas —
+`fundo`, `mao` e `cerebro` — identificadas pelo atributo `data-camada`.
+Pressionar levanta o cérebro e afrouxa a mão; o cursor inclina a cena. É
+deleite: nenhuma informação da página depende dele, e por isso o conjunto é um
+único `role="img"` com um rótulo só, não um controle focável. Com
+`prefers-reduced-motion` nada disso roda.
+
+As imagens são WebP em base64 (~190 KB somados) e entram pelo
+`tools/injetar-cerebro.ps1`, que as copia de um HTML de origem. Rodar o script
+de novo é seguro: ele sempre substitui o `src` atual.
 
 ## O que foi corrigido nesta versão
 
@@ -86,6 +103,7 @@ A versão anterior tinha problemas que iam além de estética:
 
 ```
 index.html    a página inteira (HTML + CSS + JS + imagens em base64)
+tools/        scripts de manutenção, rodados à mão
 material/     ativos de marca e documentos internos — NÃO versionado
 ```
 
