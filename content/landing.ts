@@ -13,29 +13,32 @@ export const LANDING = {
   nav: { byline: `por ${SITE.organizacaoMae}` },
   hero: {
     eyebrow: `Lançamento • ${SITE.lancamento.diaMes}`,
-    title: 'Conteúdo e campanhas',
-    highlight: 'antes do café esfriar.',
+    title: 'Seu mês, na palma',
+    highlight: 'da sua mão.',
     description:
       'Você explica uma vez. Ela planeja o mês, escreve na voz da sua marca e calcula o retorno. Você aprova.',
-    offer: 'Entre na lista antes do lançamento e você recebe o preço antes de todo mundo.',
+    offer: 'Primeira turma, com a condição de lançamento. Nenhuma cobrança agora.',
     cta: 'Garanta sua vaga',
     countdownLabel: 'Faltam',
   },
   video: {
     eyebrow: 'Veja funcionando',
-    title: 'A gente usando, sem corte e sem mágica.',
+    title: 'A gente usando',
+    titleLineTwo: 'sem corte e sem',
+    titleAccent: 'mágica.',
     description:
       'Antes de entrar na lista, veja a Digi.IA sendo operada de verdade — do pedido em português até a peça pronta.',
-    caption: `Gravado por quem construiu a ferramenta, na ${SITE.organizacaoMae}.`,
-    cta: 'Entrar na lista',
   },
   features: {
     eyebrow: 'O que ela faz',
-    title: `O método da ${SITE.organizacaoMae}, agora do seu lado.`,
-    description: `A Digi.IA foi construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
+    title: `O método da ${SITE.organizacaoMae}, agora na sua mão.`,
+    description: `A Digi.IA foi construída em cima da forma como a ${SITE.organizacaoMae}
+trabalha há mais de 15 anos em Comunicação, Marketing,
+Publicidade e Audiovisual. Ela não responde por achismo —
+responde pelo método.`,
     proofValue: '15+ anos',
     proofText:
-      'de campanhas reais viraram o critério que ela usa para decidir o que funciona.',
+      'de campanhas reais viraram o critério\nque ela usa para decidir o que funciona.',
     cards: [
       {
         icon: 'planeja' as FeatureIcon,
@@ -63,13 +66,6 @@ export const LANDING = {
         description: 'A conta que costuma ficar para depois sai na mesma conversa da ideia.',
         items: ['Custos com marketing', 'Projeção de ROI', 'Orçamento por campanha'],
       },
-    ],
-    audienceLabel: 'Feita para quem faz',
-    audience: [
-      'Micro e pequenos empresários',
-      'Social media',
-      'Equipes internas de marketing',
-      'Agências',
     ],
   },
   demo: {
@@ -111,21 +107,10 @@ export const LANDING = {
   },
   offer: {
     eyebrow: 'A oferta',
-    title: 'A condição da primeira turma não volta.',
-    badge: '1ª',
-    description:
-      'Quem está na lista vê a tabela de preços antes de todo mundo — com a condição de lançamento já aplicada.',
-    ticker: 'PRIMEIRA TURMA • CONDIÇÃO DE LANÇAMENTO •',
-    countdownLabel: 'A condição muda em',
+    title: 'Restam poucas vagas.',
+    revealedTitle: 'Condições especiais de lançamento.',
+    ticker: 'PRIMEIRA TURMA  CONDIÇÃO DE LANÇAMENTO.',
     cta: 'Garantir minha condição',
-    ctaNote: 'Leva menos de 1 minuto. Nenhuma cobrança agora.',
-    conditionsLabel: 'O que fica garantido',
-    conditions: [
-      'A primeira turma é limitada pela nossa capacidade de implantação — não por um número inventado.',
-      'Nenhuma cobrança agora. Você escolhe o plano no lançamento.',
-      'Se não quiser mais, é só não ativar. Sem multa, sem fidelidade.',
-      `O desconto acompanha seu e-mail — não precisa correr no dia ${SITE.lancamento.diaMes.split(' ')[0]}.`,
-    ],
   },
   credibility: {
     value: '15+',

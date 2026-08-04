@@ -39,7 +39,7 @@ export function ApproachSection() {
           scrollTrigger: {
             trigger: section,
             start: 'top top',
-            end: () => `+=${window.innerHeight * 1.15}`,
+            end: () => `+=${window.innerHeight * 1.38}`,
             scrub: true,
             pin: true,
             pinSpacing: true,
@@ -49,13 +49,46 @@ export function ApproachSection() {
         })
 
         timeline
-          .to('.approach-copy', { xPercent: -34, yPercent: -8, ease: 'power2.inOut', duration: 0.55 }, 0)
-          .to('.approach-title', { scale: 1.12, transformOrigin: 'left center', ease: 'power2.inOut', duration: 0.55 }, 0)
-          .fromTo('.approach-foot', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, ease: 'power3.out', duration: 0.28 }, 0.56)
+          .fromTo(
+            '.approach-media',
+            { autoAlpha: 0, xPercent: -8 },
+            { autoAlpha: 1, xPercent: 0, ease: 'power2.out', duration: 0.68 },
+            0,
+          )
+          .fromTo(
+            '.approach-media__surface',
+            { clipPath: 'inset(0 100% 0 0 round 28px)', scale: 0.94 },
+            { clipPath: 'inset(0 0% 0 0 round 28px)', scale: 1, ease: 'power3.inOut', duration: 0.82 },
+            0,
+          )
+          .fromTo(
+            '.approach-media__chrome',
+            { autoAlpha: 0 },
+            { autoAlpha: 1, ease: 'power2.out', duration: 0.24 },
+            0.52,
+          )
+          .fromTo(
+            '.approach-copy',
+            { xPercent: 8 },
+            { xPercent: 0, ease: 'power2.inOut', duration: 0.68 },
+            0,
+          )
       })
 
       media.add('(max-width: 1023px)', () => {
-        gsap.from('.approach-kicker, .approach-title, .approach-description, .approach-foot', {
+        gsap.fromTo(
+          '.approach-media__surface',
+          { clipPath: 'inset(0 100% 0 0 round 22px)', scale: 0.96 },
+          {
+            clipPath: 'inset(0 0% 0 0 round 22px)',
+            scale: 1,
+            duration: 1.05,
+            ease: 'power3.inOut',
+            scrollTrigger: { trigger: '.approach-media', start: 'top 84%' },
+          },
+        )
+
+        gsap.from('.approach-kicker, .approach-title, .approach-description', {
           autoAlpha: 0,
           y: 22,
           stagger: 0.1,
@@ -84,18 +117,33 @@ export function ApproachSection() {
       </svg>
 
       <div className="approach-stage">
-        <div className="approach-copy">
-          <p className="tag approach-kicker">{LANDING.video.eyebrow}</p>
-          <h2 className="approach-title" id="approach-title">{LANDING.video.title}</h2>
-          <p className="approach-description">{LANDING.video.description}</p>
-        </div>
+        <div className="approach-layout">
+          <div className="approach-media" role="img" aria-label="Espaço reservado para o vídeo de demonstração da Digi.IA">
+            <div className="approach-media__surface">
+              <div className="approach-media__chrome" aria-hidden="true">
+                <span className="approach-media__dots"><i /><i /><i /></span>
+                <span className="approach-media__time">00:00</span>
+                <span className="approach-media__play">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M9 7.6v8.8L16 12 9 7.6Z" />
+                  </svg>
+                </span>
+                <span className="approach-media__progress"><i /></span>
+              </div>
+            </div>
+          </div>
 
-        <div className="approach-foot">
-          <p>{LANDING.video.caption}</p>
-          <a className="ghost" href="#oferta">
-            {LANDING.video.cta}
-            <span aria-hidden="true">↗</span>
-          </a>
+          <div className="approach-copy">
+            <p className="tag approach-kicker">{LANDING.video.eyebrow}</p>
+            <h2 className="approach-title" id="approach-title">
+              <span className="approach-title__line">{LANDING.video.title}</span>
+              <span className="approach-title__line">{LANDING.video.titleLineTwo}</span>
+              <span className="approach-title__line">
+                <em className="approach-title__accent">{LANDING.video.titleAccent}</em>
+              </span>
+            </h2>
+            <p className="approach-description">{LANDING.video.description}</p>
+          </div>
         </div>
       </div>
     </section>
