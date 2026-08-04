@@ -141,7 +141,45 @@ Estas travam a página, não são melhorias:
       vagas com desconto", no CTA final, também não tem número real por trás.
 - [ ] **Vídeo de demonstração** — `NEXT_PUBLIC_VIDEO_ID` vazio; a seção mostra
       capa provisória.
-- [ ] **Domínio próprio** — hoje o site vive em `landing-page-digi-ia.vercel.app`.
+- [ ] **Domínio próprio** — hoje o site vive em `landing-page-digi-ia.vercel.app`;
+      `digi.ia.com.br` não resolve.
+
+## O objeto do hero
+
+A coluna direita do hero é uma ilustração de três camadas empilhadas —
+`fundo`, `mao` e `cerebro` — identificadas pelo atributo `data-camada`, em
+`components/sections/HeroObject.tsx`. Pressionar levanta o cérebro e afrouxa a
+mão; o cursor inclina a cena. É deleite: nenhuma informação da página depende
+dele, e por isso o conjunto é um único `role="img"` com um rótulo só, não um
+controle focável. Com `prefers-reduced-motion` nada disso roda.
+
+As três imagens são WebP reais em `public/assets/hero/` (~190 KB somados, fora
+do HTML — mesmo princípio de `logo.png`/`simbolo.png`). Para trocá-las, basta
+substituir os três arquivos; não há passo de build nem script de injeção.
+
+## O que foi corrigido nesta versão
+
+A versão anterior tinha problemas que iam além de estética:
+
+- O formulário gravava o cadastro no **`localStorage` do próprio visitante** e
+  exibia "desconto reservado". O lead se perdia e a pessoa achava que estava na
+  lista. Agora, sem `FORM_ENDPOINT`, a página avisa e não finge.
+- Um contador de "1.247 de 2.000 vagas" com barra de progresso, **fixo no
+  código**, sem vir de base nenhuma. Removido.
+- Uma posição na fila **sorteada** com `Math.random()`.
+- Um programa de indicação prometendo "sobe 40 posições" com link para
+  `https://digi.ia/`, domínio que não existe — e que expunha parte do e-mail de
+  quem indicava. Removido.
+- Data de lançamento em **fevereiro**; o correto é 14 de setembro.
+- Texto de rascunho visível ao público: `[000] clientes`, `[00] especialistas`,
+  `[SUBSTITUIR os números entre colchetes]`, `[CNPJ / endereço]`,
+  `[CONFIRMAR redação com o jurídico]`, `[substituir: capa do vídeo]`.
+- Cinco links de rodapé apontando para âncoras inexistentes — incluindo a
+  política de privacidade referenciada no aceite de LGPD.
+- Contraste de 3,1:1 nos rótulos e legendas, abaixo do mínimo de 4,5:1 da
+  WCAG AA. Agora em 5,9:1.
+- Campo **"que tipo de negócio você tem"**, que qualifica a lista, agora visível
+  em vez de ausente.
 
 `material/` está no `.gitignore` de propósito: contém o plano de lançamento e o
 manual de marca, que não podem ir para um repositório público.
