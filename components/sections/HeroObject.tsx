@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * O objeto da hero — um cérebro sustentado por uma mão robótica, em três
+ * O objeto da hero — um cérebro sustentado por uma mão robótica, em duas
  * camadas empilhadas. Segurar levanta o cérebro e afrouxa a mão; o cursor
  * inclina a cena de leve. É deleite: nenhuma informação da página depende
  * disso, por isso o conjunto inteiro é um único role="img" com um rótulo só,
