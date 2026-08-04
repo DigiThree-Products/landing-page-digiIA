@@ -1,0 +1,40 @@
+name: Verificar
+
+# Roda a cada push e a cada PR. Existe para uma coisa só: impedir que a landing
+# vá ao ar quebrada.
+#
+# A ordem importa. O `verificar` roda DEPOIS do build, sobre o HTML gerado em
+# out/ — é o que realmente vai ao ar. Verificar o código-fonte deixaria passar
+# qualquer coisa que o build introduzisse.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Push seguido de push cancela a execução anterior: só o último commit importa.
+concurrency:
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Verificar o HTML gerado
+        run: npm run verificar

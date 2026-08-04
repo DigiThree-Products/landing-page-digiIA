@@ -23,3 +23,14 @@ desktop.ini
 # Ferramentas locais
 .claude/
 node_modules/
+
+# Build do Next.js — gerado, nunca versionado
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Variáveis de ambiente locais.
+# O .env.example fica versionado; os valores reais, não.
+.env
+.env*.local
