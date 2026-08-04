@@ -9,6 +9,7 @@ import { Credibility } from '@/components/sections/Credibility'
 import { Faq } from '@/components/sections/Faq'
 import { FinalCta } from '@/components/sections/FinalCta'
 import { SiteFooter } from '@/components/sections/SiteFooter'
+import { LANDING } from '@/content/landing'
 
 /**
  * A landing.
@@ -21,7 +22,7 @@ export default function Home() {
   return (
     <>
       <a className="skip" href="#cadastro">
-        Pular para o formulário de cadastro
+        {LANDING.skipLink}
       </a>
 
       {/* Elemento-assinatura: campo de metaballs (a geometria do símbolo, viva) */}

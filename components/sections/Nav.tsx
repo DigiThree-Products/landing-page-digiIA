@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { LANDING } from '@/content/landing'
 
 export function Nav() {
   return (
@@ -15,7 +16,7 @@ export function Nav() {
           priority
         />
       </a>
-      <span className="by">por DigiThree</span>
+      <span className="by">{LANDING.nav.byline}</span>
     </nav>
   )
 }

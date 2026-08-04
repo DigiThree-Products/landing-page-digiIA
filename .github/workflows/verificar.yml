@@ -33,7 +33,27 @@ jobs:
       - name: Tipos
         run: npm run typecheck
 
-      - name: Build
+      # Branches e PRs validam a renderização com dados inequivocamente
+      # fictícios. Assim os dados jurídicos definitivos podem ser cadastrados
+      # depois, sem mascarar placeholders em uma publicação da main.
+      - name: Build de validação
+        if: github.ref != 'refs/heads/main'
+        env:
+          NEXT_PUBLIC_LEGAL_NAME: DigiThree Validação CI
+          NEXT_PUBLIC_LEGAL_CNPJ: 00.000.000/0000-00
+          NEXT_PUBLIC_LEGAL_EMAIL: validacao@example.invalid
+          NEXT_PUBLIC_LEGAL_CITY_STATE: Angra dos Reis/RJ
+        run: npm run build
+
+      # Na main não há fallback de CI: as variáveis reais devem existir nas
+      # Repository Variables e o verificador continua bloqueando marcadores.
+      - name: Build de publicação
+        if: github.ref == 'refs/heads/main'
+        env:
+          NEXT_PUBLIC_LEGAL_NAME: ${{ vars.NEXT_PUBLIC_LEGAL_NAME }}
+          NEXT_PUBLIC_LEGAL_CNPJ: ${{ vars.NEXT_PUBLIC_LEGAL_CNPJ }}
+          NEXT_PUBLIC_LEGAL_EMAIL: ${{ vars.NEXT_PUBLIC_LEGAL_EMAIL }}
+          NEXT_PUBLIC_LEGAL_CITY_STATE: ${{ vars.NEXT_PUBLIC_LEGAL_CITY_STATE }}
         run: npm run build
 
       - name: Verificar o HTML gerado

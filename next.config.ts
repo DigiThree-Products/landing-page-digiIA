@@ -5,7 +5,7 @@ import type { NextConfig } from 'next'
  *
  * A landing não tem nada que precise de servidor: sem banco no servidor, sem
  * sessão, sem rota dinâmica. O cadastro vai direto do navegador para o Supabase
- * com a chave publicável (ver lib/config.ts).
+ * com a chave publicável (ver config/product.ts).
  *
  * O que se ganha ao declarar isso explicitamente:
  *

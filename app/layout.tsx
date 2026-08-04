@@ -1,40 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Sora, Instrument_Sans, DM_Mono } from 'next/font/google'
-import { SITE, dadosEstruturados } from '@/lib/site'
+import { SITE, dadosEstruturados } from '@/config/site'
 import { Analytics } from '@/components/layout/Analytics'
+import '@fontsource-variable/sora'
+import '@fontsource-variable/instrument-sans'
+import '@fontsource/dm-mono/400.css'
+import '@fontsource/dm-mono/500.css'
 import './globals.css'
-
-/**
- * Fontes auto-hospedadas.
- *
- * Antes vinham de um <link> para fonts.googleapis.com, o que custava duas
- * conexões extras antes da primeira pintura e trazia salto de layout quando a
- * fonte trocava. O next/font baixa no build, serve do próprio domínio e injeta
- * o @font-face com `display: swap` e métricas de fallback ajustadas.
- *
- * As variáveis abaixo são consumidas pelo @theme do globals.css, que as
- * transforma em `font-display`, `font-body` e `font-mono`.
- */
-const sora = Sora({
-  subsets: ['latin'],
-  weight: ['300', '400', '600', '700'],
-  variable: '--font-sora',
-  display: 'swap',
-})
-
-const instrument = Instrument_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-instrument',
-  display: 'swap',
-})
-
-const dmMono = DM_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-dm-mono',
-  display: 'swap',
-})
 
 /**
  * As URLs sociais precisam ser absolutas: os crawlers do WhatsApp, da Meta e do
@@ -76,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${sora.variable} ${instrument.variable} ${dmMono.variable}`}>
+    <html lang="pt-BR">
       <head>
         {/* O logo do topo é a primeira coisa visível. O preload faz o download
             começar junto com a leitura do <head>, e não só quando o parser

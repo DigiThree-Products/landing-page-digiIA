@@ -1,0 +1,149 @@
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+/* Duas colunas só onde há largura para elas. Abaixo disso o objeto desce
+   para baixo do texto e encolhe. */
+@media (max-width: 980px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(20px, 5vw, 40px);
+  }
+  .palco {
+    max-width: 460px;
+  }
+  .hero-obj::before {
+    inset: -8% -4%;
+  }
+  .hero p.sub {
+    max-width: 56ch;
+  }
+}
+@media (max-width: 860px) {
+  .offer-grid {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+}
+@media (max-width: 620px) {
+  .row2 {
+    grid-template-columns: 1fr;
+  }
+  .by {
+    display: none;
+  }
+  .meter {
+    gap: 22px;
+  }
+  .palco {
+    max-width: 340px;
+  }
+  .demo-body {
+    min-height: 390px;
+  }
+  /* No mobile o texto ocupa a largura toda: o campo recua para o fundo. */
+  #field {
+    opacity: 0.5;
+  }
+  .vignette {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.86) 46%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+  }
+}
+
+/* Telas de pouca altura (notebooks 720p, celulares baixos):
+   comprime o hero para o botão continuar visível sem rolar. */
+@media (max-height: 790px) {
+  .nav {
+    padding-block: 14px;
+  }
+  .hero {
+    padding-top: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(24px, 2.6vw, 38px);
+    margin-top: 14px;
+  }
+  .hero p.sub {
+    margin-top: 13px;
+    font-size: 15px;
+  }
+  .form-block {
+    margin-top: 18px;
+  }
+  .consent {
+    margin-top: 12px;
+  }
+  .cta {
+    margin-top: 14px;
+    padding-block: 15px;
+  }
+  .nocard {
+    margin-top: 11px;
+  }
+  .meter {
+    margin-top: 32px;
+    padding-top: 22px;
+  }
+  .count {
+    --digito: clamp(22px, 2.45vw, 34px);
+  }
+}
+@media (max-height: 680px) {
+  .hero h1 {
+    font-size: clamp(22px, 2.3vw, 33px);
+  }
+  .hero p.sub {
+    font-size: 14px;
+    margin-top: 11px;
+  }
+  .cta {
+    padding-block: 14px;
+  }
+  .consent {
+    margin-top: 10px;
+    font-size: 12.5px;
+  }
+  .count {
+    --digito: clamp(20px, 2.15vw, 30px);
+  }
+}
+
+/* ============================================================
+   MOVIMENTO REDUZIDO
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  .rv,
+  .stagger > * {
+    opacity: 1;
+    transform: none;
+  }
+  #field {
+    display: none;
+  }
+  /* O objeto da hero fica parado: sem flutuação, sem paralaxe, sem onda. O
+     componente também não aplica nenhuma transform neste modo. */
+  .camada--cerebro {
+    animation: none;
+  }
+  .camada--cerebro,
+  .camada--mao {
+    transform: none !important;
+  }
+  .onda {
+    display: none;
+  }
+}
