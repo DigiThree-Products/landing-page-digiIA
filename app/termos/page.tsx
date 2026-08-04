@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { SITE } from '@/config/site'
+import { LEGAL } from '@/content/legal'
 
 /*
   ATENÇÃO ANTES DE PUBLICAR: [RAZÃO SOCIAL], [CNPJ], [E-MAIL DE CONTATO] e
@@ -12,6 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default function Termos() {
+  const { controller } = LEGAL
+
   return (
     <div className="doc">
       <div className="doc-wrap">
@@ -22,7 +26,7 @@ export default function Termos() {
         </header>
 
         <h1>Termos de Uso</h1>
-        <p className="atualizado">Última atualização: 3 de agosto de 2026</p>
+        <p className="atualizado">Última atualização: {LEGAL.updatedLabel}</p>
 
         <p>
           Estes termos valem para o site da Digi.IA e para a lista de espera do lançamento. Ao
@@ -31,8 +35,8 @@ export default function Termos() {
 
         <h2>1. Quem oferece este site</h2>
         <p>
-          O site é mantido por <strong>[RAZÃO SOCIAL]</strong>, CNPJ <strong>[CNPJ]</strong>.
-          Contato: <strong>[E-MAIL DE CONTATO]</strong>.
+          O site é mantido por <strong>{controller.legalName}</strong>, CNPJ{' '}
+          <strong>{controller.cnpj}</strong>. Contato: <strong>{controller.email}</strong>.
         </p>
 
         <h2>2. O que é a lista de espera</h2>
@@ -57,8 +61,8 @@ export default function Termos() {
             Vale por <strong>12 meses a partir da ativação</strong> da assinatura.
           </li>
           <li>
-            Vale <strong>enquanto houver vagas</strong> na primeira turma. Se ela lotar antes de 14
-            de setembro de 2026, avisaremos por e-mail.
+            Vale <strong>enquanto houver vagas</strong> na primeira turma. Se ela lotar antes de{' '}
+            {SITE.lancamento.porExtenso}, avisaremos por e-mail.
           </li>
           <li>
             Os planos e valores serão anunciados no lançamento. Quem está na lista recebe a tabela
@@ -72,7 +76,7 @@ export default function Termos() {
 
         <h2>4. A data de lançamento</h2>
         <p>
-          O lançamento está previsto para <strong>14 de setembro de 2026</strong>. É uma previsão:
+          O lançamento está previsto para <strong>{SITE.lancamento.porExtenso}</strong>. É uma previsão:
           se mudar, avisaremos por e-mail quem estiver na lista. Uma mudança de data não elimina a
           condição descrita no item 3.
         </p>
@@ -103,7 +107,7 @@ export default function Termos() {
         <h2>7. Conteúdo e marca</h2>
         <p>
           O nome Digi.IA, a identidade visual, os textos e as imagens deste site são de titularidade
-          de <strong>[RAZÃO SOCIAL]</strong>. Entrar na lista não concede nenhuma licença sobre esse
+          de <strong>{controller.legalName}</strong>. Entrar na lista não concede nenhuma licença sobre esse
           material.
         </p>
 
@@ -130,7 +134,8 @@ export default function Termos() {
 
         <h2>11. Lei aplicável</h2>
         <p>
-          Aplica-se a lei brasileira. Fica eleito o foro da comarca de <strong>[CIDADE/UF]</strong>,
+          Aplica-se a lei brasileira. Fica eleito o foro da comarca de{' '}
+          <strong>{controller.cityState}</strong>,
           sem prejuízo do direito do consumidor de demandar no foro do seu domicílio.
         </p>
 

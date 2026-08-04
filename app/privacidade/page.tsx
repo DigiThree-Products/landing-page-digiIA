@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import { PRODUCT_CONFIG } from '@/config/product'
+import { SITE } from '@/config/site'
+import { LEGAL } from '@/content/legal'
 
 /*
   ATENÇÃO ANTES DE PUBLICAR: os campos [RAZÃO SOCIAL], [CNPJ] e
@@ -15,6 +18,11 @@ export const metadata: Metadata = {
 }
 
 export default function Privacidade() {
+  const { controller } = LEGAL
+  const measurementEnabled = Boolean(
+    PRODUCT_CONFIG.analytics.ga4Id || PRODUCT_CONFIG.analytics.metaPixelId,
+  )
+
   return (
     <div className="doc">
       <div className="doc-wrap">
@@ -25,7 +33,7 @@ export default function Privacidade() {
         </header>
 
         <h1>Política de Privacidade</h1>
-        <p className="atualizado">Última atualização: 3 de agosto de 2026</p>
+        <p className="atualizado">Última atualização: {LEGAL.updatedLabel}</p>
 
         <p>
           Esta página explica o que acontece com os dados que você informa ao entrar na lista de
@@ -35,9 +43,9 @@ export default function Privacidade() {
 
         <h2>1. Quem é responsável pelos seus dados</h2>
         <p>
-          O controlador dos dados é <strong>[RAZÃO SOCIAL]</strong>, inscrita no CNPJ{' '}
-          <strong>[CNPJ]</strong>. Para qualquer assunto relacionado a esta política ou aos seus
-          dados, o contato é <strong>[E-MAIL DE CONTATO]</strong>.
+          O controlador dos dados é <strong>{controller.legalName}</strong>, inscrita no CNPJ{' '}
+          <strong>{controller.cnpj}</strong>. Para qualquer assunto relacionado a esta política ou
+          aos seus dados, o contato é <strong>{controller.email}</strong>.
         </p>
 
         <h2>2. Quais dados coletamos</h2>
@@ -61,6 +69,12 @@ export default function Privacidade() {
             campanha (por exemplo <code>utm_source</code>), o que nos permite saber por qual anúncio
             ou link você chegou.
           </dd>
+
+          <dt>Registro do consentimento</dt>
+          <dd>
+            Data, hora e versão desta política aceitas no envio. Esses dados permitem comprovar
+            qual autorização acompanhou cada cadastro.
+          </dd>
         </dl>
         <p>
           Não pedimos CPF, endereço, dados de pagamento nem qualquer dado sensível (art. 5º, II da
@@ -69,7 +83,7 @@ export default function Privacidade() {
 
         <h2>3. Para que usamos</h2>
         <ul>
-          <li>Avisar você sobre o lançamento, previsto para 14 de setembro de 2026.</li>
+          <li>Avisar você sobre o lançamento, previsto para {SITE.lancamento.porExtenso}.</li>
           <li>Enviar a condição de fundador oferecida a quem entrou na lista.</li>
           <li>Responder quando você entra em contato.</li>
           <li>Entender, de forma agregada, de onde vêm os cadastros.</li>
@@ -107,15 +121,17 @@ export default function Privacidade() {
         </p>
 
         <h2>6. Cookies e medição</h2>
-        <p>
-          Esta página <strong>não usa cookies de rastreamento</strong> e, na data desta publicação,
-          não carrega nenhum script de terceiros para publicidade ou análise de audiência.
-        </p>
-        <p>
-          Pretendemos ativar ferramentas de medição (Google Analytics e Meta Pixel) para acompanhar
-          o desempenho da divulgação. Quando isso acontecer, esta política será atualizada antes ou
-          junto com a ativação, e a data acima mudará.
-        </p>
+        {measurementEnabled ? (
+          <p>
+            Esta página carrega as ferramentas configuradas para o ambiente — Google Analytics
+            e/ou Meta Pixel — para acompanhar visitas e conversões da divulgação.
+          </p>
+        ) : (
+          <p>
+            Esta página <strong>não usa cookies de rastreamento</strong> e não carrega scripts de
+            terceiros para publicidade ou análise de audiência no ambiente atual.
+          </p>
+        )}
 
         <h2>7. Por quanto tempo guardamos</h2>
         <p>
@@ -135,7 +151,7 @@ export default function Privacidade() {
           <li>revogar o consentimento e ser removido da lista.</li>
         </ul>
         <p>
-          Basta escrever para <strong>[E-MAIL DE CONTATO]</strong>. Respondemos em até 15 dias. Todo
+          Basta escrever para <strong>{controller.email}</strong>. Respondemos em até 15 dias. Todo
           e-mail que enviarmos também terá um link de descadastro.
         </p>
 

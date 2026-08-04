@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { CONFIG } from '@/lib/config'
+import { PRODUCT_CONFIG } from '@/config/product'
+import { LANDING } from '@/content/landing'
 import { Reveal } from '@/components/ui/Reveal'
 
 /**
@@ -12,7 +13,7 @@ import { Reveal } from '@/components/ui/Reveal'
  * entra depois do clique — até lá a seção é uma capa e um botão.
  */
 export function VideoSection() {
-  const V = CONFIG.VIDEO
+  const V = PRODUCT_CONFIG.video
   const [tocando, setTocando] = useState(false)
   const [aviso, setAviso] = useState('')
 
@@ -20,15 +21,15 @@ export function VideoSection() {
 
   function tocar() {
     if (!V.id) {
-      setAviso('Defina NEXT_PUBLIC_VIDEO_ID para publicar o vídeo.')
-      console.warn('[Digi.IA] CONFIG.VIDEO.id está vazio.')
+      setAviso('Vídeo indisponível no momento.')
+      console.warn('[Digi.IA] NEXT_PUBLIC_VIDEO_ID está vazio.')
       return
     }
     setTocando(true)
   }
 
   const src =
-    V.tipo === 'vimeo'
+    V.type === 'vimeo'
       ? `https://player.vimeo.com/video/${V.id}?autoplay=1`
       : `https://www.youtube-nocookie.com/embed/${V.id}?autoplay=1&rel=0&modestbranding=1`
 
@@ -36,18 +37,15 @@ export function VideoSection() {
     <section id="video">
       <Reveal>
         <div className="sec-head">
-          <p className="tag">Veja funcionando</p>
-          <h2>A gente usando, sem corte e sem mágica.</h2>
-          <p>
-            Antes de entrar na lista, veja a Digi.IA sendo operada de verdade — do pedido em
-            português até a peça pronta.
-          </p>
+          <p className="tag">{LANDING.video.eyebrow}</p>
+          <h2>{LANDING.video.title}</h2>
+          <p>{LANDING.video.description}</p>
         </div>
       </Reveal>
 
       <Reveal className="player">
         {tocando ? (
-          V.tipo === 'arquivo' ? (
+          V.type === 'arquivo' ? (
             <video className="frame" src={V.id} controls autoPlay playsInline poster={V.poster} />
           ) : (
             <iframe
@@ -93,7 +91,7 @@ export function VideoSection() {
                 <path d="M25 12.27a2 2 0 0 1 0 3.46L3 27.5A2 2 0 0 1 0 25.77V2.23A2 2 0 0 1 3 .5l22 11.77Z" />
               </svg>
             </span>
-            <span className="dur">{V.duracao}</span>
+            <span className="dur">{V.duration}</span>
             <span className="hint">{aviso}</span>
           </button>
         )}
@@ -101,9 +99,9 @@ export function VideoSection() {
 
       <Reveal>
         <p className="vcap">
-          <span>{V.legenda}</span>
+          <span>{LANDING.video.caption}</span>
           <a className="ghost" href="#cadastro">
-            Entrar na lista
+            {LANDING.video.cta}
             <svg
               width="14"
               height="14"

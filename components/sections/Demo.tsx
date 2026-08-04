@@ -2,154 +2,69 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Reveal } from '@/components/ui/Reveal'
+import { LANDING, type DemoScene } from '@/content/landing'
 
-type Cena = {
-  prompt: string
-  rotulo: string
-  itens: [string, string][]
-}
+const espera = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const CENAS: Cena[] = [
-  {
-    prompt: 'campanha de dia das mães para uma joalheria de bairro',
-    rotulo: 'Campanha gerada — 3 variações',
-    itens: [
-      ['01', 'Headline: “Ela guardou tudo. Guarde isso para ela.”'],
-      ['02', 'Headline: “Presente que não vai para a gaveta.”'],
-      ['03', 'Headline: “Dez anos de loja. Milhares de mães.”'],
-      ['→', 'Legenda, criativo 1080×1350 e versão para stories inclusos.'],
-    ],
-  },
-  {
-    prompt: 'calendário editorial de 30 dias para uma clínica odontológica',
-    rotulo: 'Calendário gerado — abril',
-    itens: [
-      ['01', 'Seg — Carrossel: o que ninguém conta sobre clareamento'],
-      ['02', 'Qua — Reels: bastidor de um dia na clínica'],
-      ['03', 'Sex — Post: antes e depois com consentimento do paciente'],
-      ['→', 'Mais 27 pautas com formato, legenda e melhor horário.'],
-    ],
-  },
-  {
-    prompt: 'qual o ROI de investir R$ 3.000 em tráfego neste lançamento?',
-    rotulo: 'Projeção calculada',
-    itens: [
-      ['R$', 'Custo por lead estimado: R$ 4,80 — 625 leads no período'],
-      ['%', 'Conversão histórica do setor: 3,2% → 20 vendas'],
-      ['→', 'ROI projetado: 2,4× sobre o investimento em mídia'],
-      ['→', 'Cenário conservador e cenário otimista no detalhamento.'],
-    ],
-  },
-]
-
-const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
-/**
- * Demonstração: o prompt é digitado, o resultado aparece, apaga e passa para a
- * próxima cena. Só começa quando a seção entra na tela — animar fora de vista
- * gasta bateria sem ninguém ver.
- */
 export function Demo() {
   const [digitado, setDigitado] = useState('')
-  const [cena, setCena] = useState<Cena | null>(null)
+  const [cena, setCena] = useState<DemoScene | null>(null)
   const alvo = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = alvo.current
-    if (!el) return
-
-    // Com movimento reduzido, mostra a primeira cena parada.
+    const element = alvo.current
+    if (!element) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDigitado(CENAS[0].prompt)
-      setCena(CENAS[0])
+      setDigitado(LANDING.demo.scenes[0].prompt)
+      setCena(LANDING.demo.scenes[0])
       return
     }
 
-    let vivo = true
-
-    const ciclo = async () => {
-      let i = 0
-      while (vivo) {
-        const atual = CENAS[i]
-
-        for (let c = 0; c < atual.prompt.length && vivo; c++) {
-          setDigitado(atual.prompt.slice(0, c + 1))
+    let alive = true
+    const cycle = async () => {
+      let index = 0
+      while (alive) {
+        const current = LANDING.demo.scenes[index]
+        for (let character = 0; character < current.prompt.length && alive; character++) {
+          setDigitado(current.prompt.slice(0, character + 1))
           await espera(26 + Math.random() * 34)
         }
-        if (!vivo) return
-
+        if (!alive) return
         await espera(420)
-        setCena(atual)
+        setCena(current)
         await espera(4600)
-        if (!vivo) return
-
-        for (let c = atual.prompt.length; c > 0 && vivo; c--) {
-          setDigitado(atual.prompt.slice(0, c - 1))
+        if (!alive) return
+        for (let character = current.prompt.length; character > 0 && alive; character--) {
+          setDigitado(current.prompt.slice(0, character - 1))
           await espera(11)
         }
         setCena(null)
-        i = (i + 1) % CENAS.length
+        index = (index + 1) % LANDING.demo.scenes.length
       }
     }
 
-    const io = new IntersectionObserver(
-      (entradas) => {
-        for (const entrada of entradas) {
-          if (!entrada.isIntersecting) continue
-          io.unobserve(entrada.target)
-          void ciclo()
-        }
-      },
-      { threshold: 0.3 },
-    )
-    io.observe(el)
-
-    return () => {
-      vivo = false
-      io.disconnect()
-    }
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        observer.unobserve(entry.target)
+        void cycle()
+      }
+    }, { threshold: 0.3 })
+    observer.observe(element)
+    return () => { alive = false; observer.disconnect() }
   }, [])
 
   return (
     <section>
-      <Reveal>
-        <div className="sec-head">
-          <p className="tag">Como funciona</p>
-          <h2>Você pede em português. Ela entrega em minutos.</h2>
-        </div>
-      </Reveal>
-
+      <Reveal><div className="sec-head"><p className="tag">{LANDING.demo.eyebrow}</p><h2>{LANDING.demo.title}</h2></div></Reveal>
       <Reveal className="demo">
-        <div className="demo-bar">
-          <span className="dot live" aria-hidden="true" />
-          <span>Digi.IA — demonstração</span>
-        </div>
+        <div className="demo-bar"><span className="dot live" aria-hidden="true" /><span>{LANDING.demo.windowLabel}</span></div>
         <div className="demo-body">
-          <div className="prompt-line">
-            <span className="chev" aria-hidden="true">
-              &rsaquo;
-            </span>
-            <span>
-              <span>{digitado}</span>
-              <span className="caret" aria-hidden="true" />
-            </span>
-          </div>
+          <div className="prompt-line"><span className="chev" aria-hidden="true">&rsaquo;</span><span><span>{digitado}</span><span className="caret" aria-hidden="true" /></span></div>
           <div className="out" ref={alvo} aria-live="off">
-            {cena ? (
-              <>
-                <p className="tag">{cena.rotulo}</p>
-                {cena.itens.map(([marca, texto], i) => (
-                  <div
-                    className="out-item"
-                    key={marca + texto}
-                    style={{ animationDelay: `${0.22 + i * 0.13}s` }}
-                  >
-                    <em>{marca}</em>
-                    <span>{texto}</span>
-                  </div>
-                ))}
-              </>
-            ) : null}
+            {cena ? <><p className="tag">{cena.label}</p>{cena.items.map(([mark, text], index) => (
+              <div className="out-item" key={mark + text} style={{ animationDelay: `${0.22 + index * 0.13}s` }}><em>{mark}</em><span>{text}</span></div>
+            ))}</> : null}
           </div>
         </div>
       </Reveal>

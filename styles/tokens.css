@@ -1,0 +1,61 @@
+/* ============================================================
+   TEMA — a paleta oficial vira token do Tailwind
+
+   Declarar aqui é o que faz `bg-violet`, `text-lilac`, `border-rule`,
+   `font-display` e `ease-brand` existirem como utilitário. É a fonte
+   única: nenhum componente escreve #4500F9 na mão.
+
+   As famílias são empacotadas pelo Fontsource. O build não depende do Google
+   Fonts e o navegador não precisa abrir conexões para carregar tipografia.
+   ============================================================ */
+@theme {
+  --color-ink: #000000;
+  --color-violet: #4500f9;
+  --color-lilac: #cd82ff;
+  --color-paper: #f8f0ff;
+  --color-mid: #8e47fb;
+  --color-abyss: #01037a;
+
+  /* Derivados por opacidade — a marca não usa cinza neutro em lugar nenhum */
+  --color-paper-80: rgb(248 240 255 / 0.8);
+  --color-paper-56: rgb(248 240 255 / 0.56);
+  --color-rule: rgb(248 240 255 / 0.1);
+  --color-rule-hi: rgb(248 240 255 / 0.22);
+  --color-surface: rgb(248 240 255 / 0.035);
+
+  --font-display: 'Sora Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Instrument Sans Variable', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Cascadia Mono', 'SFMono-Regular', ui-monospace, monospace;
+
+  --ease-brand: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ------------------------------------------------------------
+   Apelidos curtos.
+
+   O CSS autoral abaixo foi escrito com var(--violet), e o @theme do
+   Tailwind publica var(--color-violet). Em vez de reescrever ~800
+   linhas — e arriscar o visual de uma página que já está no ar —, os
+   apelidos apontam para os tokens. Continua havendo uma definição só.
+   ------------------------------------------------------------ */
+:root {
+  --ink: var(--color-ink);
+  --violet: var(--color-violet);
+  --lilac: var(--color-lilac);
+  --paper: var(--color-paper);
+  --mid: var(--color-mid);
+  --abyss: var(--color-abyss);
+
+  --paper-80: var(--color-paper-80);
+  --paper-56: var(--color-paper-56);
+  /* Igual ao 56 de propósito: a versão 38 reprovava no contraste da WCAG AA
+     (3,1:1). Corrigido antes de ir ao ar; o nome ficou para não quebrar o CSS. */
+  --paper-38: var(--color-paper-56);
+  --rule: var(--color-rule);
+  --rule-hi: var(--color-rule-hi);
+  --surface: var(--color-surface);
+
+  --ease: var(--ease-brand);
+  --gutter: clamp(20px, 5vw, 72px);
+  --measure: 1180px;
+}

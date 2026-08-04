@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { absoluta } from '@/lib/site'
+import { absoluta } from '@/config/site'
 
 /**
  * Gerado no build — antes era um robots.txt escrito à mão, com o domínio

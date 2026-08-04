@@ -1,0 +1,167 @@
+/* --- Hero: texto à esquerda, objeto à direita --- */
+.hero {
+  padding-top: clamp(22px, 4vh, 56px);
+  padding-bottom: clamp(56px, 10vh, 120px);
+}
+/* 1.06/0.94 é o ponto em que o h1 fecha em três linhas em toda a faixa de
+   duas colunas, sem espremer o objeto. Medido, não chutado. */
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+}
+.hero-col {
+  min-width: 0;
+}
+.hero h1 {
+  font-size: clamp(26px, 2.9vw, 42px);
+  line-height: 1.04;
+  margin: 18px 0 0;
+}
+.hero h1 .glow {
+  background: linear-gradient(96deg, var(--lilac) 0%, var(--mid) 45%, var(--violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p.sub {
+  font-size: clamp(14.5px, 0.4vw + 13px, 16px);
+  color: var(--paper-80);
+  max-width: 46ch;
+  margin: 16px 0 0;
+}
+.hero .offer {
+  color: var(--paper);
+  border-bottom: 1px solid var(--lilac);
+  padding-bottom: 1px;
+}
+
+/* --- Objeto da hero: o cérebro sustentado pela mão ---
+   Três camadas empilhadas: segurar levanta o cérebro e afrouxa a mão. É
+   ilustração — não carrega nenhuma informação que só ela dê, por isso não é
+   focável nem anunciada como controle (ver components/sections/HeroObject.tsx). */
+.hero-obj {
+  position: relative;
+  min-width: 0;
+}
+.hero-obj::before {
+  /* halo por trás do objeto */
+  content: '';
+  position: absolute;
+  inset: -14% -8%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 46% at 54% 48%, rgba(142, 71, 251, 0.42), transparent 68%),
+    radial-gradient(34% 34% at 60% 40%, rgba(205, 130, 255, 0.26), transparent 70%);
+  filter: blur(6px);
+}
+.palco {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  margin-inline: auto;
+  isolation: isolate;
+  /* pan-y mantém o scroll da página possível sobre a cena; o resto evita
+     menu de imagem e seleção no toque longo. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.camada {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+/* Só o fundo é mascarado. Ele é a única camada com o retângulo escuro
+   embutido; mão e cérebro têm transparência própria e não precisam. A
+   máscara mora aqui, e não no .palco, porque no palco ela recortava o
+   cérebro: ao subir os 46px do gesto de segurar, o topo dele entrava na
+   zona transparente e sumia. */
+.camada--fundo {
+  position: relative;
+  z-index: 0;
+  transition: filter 0.7s var(--ease);
+  -webkit-mask-image: radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+  mask-image: radial-gradient(58% 54% at 50% 46%, #000 30%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+}
+.camada--mao {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-origin: 50% 88%;
+}
+.camada--cerebro {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: 50% 62%;
+}
+.camada--mao,
+.camada--cerebro {
+  will-change: transform, filter;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.38s var(--ease);
+}
+.camada--cerebro {
+  animation: flutua 7s ease-in-out infinite;
+}
+/* fecha devagar enquanto o dedo está pressionado */
+.palco.segurando .camada--cerebro,
+.palco.segurando .camada--mao {
+  transition:
+    transform 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.8s var(--ease);
+}
+/* abre um pouco mais rápido: a mão relaxa, não empurra */
+.palco.soltando .camada--cerebro,
+.palco.soltando .camada--mao {
+  transition:
+    transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.7s var(--ease);
+}
+.palco.segurando .camada--cerebro {
+  filter: brightness(1.35) saturate(1.15);
+  animation-play-state: paused;
+}
+.palco.segurando .camada--mao {
+  filter: brightness(1.1);
+}
+.palco.segurando .camada--fundo {
+  filter: brightness(1.4);
+}
+.onda {
+  position: absolute;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  border: 2px solid var(--lilac);
+  pointer-events: none;
+  animation: onda 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes flutua {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+@keyframes onda {
+  0% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(16);
+    opacity: 0;
+  }
+}
