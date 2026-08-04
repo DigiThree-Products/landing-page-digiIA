@@ -19,7 +19,7 @@ function maskWhatsapp(raw: string): string {
   return ''
 }
 
-export function WaitlistForm({ variante = 'completo' }: { variante?: Variant }) {
+export function WaitlistForm({ variante = 'completo', onCancel }: { variante?: Variant; onCancel?: () => void }) {
   const id = useId()
   const blockRef = useRef<HTMLDivElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
@@ -133,10 +133,20 @@ export function WaitlistForm({ variante = 'completo' }: { variante?: Variant }) 
           <span>{complete ? <>Quero receber avisos sobre o lançamento. Li a <a href="/privacidade">política de privacidade</a> e autorizo o uso dos meus dados conforme a LGPD.</> : <>Autorizo o contato sobre o lançamento, conforme a <a className="consent-link" href="/privacidade">política de privacidade</a>.</>}</span>
         </label>
 
-        <button className={`cta${sending ? ' loading' : ''}`} type="submit" disabled={sending} onPointerMove={trackButtonPointer}>
-          <span>{sending ? 'Reservando…' : 'Entrar na lista'}</span><span className="spinner" aria-hidden="true" />
-        </button>
-        <p className="nocard">{complete ? <NoCardIcon /> : null}<b>Não pedimos cartão agora.</b> Só o e-mail.</p>
+        {onCancel ? <>
+          <p className="nocard">{complete ? <NoCardIcon /> : null}<b>Não pedimos cartão agora.</b> Só o e-mail.</p>
+          <div className="form-actions">
+            <button className="form-cancel" type="button" onClick={onCancel}>Agora não</button>
+            <button className={`cta${sending ? ' loading' : ''}`} type="submit" disabled={sending} onPointerMove={trackButtonPointer}>
+              <span>{sending ? 'Reservando…' : 'Entrar na primeira turma'}</span><span className="spinner" aria-hidden="true" />
+            </button>
+          </div>
+        </> : <>
+          <button className={`cta${sending ? ' loading' : ''}`} type="submit" disabled={sending} onPointerMove={trackButtonPointer}>
+            <span>{sending ? 'Reservando…' : 'Entrar na lista'}</span><span className="spinner" aria-hidden="true" />
+          </button>
+          <p className="nocard">{complete ? <NoCardIcon /> : null}<b>Não pedimos cartão agora.</b> Só o e-mail.</p>
+        </>}
       </form>
     </div>
   )

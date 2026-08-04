@@ -31,7 +31,7 @@ function FeatureMark({ name }: { name: FeatureIcon }) {
 export function WhatItDoes() {
   const content = LANDING.features
   return (
-    <section>
+    <section id="recursos">
       <Reveal>
         <div className="sec-head">
           <p className="tag">{content.eyebrow}</p>

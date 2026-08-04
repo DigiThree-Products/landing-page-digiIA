@@ -7,7 +7,7 @@ function PlusIcon() {
 
 export function Faq() {
   return (
-    <section>
+    <section id="faq">
       <Reveal><div className="sec-head"><p className="tag">{LANDING.faq.eyebrow}</p><h2>{LANDING.faq.title}</h2></div></Reveal>
       <Reveal className="faq">
         {LANDING.faq.items.map(({ question, answer }) => (

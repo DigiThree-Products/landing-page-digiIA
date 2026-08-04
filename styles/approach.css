@@ -1,0 +1,96 @@
+/* "Veja funcionando": composi‡Æo tipogr fica, sem player ou m¡dia. */
+.page .approach {
+  position: relative;
+  min-height: 100svh;
+  width: 100vw;
+  padding: 0;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  isolation: isolate;
+  border-block: 1px solid var(--rule);
+  background:
+    radial-gradient(60% 80% at 82% 28%, rgba(69, 0, 249, 0.19), transparent 72%),
+    linear-gradient(180deg, rgba(1, 3, 122, 0.13), transparent 45%),
+    var(--ink);
+}
+.approach-ribbon {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.approach-ribbon__path {
+  fill: none;
+  stroke: url(#approach-gradient);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  vector-effect: non-scaling-stroke;
+}
+.approach-stage {
+  position: relative;
+  width: 100%;
+  max-width: var(--measure);
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: clamp(110px, 15vh, 160px) var(--gutter) clamp(54px, 8vh, 86px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.approach-copy {
+  width: min(620px, 54vw);
+  align-self: center;
+  justify-self: end;
+  will-change: transform;
+}
+.approach-title {
+  margin-top: 18px;
+  font-size: clamp(42px, 6.2vw, 92px);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  will-change: transform;
+}
+.approach-description {
+  max-width: 46ch;
+  margin: 24px 0 0;
+  color: var(--paper-80);
+  font-size: clamp(16px, 1.25vw, 19px);
+}
+.approach-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule-hi);
+}
+.approach-foot p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--paper-56);
+  font-size: 14px;
+}
+
+@media (max-width: 1023px) {
+  .page .approach { min-height: auto; }
+  .approach-ribbon { opacity: 0.55; }
+  .approach-stage {
+    min-height: 88svh;
+    padding-top: clamp(112px, 16vh, 150px);
+    padding-bottom: 120px;
+  }
+  .approach-copy { width: 100%; align-self: center; justify-self: stretch; }
+  .approach-title { max-width: 12ch; font-size: clamp(40px, 12vw, 68px); }
+  .approach-description { font-size: 16px; }
+  .approach-foot { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .approach-ribbon__path { stroke-dashoffset: 0; }
+  .approach-copy,
+  .approach-title,
+  .approach-foot { transform: none !important; opacity: 1 !important; visibility: visible !important; }
+}

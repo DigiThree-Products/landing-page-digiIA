@@ -9,15 +9,16 @@ export type DemoScene = {
 
 /** Toda a copy da landing. Componentes cuidam de apresentação e interação. */
 export const LANDING = {
-  skipLink: 'Pular para o formulário de cadastro',
+  skipLink: 'Pular para a oferta e cadastro',
   nav: { byline: `por ${SITE.organizacaoMae}` },
   hero: {
     eyebrow: `Lançamento • ${SITE.lancamento.diaMes}`,
-    title: 'Conteúdo e campanhas prontos',
+    title: 'Conteúdo e campanhas',
     highlight: 'antes do café esfriar.',
     description:
-      'A Digi.IA escreve posts, monta calendário editorial e gera campanhas inteiras já falando com a voz da sua marca.',
+      'Você explica uma vez. Ela planeja o mês, escreve na voz da sua marca e calcula o retorno. Você aprova.',
     offer: 'Entre na lista antes do lançamento e você recebe o preço antes de todo mundo.',
+    cta: 'Garanta sua vaga',
     countdownLabel: 'Faltam',
   },
   video: {
@@ -110,10 +111,15 @@ export const LANDING = {
   },
   offer: {
     eyebrow: 'A oferta',
-    title: 'O preço da lista não volta depois.',
-    badge: '1º',
+    title: 'A condição da primeira turma não volta.',
+    badge: '1ª',
     description:
       'Quem está na lista vê a tabela de preços antes de todo mundo — com a condição de lançamento já aplicada.',
+    ticker: 'PRIMEIRA TURMA • CONDIÇÃO DE LANÇAMENTO •',
+    countdownLabel: 'A condição muda em',
+    cta: 'Garantir minha condição',
+    ctaNote: 'Leva menos de 1 minuto. Nenhuma cobrança agora.',
+    conditionsLabel: 'O que fica garantido',
     conditions: [
       'A primeira turma é limitada pela nossa capacidade de implantação — não por um número inventado.',
       'Nenhuma cobrança agora. Você escolhe o plano no lançamento.',
@@ -164,6 +170,8 @@ export const LANDING = {
     eyebrow: 'Primeira turma com condição de lançamento',
     title: 'Entre agora e receba o preço antes da abertura.',
     signature: 'Onde as ideias ganham vida.',
+    cta: 'Entrar na primeira turma',
+    note: 'O formulário abre aqui, sem sair da página.',
   },
   waitlist: {
     businessTypes: [

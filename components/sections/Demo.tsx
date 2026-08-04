@@ -55,7 +55,7 @@ export function Demo() {
   }, [])
 
   return (
-    <section>
+    <section id="demo">
       <Reveal><div className="sec-head"><p className="tag">{LANDING.demo.eyebrow}</p><h2>{LANDING.demo.title}</h2></div></Reveal>
       <Reveal className="demo">
         <div className="demo-bar"><span className="dot live" aria-hidden="true" /><span>{LANDING.demo.windowLabel}</span></div>
