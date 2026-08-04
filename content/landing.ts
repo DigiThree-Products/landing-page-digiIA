@@ -70,7 +70,7 @@ responde pelo método.`,
   },
   demo: {
     eyebrow: 'Como funciona',
-    title: 'Você pede em português. Ela entrega em minutos.',
+    title: 'Seu pedido ganha forma e evolui com cada ajuste.',
     windowLabel: 'Digi.IA — demonstração',
     scenes: [
       {

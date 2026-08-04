@@ -8,7 +8,6 @@ import { Demo } from '@/components/sections/Demo'
 import { Offer } from '@/components/sections/Offer'
 import { Credibility } from '@/components/sections/Credibility'
 import { Faq } from '@/components/sections/Faq'
-import { FinalCta } from '@/components/sections/FinalCta'
 import { SiteFooter } from '@/components/sections/SiteFooter'
 import { LANDING } from '@/content/landing'
 
@@ -16,7 +15,7 @@ import { LANDING } from '@/content/landing'
  * A landing.
  *
  * A ordem das seções é o argumento da página: promessa → abordagem → o que faz
- * → como funciona → oferta → credibilidade → objeções → última chamada.
+ * → como funciona → oferta → credibilidade → objeções.
  * Mexer na ordem muda o argumento, não só o layout.
  */
 export default function Home() {
@@ -38,7 +37,6 @@ export default function Home() {
           <Offer />
           <Credibility />
           <Faq />
-          <FinalCta />
           <SiteFooter />
         </div>
       </div>
