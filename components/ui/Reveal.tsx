@@ -29,19 +29,42 @@ export function Reveal({ children, className = '' }: Props) {
       return
     }
 
-    const io = new IntersectionObserver(
-      (entradas) => {
-        for (const entrada of entradas) {
-          if (!entrada.isIntersecting) continue
-          entrada.target.classList.add('in')
-          io.unobserve(entrada.target)
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
-    )
+    let frame = 0
+    let revealed = false
 
-    io.observe(el)
-    return () => io.disconnect()
+    const reveal = () => {
+      if (revealed) return
+      revealed = true
+      el.classList.add('in')
+      observer.disconnect()
+      window.removeEventListener('scroll', requestCheck)
+    }
+
+    const check = () => {
+      frame = 0
+      const rect = el.getBoundingClientRect()
+      if (rect.top <= window.innerHeight * 0.92) reveal()
+    }
+
+    const requestCheck = () => {
+      if (frame || revealed) return
+      frame = window.requestAnimationFrame(check)
+    }
+
+    const observer = new IntersectionObserver(requestCheck, {
+      threshold: 0,
+      rootMargin: '0px 0px -8% 0px',
+    })
+
+    observer.observe(el)
+    window.addEventListener('scroll', requestCheck, { passive: true })
+    requestCheck()
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', requestCheck)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
   }, [])
 
   return (

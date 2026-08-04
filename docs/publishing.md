@@ -16,5 +16,5 @@ frontend. A ordem inversa pode enviar colunas que a tabela ainda não conhece.
 
 - Formulário grava um novo e-mail e aceita repetidos como sucesso.
 - `/privacidade` e `/termos` não têm marcadores.
-- Vídeo, analytics e checkout correspondem ao ambiente.
+- Analytics e checkout correspondem ao ambiente.
 - A política descreve as ferramentas de medição realmente ligadas.

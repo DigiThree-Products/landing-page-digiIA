@@ -1,0 +1,790 @@
+/* ============================================================
+   SISTEMA INSTITUCIONAL ƒ?" capitulos de tela inteira
+   Mantem a paleta Digi.IA e adota o ritmo do site DigiThree.
+   ============================================================ */
+:root {
+  --world-max: 1280px;
+  --world-edge: max(var(--gutter), calc((100vw - var(--world-max)) / 2 + var(--gutter)));
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.page {
+  overflow: clip;
+  background: var(--ink);
+}
+.page > .wrap {
+  width: 100%;
+  max-width: none;
+  padding-inline: 0;
+}
+.page section,
+.site-footer {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Marcadores editoriais usados nas secoes claras. */
+.page #demo::after,
+.page .credibility-section::after,
+.page .approach::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image: radial-gradient(circle, rgba(69, 0, 249, 0.34) 1.1px, transparent 1.2px);
+  background-size: clamp(110px, 12.5vw, 180px) clamp(110px, 12.5vw, 180px);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+/* Eyebrow do sistema de titulos da referencia. */
+.page .sec-head > .tag,
+.page .approach-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.page .sec-head > .tag::before,
+.page .approach-kicker::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+
+/* ============================================================
+   HERO ƒ?" capitulo escuro, editorial e contido
+   ============================================================ */
+.page .hero {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  padding-inline: var(--world-edge);
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.88) 42%, rgba(1, 3, 122, 0.24) 100%),
+    radial-gradient(65% 80% at 86% 45%, rgba(69, 0, 249, 0.35), transparent 68%),
+    var(--ink);
+}
+.hero::after {
+  content: '+';
+  position: absolute;
+  right: var(--world-edge);
+  bottom: 30px;
+  z-index: 3;
+  color: var(--lilac);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  opacity: 0.55;
+}
+.page .hero-grid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+}
+.page .hero h1 {
+  max-width: 10.5ch;
+  font-size: clamp(48px, 5.3vw, 82px);
+  line-height: 0.93;
+}
+.page .hero p.sub {
+  max-width: 48ch;
+  line-height: 1.55;
+}
+.page .hero-ribbon {
+  z-index: 1;
+  opacity: 0.85;
+}
+.page .hero-obj {
+  z-index: 2;
+}
+
+/* ============================================================
+   VEJA FUNCIONANDO ƒ?" superficie clara e faixa de conexao
+   ============================================================ */
+.page .approach {
+  width: 100%;
+  margin-left: 0;
+  color: var(--ink);
+  border-color: rgba(69, 0, 249, 0.16);
+  background:
+    radial-gradient(62% 82% at 84% 24%, rgba(205, 130, 255, 0.28), transparent 72%),
+    linear-gradient(180deg, rgba(205, 130, 255, 0.08), transparent 40%),
+    var(--paper);
+}
+.page .approach-stage {
+  z-index: 2;
+  max-width: var(--world-max);
+}
+.page .approach-ribbon {
+  z-index: 1;
+  opacity: 0.72;
+}
+.page .approach-kicker {
+  color: var(--violet);
+}
+.page .approach-title {
+  max-width: 9ch;
+  font-size: clamp(54px, 7.2vw, 108px);
+  color: var(--ink);
+}
+.page .approach-description {
+  color: rgba(0, 0, 0, 0.68);
+}
+.page .approach-foot {
+  border-color: rgba(0, 0, 0, 0.16);
+}
+.page .approach-foot p {
+  color: rgba(0, 0, 0, 0.56);
+}
+.page .approach .ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 11px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  transition: color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.page .approach .ghost:hover {
+  color: var(--paper);
+  background: var(--violet);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+/* ============================================================
+   O QUE ELA FAZ ƒ?" galeria escura em paineis expansivos
+   ============================================================ */
+.page #recursos {
+  width: 100%;
+  min-height: 110svh;
+  margin: 0;
+  padding: clamp(110px, 15vh, 170px) var(--world-edge);
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(70% 72% at 18% 18%, rgba(69, 0, 249, 0.22), transparent 68%),
+    radial-gradient(45% 55% at 88% 84%, rgba(205, 130, 255, 0.13), transparent 72%),
+    var(--ink);
+}
+.page #recursos::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.26;
+  background-image:
+    linear-gradient(rgba(248, 240, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 240, 255, 0.08) 1px, transparent 1px);
+  background-size: clamp(110px, 12.5vw, 180px) clamp(110px, 12.5vw, 180px);
+  mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
+}
+.page #recursos > .rv {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+}
+.page #recursos .sec-head {
+  max-width: 920px;
+  margin-bottom: clamp(52px, 7vw, 92px);
+}
+.page #recursos .sec-head h2 {
+  max-width: 13ch;
+  font-size: clamp(46px, 6vw, 86px);
+  line-height: 0.95;
+}
+.page #recursos .sec-head > p:not(.tag) {
+  max-width: 62ch;
+  color: var(--paper-56);
+}
+.page #recursos .method {
+  border-color: var(--lilac);
+}
+.page #recursos .cards {
+  display: flex;
+  gap: 12px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.page #recursos .card {
+  position: relative;
+  min-width: 0;
+  min-height: 560px;
+  flex: 1 1 0;
+  padding: clamp(28px, 3vw, 42px);
+  overflow: hidden;
+  border: 1px solid rgba(248, 240, 255, 0.13);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(248, 240, 255, 0.07), rgba(248, 240, 255, 0.018)),
+    rgba(6, 2, 18, 0.82);
+  box-shadow: 0 30px 80px -54px rgba(205, 130, 255, 0.65);
+  transition: flex 0.7s cubic-bezier(0.6, 0.04, 0.1, 1), transform 0.4s var(--ease), background 0.4s var(--ease);
+}
+.page #recursos .card::after {
+  position: absolute;
+  right: 24px;
+  bottom: -22px;
+  color: rgba(248, 240, 255, 0.035);
+  font-family: var(--font-display);
+  font-size: 148px;
+  font-weight: 700;
+  line-height: 1;
+}
+.page #recursos .card:nth-child(1)::after { content: '01'; }
+.page #recursos .card:nth-child(2)::after { content: '02'; }
+.page #recursos .card:nth-child(3)::after { content: '03'; }
+.page #recursos .card:hover {
+  flex: 1.28 1 0;
+  z-index: 2;
+  transform: translateY(-8px);
+  background:
+    linear-gradient(155deg, rgba(69, 0, 249, 0.3), rgba(205, 130, 255, 0.06) 62%),
+    rgba(6, 2, 18, 0.94);
+}
+.page #recursos .card h3 {
+  max-width: 13ch;
+  font-size: clamp(25px, 2.25vw, 36px);
+  line-height: 1.02;
+}
+.page #recursos .card p,
+.page #recursos .does li {
+  color: var(--paper-56);
+}
+.page #recursos .does {
+  margin-top: auto;
+  padding-top: 36px;
+  position: relative;
+  z-index: 1;
+}
+.page #recursos .card {
+  display: flex;
+  flex-direction: column;
+}
+.page #recursos .who {
+  margin-top: 52px;
+}
+
+/* ============================================================
+   DEMO ƒ?" capitulo claro em duas colunas
+   ============================================================ */
+.page #demo {
+  width: 100%;
+  min-height: 110svh;
+  margin: 0;
+  padding: clamp(110px, 15vh, 170px) var(--world-edge);
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+  align-items: center;
+  gap: clamp(48px, 7vw, 120px);
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(55% 80% at 88% 50%, rgba(205, 130, 255, 0.2), transparent 72%),
+    var(--paper);
+}
+.page #demo > .rv {
+  position: relative;
+  z-index: 2;
+}
+.page #demo .sec-head {
+  max-width: 520px;
+  margin: 0;
+}
+.page #demo .sec-head h2 {
+  font-size: clamp(48px, 5.3vw, 78px);
+  line-height: 0.96;
+}
+.page #demo .tag {
+  color: var(--violet);
+}
+.page #demo .demo {
+  width: 100%;
+  max-width: 900px;
+  border-color: rgba(248, 240, 255, 0.16);
+  border-radius: 24px;
+  color: var(--paper);
+  background:
+    radial-gradient(85% 80% at 90% 0%, rgba(69, 0, 249, 0.26), transparent 62%),
+    #07030f;
+  box-shadow: 0 44px 100px -54px rgba(69, 0, 249, 0.72);
+}
+.page #demo .demo-body {
+  min-height: 500px;
+  padding: clamp(26px, 4vw, 48px);
+}
+.page #demo .demo-bar {
+  padding: 18px 22px;
+}
+
+/* ============================================================
+   OFERTA ƒ?" grande bloco de cor da referencia
+   ============================================================ */
+.page #oferta {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  padding: clamp(100px, 14vh, 160px) var(--world-edge);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
+    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
+}
+.page #oferta::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  z-index: 0;
+  border: clamp(60px, 8vw, 120px) solid rgba(248, 240, 255, 0.04);
+  border-radius: 50%;
+  transform: translate(38%, 30%);
+}
+.page #oferta > .rv {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+}
+.page #oferta .sec-head {
+  max-width: 940px;
+  margin-bottom: clamp(48px, 7vw, 90px);
+}
+.page #oferta .sec-head h2 {
+  max-width: 12ch;
+  font-size: clamp(50px, 6.5vw, 96px);
+  line-height: 0.94;
+}
+.page #oferta .tag,
+.page #oferta .sec-head p {
+  color: rgba(248, 240, 255, 0.76);
+}
+.page #oferta .offer-grid {
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+  align-items: end;
+  gap: clamp(52px, 8vw, 130px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.page #oferta .pct {
+  font-size: clamp(150px, 24vw, 330px);
+  color: var(--paper);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  opacity: 0.94;
+}
+.page #oferta .offer-copy {
+  max-width: 35ch;
+  color: rgba(248, 240, 255, 0.74);
+}
+.page #oferta .terms li {
+  padding-block: 18px;
+  border-color: rgba(248, 240, 255, 0.2);
+  color: rgba(248, 240, 255, 0.84);
+  font-size: 16px;
+}
+
+/* ============================================================
+   CREDIBILIDADE ƒ?" respiro claro e tipografia monumental
+   ============================================================ */
+.page .credibility-section {
+  width: 100%;
+  min-height: 72svh;
+  margin: 0;
+  padding: clamp(90px, 13vh, 150px) var(--world-edge);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--paper);
+}
+.page .credibility-section .cred {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(300px, 1.1fr);
+  align-items: center;
+  gap: clamp(40px, 8vw, 140px);
+  padding: 0;
+  border: 0;
+}
+.page .credibility-section .stat b {
+  color: var(--violet);
+  font-size: clamp(110px, 17vw, 250px);
+  font-weight: 700;
+  line-height: 0.78;
+}
+.page .credibility-section .stat i {
+  margin-top: 28px;
+  color: rgba(0, 0, 0, 0.54);
+}
+.page .credibility-section .cred p {
+  max-width: 23ch;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.2vw, 60px);
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+}
+
+/* ============================================================
+   FAQ ƒ?" editorial escuro em duas colunas
+   ============================================================ */
+.page #faq {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  padding: clamp(110px, 15vh, 170px) var(--world-edge);
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
+  align-items: start;
+  gap: clamp(54px, 9vw, 150px);
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%),
+    var(--ink);
+}
+.page #faq > .rv {
+  position: relative;
+  z-index: 2;
+}
+.page #faq .sec-head {
+  position: sticky;
+  top: 130px;
+  max-width: 520px;
+  margin: 0;
+}
+.page #faq .sec-head h2 {
+  font-size: clamp(48px, 5.4vw, 78px);
+  line-height: 0.96;
+}
+.page #faq .faq {
+  max-width: none;
+}
+.page #faq .faq details {
+  border-color: rgba(248, 240, 255, 0.16);
+}
+.page #faq .faq summary {
+  padding-block: 28px;
+  font-size: clamp(18px, 1.6vw, 23px);
+}
+.page #faq .faq-body p {
+  color: var(--paper-56);
+}
+
+/* ============================================================
+   CTA FINAL + FOOTER ƒ?" fechamento de tela inteira
+   ============================================================ */
+.page #lista-final {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  padding: clamp(96px, 13vh, 150px) var(--world-edge);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(80% 110% at 10% 0%, rgba(205, 130, 255, 0.4), transparent 58%),
+    linear-gradient(135deg, var(--abyss), var(--violet) 72%);
+}
+.page #lista-final::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 44%, rgba(248, 240, 255, 0.08) 44.1%, transparent 44.7%);
+}
+.page #lista-final .final {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0;
+  border-radius: 0;
+  text-align: center;
+  background: transparent;
+}
+.page #lista-final .final h2 {
+  max-width: 13ch;
+  margin: 18px auto 0;
+  font-size: clamp(48px, 7.2vw, 108px);
+  line-height: 0.94;
+}
+.page #lista-final .final .assin {
+  font-size: clamp(20px, 2.2vw, 30px);
+}
+.page #lista-final .form-block {
+  max-width: 680px;
+  margin: 46px auto 0;
+  text-align: left;
+}
+
+.page .site-footer {
+  width: 100%;
+  margin: 0;
+  padding: 72px var(--world-edge) 42px;
+  color: var(--paper);
+  border-color: rgba(248, 240, 255, 0.12);
+  background: #05020b;
+}
+.page .site-footer .foot-top,
+.page .site-footer .foot-bot {
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+}
+.page .site-footer .foot-sig {
+  max-width: 13ch;
+  font-size: clamp(26px, 3.8vw, 54px);
+  color: var(--paper-56);
+}
+.page .site-footer .foot-links {
+  max-width: 440px;
+  justify-content: flex-end;
+}
+.page .site-footer .foot-bot {
+  margin-top: 62px;
+}
+
+/* Scroll rail discreto da referencia institucional. */
+.scroll-rail {
+  position: fixed;
+  top: 50%;
+  right: 18px;
+  z-index: 76;
+  width: 2px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(248, 240, 255, 0.18);
+  transform: translateY(-50%);
+  mix-blend-mode: difference;
+}
+.scroll-rail span {
+  --scroll-progress: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--paper);
+  transform: scaleY(var(--scroll-progress));
+  transform-origin: top;
+}
+
+/* Reveals mais proximos da coreografia institucional. */
+.page .rv {
+  filter: blur(7px);
+  transform: translateY(34px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), filter 0.9s var(--ease);
+}
+.page .rv.in {
+  filter: none;
+  transform: none;
+}
+.page #recursos .cards.rv {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.page #recursos .cards.rv .card {
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+}
+.page #recursos .cards.rv.in .card {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.75s var(--ease),
+    transform 0.75s var(--ease),
+    flex 0.7s cubic-bezier(0.6, 0.04, 0.1, 1),
+    background 0.4s var(--ease);
+}
+.page #recursos .cards.rv.in .card:nth-child(2) { transition-delay: 0.09s; }
+.page #recursos .cards.rv.in .card:nth-child(3) { transition-delay: 0.18s; }
+
+@media (max-width: 1023px) {
+  :root { --world-edge: var(--gutter); }
+
+  .scroll-rail { display: none; }
+
+  .page .hero {
+    padding-inline: var(--gutter);
+  }
+  .page .hero h1 {
+    max-width: 11.5ch;
+    font-size: clamp(42px, 10vw, 68px);
+  }
+
+  .page .approach-title {
+    max-width: 10ch;
+    font-size: clamp(46px, 12vw, 76px);
+  }
+
+  .page #recursos,
+  .page #demo,
+  .page #oferta,
+  .page .credibility-section,
+  .page #faq,
+  .page #lista-final {
+    padding-inline: var(--gutter);
+  }
+
+  .page #recursos {
+    min-height: auto;
+  }
+  .page #recursos .cards {
+    width: calc(100vw - var(--gutter));
+    max-width: none;
+    margin-right: calc(var(--gutter) * -1);
+    padding-right: var(--gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .page #recursos .cards::-webkit-scrollbar { display: none; }
+  .page #recursos .card {
+    min-width: min(82vw, 390px);
+    min-height: 520px;
+    flex: none;
+    scroll-snap-align: center;
+  }
+  .page #recursos .card:hover {
+    flex: none;
+  }
+
+  .page #demo {
+    min-height: auto;
+    display: block;
+  }
+  .page #demo > .rv + .rv {
+    margin-top: 46px;
+  }
+  .page #demo .demo-body {
+    min-height: 430px;
+  }
+
+  .page #oferta .offer-grid {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+  .page #oferta .pct {
+    font-size: clamp(138px, 44vw, 230px);
+  }
+
+  .page .credibility-section .cred {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .page .credibility-section .cred p {
+    max-width: 18ch;
+  }
+
+  .page #faq {
+    min-height: auto;
+    display: block;
+  }
+  .page #faq .sec-head {
+    position: static;
+  }
+  .page #faq > .rv + .rv {
+    margin-top: 48px;
+  }
+
+  .page .site-footer .foot-links {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .page .hero {
+    padding-top: 110px;
+  }
+  .page .hero h1 {
+    font-size: clamp(40px, 11.5vw, 54px);
+  }
+  .page .hero::after { display: none; }
+
+  .page #recursos,
+  .page #demo,
+  .page #oferta,
+  .page .credibility-section,
+  .page #faq,
+  .page #lista-final {
+    padding-block: 96px 118px;
+  }
+  .page #recursos .sec-head h2,
+  .page #demo .sec-head h2,
+  .page #oferta .sec-head h2,
+  .page #faq .sec-head h2 {
+    font-size: clamp(40px, 12vw, 56px);
+  }
+  .page #recursos .card {
+    min-width: min(84vw, 350px);
+    min-height: 500px;
+  }
+  .page #demo .demo-body {
+    min-height: 390px;
+  }
+  .page .credibility-section .stat b {
+    font-size: clamp(108px, 38vw, 180px);
+  }
+  .page .credibility-section .cred p {
+    font-size: clamp(34px, 10vw, 48px);
+  }
+  .page #lista-final .final h2 {
+    font-size: clamp(42px, 12vw, 60px);
+  }
+  .page .site-footer {
+    padding: 60px var(--gutter) 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page .rv,
+  .page #recursos .cards.rv .card {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  .page #recursos .card:hover,
+  .page .approach .ghost:hover {
+    transform: none;
+  }
+}
