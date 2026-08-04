@@ -138,7 +138,8 @@ html.waitlist-modal-open body {
 
 /* Oferta: o texto alternativo aparece somente dentro da lente do cursor. */
 .page #oferta {
-  min-height: 100svh;
+  min-height: 115svh;
+  min-height: 115dvh;
   justify-content: center;
   gap: 0;
   padding: clamp(160px, 20vh, 220px) var(--world-edge) clamp(100px, 14vh, 160px);
@@ -240,7 +241,7 @@ html.waitlist-modal-open body {
   max-width: 12.5ch;
   margin: 0 auto;
   font-family: var(--font-display);
-  font-size: clamp(58px, 8.4vw, 118px);
+  font-size: clamp(50px, 6.6vw, 92px);
   font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.07em;
@@ -603,6 +604,8 @@ html.waitlist-modal-open body {
     justify-content: space-between;
   }
   .page #oferta {
+    min-height: 100svh;
+    min-height: 100dvh;
     gap: 44px;
     padding-top: 150px;
   }
@@ -617,12 +620,12 @@ html.waitlist-modal-open body {
     margin-top: 30px;
   }
   .offer-reveal__text {
-    font-size: clamp(43px, 12.4vw, 58px);
+    font-size: clamp(38px, 10.8vw, 50px);
     line-height: 0.94;
     letter-spacing: -0.055em;
   }
   .offer-reveal__text--primary {
-    font-size: clamp(32px, 9.2vw, 42px);
+    font-size: clamp(30px, 8.4vw, 38px);
   }
   .page #oferta .offer-action {
     margin-top: 42px;
@@ -888,36 +891,50 @@ html.waitlist-modal-open body {
   }
 }
 
+/* Como funciona: titulo e marcador em escala mais contida. */
+.page #demo .sec-head > .tag {
+  font-size: 11px;
+}
+.page #demo .sec-head h2 {
+  font-size: clamp(44px, 4.8vw, 70px);
+}
+
+@media (max-width: 620px) {
+  .page #demo .sec-head h2 {
+    font-size: clamp(38px, 10.5vw, 50px);
+  }
+}
+
 /* O que ela faz: escala textual mais enxuta em toda a galeria. */
 .page #recursos .sec-head > .tag,
 .page #recursos .who .tag {
-  font-size: 10px;
+  font-size: 11px;
 }
 .page #recursos .sec-head h2 {
-  font-size: clamp(30px, 3.2vw, 48px);
+  font-size: clamp(34px, 3.8vw, 52px);
 }
 .page #recursos .sec-head > p:not(.tag) {
-  font-size: clamp(11px, 0.7vw, 12px);
+  font-size: clamp(12.5px, 0.85vw, 14px);
   white-space: pre-line;
 }
 .page #recursos .method b {
-  font-size: clamp(18px, 1.8vw, 24px);
+  font-size: clamp(20px, 2vw, 26px);
 }
 .page #recursos .method span {
-  font-size: 11.5px;
+  font-size: 12px;
   white-space: pre-line;
 }
 .page #recursos .card .verb {
-  font-size: 7px;
+  font-size: 8.5px;
 }
 .page #recursos .card h3 {
-  font-size: clamp(15px, 1.1vw, 18px);
+  font-size: clamp(18px, 1.35vw, 22px);
 }
 .page #recursos .card p {
-  font-size: 11px;
+  font-size: 12px;
 }
 .page #recursos .does li {
-  font-size: 10.5px;
+  font-size: 11.5px;
 }
 .page #recursos .who li {
   font-size: 11px;
@@ -925,10 +942,10 @@ html.waitlist-modal-open body {
 
 @media (max-width: 620px) {
   .page #recursos .sec-head h2 {
-    font-size: clamp(30px, 9vw, 42px);
+    font-size: clamp(32px, 9.5vw, 44px);
   }
   .page #recursos .card h3 {
-    font-size: 17px;
+    font-size: 19px;
   }
 }
 
@@ -968,6 +985,13 @@ html.waitlist-modal-open body {
 /* Cards da galeria: altura mais compacta depois da redução tipográfica. */
 .page #recursos .card {
   min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.page #recursos .card:hover {
+  background: transparent;
 }
 .page #recursos .card::after {
   display: none;
