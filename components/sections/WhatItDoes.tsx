@@ -51,10 +51,6 @@ export function WhatItDoes() {
           </article>
         ))}
       </Reveal>
-      <Reveal className="who">
-        <p className="tag">{content.audienceLabel}</p>
-        <ul>{content.audience.map((person) => <li key={person}>{person}</li>)}</ul>
-      </Reveal>
     </section>
   )
 }
