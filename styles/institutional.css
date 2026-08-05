@@ -202,12 +202,40 @@ body::after {
   max-width: var(--world-max);
   margin-inline: auto;
 }
+/* Retrato à esquerda, todo o conteúdo à direita. O retrato é recorte com
+   alfa: sem moldura, sem fundo — encosta direto no papel da seção. */
+.page #demo .demo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: clamp(28px, 4.4vw, 72px);
+  align-items: center;
+}
+.page #demo .demo-retrato {
+  display: flex;
+  justify-content: center;
+}
+/* Governado pela altura, não pela largura. O recorte é retrato (854x1040):
+   deixar a largura mandar faria a imagem crescer mais que a coluna de texto
+   e estourar a seção, que é de uma tela só. */
+.page #demo .demo-retrato img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(320px, 52vh, 520px);
+}
+.page #demo .demo-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3.2vh, 40px);
+}
 .page #demo .demo-head {
   display: block;
-  text-align: center;
+  /* Centralizado fazia sentido quando o cabeçalho era faixa de largura total.
+     Numa coluna, texto centralizado deixa as duas margens serrilhadas. */
+  text-align: left;
 }
-/* O rótulo da seção fica à esquerda, como nas demais seções da página.
-   Só o título e o subtítulo são centralizados. */
+/* O rótulo da seção fica à esquerda, como nas demais seções da página. */
 .page #demo .demo-head .tag {
   display: flex;
   align-items: center;
@@ -224,11 +252,12 @@ body::after {
   background: currentColor;
 }
 /* Uma linha só: o tamanho é escolhido para a frase inteira caber na
-   largura do capítulo, e fica abaixo do h1 do hero (82px) para não
-   inverter a hierarquia da página. */
+   largura da coluna, e fica abaixo do h1 do hero (82px) para não inverter a
+   hierarquia da página. Era 76px quando o cabeçalho ocupava a faixa toda;
+   numa coluna de ~640px, esse tamanho quebrava a frase em três linhas. */
 .page #demo .demo-head h2 {
   margin: 14px 0 0;
-  font-size: clamp(30px, 5.6vw, 76px);
+  font-size: clamp(30px, 3.9vw, 55px);
   line-height: 1.04;
   letter-spacing: -0.045em;
 }
@@ -239,8 +268,8 @@ body::after {
   color: var(--violet);
 }
 .page #demo .demo-head__sub {
-  margin: 16px auto 0;
-  max-width: 52ch;
+  margin: 16px 0 0;
+  max-width: 46ch;
   color: rgba(0, 0, 0, 0.62);
   font-size: clamp(15px, 1.35vw, 19px);
   line-height: 1.45;
@@ -250,7 +279,8 @@ body::after {
 }
 .page #demo .demo {
   width: 100%;
-  max-width: 640px;
+  /* Quem governa a largura agora é a coluna da direita, não este teto. */
+  max-width: none;
   border-color: rgba(248, 240, 255, 0.16);
   border-radius: 24px;
   color: var(--paper);
@@ -578,6 +608,16 @@ body::after {
   }
   .page #demo .demo-body {
     min-height: 400px;
+  }
+  /* Empilha: o retrato entra primeiro, contido, e o conteúdo vem abaixo.
+     Sem o teto de largura ele ocuparia a tela toda e empurraria a
+     demonstração para fora do primeiro scroll. */
+  .page #demo .demo-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .page #demo .demo-retrato img {
+    max-height: 340px;
   }
 
   .page #oferta .offer-grid {

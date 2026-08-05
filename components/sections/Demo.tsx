@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { Reveal } from '@/components/ui/Reveal'
 import { LANDING, type DemoScene } from '@/content/landing'
 
@@ -11,6 +12,11 @@ const PRIMEIRA = CENAS[0]
 
 /**
  * Como funciona.
+ *
+ * Duas colunas: o retrato da Digi.IA à esquerda, todo o conteúdo — cabeçalho e
+ * janela da demonstração — à direita. O retrato é ilustração de marca, não
+ * informação: `alt` vazio de propósito, para o leitor de tela pular direto ao
+ * texto em vez de ouvir a descrição de um enfeite.
  *
  * A janela nasce com a primeira cena JÁ na tela, não vazia. Antes o estado
  * inicial era vazio e a animação dependia de um IntersectionObserver sobre o
@@ -92,46 +98,52 @@ export function Demo() {
 
   return (
     <section id="demo" ref={secao} aria-labelledby="demo-titulo">
-      <Reveal className="demo-head">
-        <div>
-          <p className="tag">{LANDING.demo.eyebrow}</p>
-          <h2 id="demo-titulo">
-            <span>{LANDING.demo.title}</span>{' '}
-            <span className="demo-head__accent">{LANDING.demo.titleAccent}</span>
-          </h2>
-          <p className="demo-head__sub">{LANDING.demo.subtitle}</p>
+      <Reveal className="demo-layout">
+        <div className="demo-retrato">
+          <Image src="/assets/digi-ia.webp" alt="" width={854} height={1040} />
         </div>
-      </Reveal>
 
-      <Reveal className="demo">
-        <div className="demo-bar">
-          <span className="dot live" aria-hidden="true" />
-          <span>{LANDING.demo.windowLabel}</span>
-        </div>
-        <div className="demo-body">
-          <div className="prompt-line">
-            <span className="chev" aria-hidden="true">&rsaquo;</span>
-            <span>
-              <span>{digitado}</span>
-              <span className="caret" aria-hidden="true" />
-            </span>
+        <div className="demo-coluna">
+          <div className="demo-head">
+            <p className="tag">{LANDING.demo.eyebrow}</p>
+            <h2 id="demo-titulo">
+              <span>{LANDING.demo.title}</span>{' '}
+              <span className="demo-head__accent">{LANDING.demo.titleAccent}</span>
+            </h2>
+            <p className="demo-head__sub">{LANDING.demo.subtitle}</p>
           </div>
-          <div className="out" aria-live="off">
-            {cena ? (
-              <>
-                <p className="tag">{cena.label}</p>
-                {cena.items.map(([marca, texto], indice) => (
-                  <div
-                    className="out-item"
-                    key={marca + texto}
-                    style={{ animationDelay: `${0.22 + indice * 0.13}s` }}
-                  >
-                    <em>{marca}</em>
-                    <span>{texto}</span>
-                  </div>
-                ))}
-              </>
-            ) : null}
+
+          <div className="demo">
+            <div className="demo-bar">
+              <span className="dot live" aria-hidden="true" />
+              <span>{LANDING.demo.windowLabel}</span>
+            </div>
+            <div className="demo-body">
+              <div className="prompt-line">
+                <span className="chev" aria-hidden="true">&rsaquo;</span>
+                <span>
+                  <span>{digitado}</span>
+                  <span className="caret" aria-hidden="true" />
+                </span>
+              </div>
+              <div className="out" aria-live="off">
+                {cena ? (
+                  <>
+                    <p className="tag">{cena.label}</p>
+                    {cena.items.map(([marca, texto], indice) => (
+                      <div
+                        className="out-item"
+                        key={marca + texto}
+                        style={{ animationDelay: `${0.22 + indice * 0.13}s` }}
+                      >
+                        <em>{marca}</em>
+                        <span>{texto}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
       </Reveal>
