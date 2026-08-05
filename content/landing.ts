@@ -110,24 +110,25 @@ export const LANDING = {
    * Conheça a Digi.IA na prática.
    *
    * Dois cards irmãos sob um título só: um mostra o produto rodando, o outro
-   * responde o que passa pela cabeça de quem está assistindo. Os rótulos são
-   * um par de propósito — "Você pede. Ela entrega." de um lado, "Você
-   * pergunta. A gente responde." do outro. É esse eco que faz as duas metades
-   * conversarem, em vez de ficarem em seções distantes como antes.
+   * responde o que passa pela cabeça de quem está assistindo. Cada um leva o
+   * próprio nome — "Como funciona" e "Perguntas frequentes" —, o que faz a
+   * seção substituir dois capítulos que antes viviam distantes um do outro.
+   *
+   * Sem rótulo de seção: ele diria "Como funciona" a 150px de um card que já
+   * se chama assim.
    *
    * A ordem das perguntas é argumento: as três primeiras falam do que está
    * acontecendo no card ao lado (uso), as três últimas são as de decisão
    * (preço, risco, data). Dúvida de uso antes de compromisso.
    */
   demo: {
-    eyebrow: 'Como funciona',
     title: 'Conheça a Digi.IA',
     titleAccent: 'na prática.',
     subtitle:
       'Do pedido à entrega, em tempo real. E as dúvidas que aparecem no caminho, respondidas na hora.',
     windowLabel: 'Digi.IA — demonstração',
-    sceneLabel: 'Você pede. Ela entrega.',
-    questionsLabel: 'Você pergunta. A gente responde.',
+    sceneLabel: 'Como funciona',
+    questionsLabel: 'Perguntas frequentes',
     scenes: [
       {
         prompt: 'campanha de dia das mães para uma joalheria de bairro',

@@ -206,23 +206,9 @@ body::after {
   display: block;
   text-align: center;
 }
-/* O rótulo da seção fica à esquerda, como nas demais seções da página.
-   Só o título e o subtítulo são centralizados. */
-.page #demo .demo-head .tag {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 600;
-  color: var(--violet);
-}
-.page #demo .demo-head .tag::before {
-  content: '';
-  width: 30px;
-  height: 1px;
-  flex: none;
-  background: currentColor;
-}
+/* Sem rótulo de seção: quem nomeia os capítulos agora são os dois cards,
+   "Como funciona" e "Perguntas frequentes". Um rótulo aqui repetiria o
+   primeiro deles a 150px de distância. */
 /* Uma linha só: o tamanho é escolhido para a frase inteira caber na
    largura do capítulo, e fica abaixo do h1 do hero (82px) para não
    inverter a hierarquia da página. */

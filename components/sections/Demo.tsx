@@ -100,7 +100,6 @@ export function Demo() {
     <section id="demo" ref={secao} aria-labelledby="demo-titulo">
       <Reveal className="demo-head">
         <div>
-          <p className="tag">{LANDING.demo.eyebrow}</p>
           <h2 id="demo-titulo">
             <span>{LANDING.demo.title}</span>{' '}
             <span className="demo-head__accent">{LANDING.demo.titleAccent}</span>
