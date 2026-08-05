@@ -1,3 +1,5 @@
+import { CalculoRoi } from '@/components/sections/CalculoRoi'
+import { PostGerado } from '@/components/sections/PostGerado'
 import { Reveal } from '@/components/ui/Reveal'
 import { LANDING } from '@/content/landing'
 
@@ -41,25 +43,7 @@ export function WhatItDoes() {
           <p className="rec-cell__lede">{F.cria.description}</p>
 
           <div className="rec-out">
-            <figure className="post">
-              <figcaption className="post__bar">
-                <span className="post__dot" aria-hidden="true" />
-                <b>{F.cria.exemplo.marca}</b>
-                <span>{F.cria.exemplo.contexto}</span>
-              </figcaption>
-              <div className="post__body">
-                <p className="post__caption">
-                  {F.cria.exemplo.legenda} <i>{F.cria.exemplo.marcadores}</i>
-                </p>
-                <ul className="chips">
-                  {F.cria.exemplo.variacoes.map((variacao) => (
-                    <li key={variacao.rotulo} data-ativa={variacao.ativa || undefined}>
-                      {variacao.rotulo}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </figure>
+            <PostGerado />
           </div>
         </article>
 
@@ -83,16 +67,7 @@ export function WhatItDoes() {
           <span className="verb">{F.calcula.verb}</span>
           <h3>{F.calcula.title}</h3>
 
-          <div className="rec-out">
-            <dl className="numeros">
-              {F.calcula.linhas.map((linha) => (
-                <div key={linha.rotulo}>
-                  <dt>{linha.rotulo}</dt>
-                  <dd data-destaque={linha.destaque || undefined}>{linha.valor}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+          <CalculoRoi />
         </article>
 
         <article className="rec-cell rec-cell--dna">
