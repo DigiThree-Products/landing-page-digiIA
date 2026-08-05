@@ -157,7 +157,7 @@
   .site-nav .logo { width: 92px; }
   .site-nav__cta { min-height: 38px; padding-inline: 15px; }
   .mobile-dock { display: flex; }
-  #cadastro, #video, #recursos, #demo, #oferta, #lista-final { scroll-margin-top: 78px; }
+  #cadastro, #video, #recursos, #demo, #oferta, #faq, #lista-final { scroll-margin-top: 78px; }
 }
 
 @media (max-width: 380px) {

@@ -891,7 +891,9 @@ html.waitlist-modal-open body {
   }
 }
 
-/* O marcador do cabeçalho de "Como funciona" saiu: os dois cards da seção
-   levam o nome agora. O tamanho do titulo continua em institutional.css,
-   junto do layout que o sustenta — separar os dois foi o que deixou um
-   titulo de 70px numa coluna de 359px. */
+/* Como funciona: marcador em escala mais contida. O tamanho do titulo
+   vive em institutional.css, junto do layout que o sustenta — separar os
+   dois foi o que deixou um titulo de 70px numa coluna de 359px. */
+.page #demo .demo-head .tag {
+  font-size: 11px;
+}
