@@ -45,10 +45,30 @@ jobs:
           NEXT_PUBLIC_LEGAL_CITY_STATE: Angra dos Reis/RJ
         run: npm run build
 
-      # Na main não há fallback de CI: as variáveis reais devem existir nas
-      # Repository Variables e o verificador continua bloqueando marcadores.
-      - name: Build de publicação
+      # Na main não há fallback de dados fictícios: as variáveis reais devem
+      # existir nas Repository Variables. Enquanto o cliente não as envia,
+      # pula o build/verificação de publicação (job fica verde com etapas
+      # puladas) em vez de reportar falha — um "pendente" não deve se
+      # disfarçar de quebra. Assim que as variáveis forem cadastradas, o
+      # verificador volta a bloquear qualquer marcador esquecido de verdade.
+      - name: Dados jurídicos cadastrados?
         if: github.ref == 'refs/heads/main'
+        id: dados_juridicos
+        env:
+          NEXT_PUBLIC_LEGAL_NAME: ${{ vars.NEXT_PUBLIC_LEGAL_NAME }}
+          NEXT_PUBLIC_LEGAL_CNPJ: ${{ vars.NEXT_PUBLIC_LEGAL_CNPJ }}
+          NEXT_PUBLIC_LEGAL_EMAIL: ${{ vars.NEXT_PUBLIC_LEGAL_EMAIL }}
+          NEXT_PUBLIC_LEGAL_CITY_STATE: ${{ vars.NEXT_PUBLIC_LEGAL_CITY_STATE }}
+        run: |
+          if [ -n "$NEXT_PUBLIC_LEGAL_NAME" ] && [ -n "$NEXT_PUBLIC_LEGAL_CNPJ" ] && [ -n "$NEXT_PUBLIC_LEGAL_EMAIL" ] && [ -n "$NEXT_PUBLIC_LEGAL_CITY_STATE" ]; then
+            echo "prontos=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prontos=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Dados jurídicos ainda não cadastrados nas Repository Variables (NEXT_PUBLIC_LEGAL_NAME/CNPJ/EMAIL/CITY_STATE) — build e verificação de publicação pulados até o cliente enviar razão social, CNPJ, e-mail de contato e cidade/UF."
+          fi
+
+      - name: Build de publicação
+        if: github.ref == 'refs/heads/main' && steps.dados_juridicos.outputs.prontos == 'true'
         env:
           NEXT_PUBLIC_LEGAL_NAME: ${{ vars.NEXT_PUBLIC_LEGAL_NAME }}
           NEXT_PUBLIC_LEGAL_CNPJ: ${{ vars.NEXT_PUBLIC_LEGAL_CNPJ }}
@@ -57,4 +77,5 @@ jobs:
         run: npm run build
 
       - name: Verificar o HTML gerado
+        if: github.ref != 'refs/heads/main' || steps.dados_juridicos.outputs.prontos == 'true'
         run: npm run verificar
