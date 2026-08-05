@@ -891,16 +891,9 @@ html.waitlist-modal-open body {
   }
 }
 
-/* Como funciona: titulo e marcador em escala mais contida. */
-.page #demo .sec-head > .tag {
+/* Como funciona: marcador em escala mais contida. O tamanho do titulo
+   vive em institutional.css, junto do layout que o sustenta — separar os
+   dois foi o que deixou um titulo de 70px numa coluna de 359px. */
+.page #demo .demo-head .tag {
   font-size: 11px;
-}
-.page #demo .sec-head h2 {
-  font-size: clamp(44px, 4.8vw, 70px);
-}
-
-@media (max-width: 620px) {
-  .page #demo .sec-head h2 {
-    font-size: clamp(38px, 10.5vw, 50px);
-  }
 }

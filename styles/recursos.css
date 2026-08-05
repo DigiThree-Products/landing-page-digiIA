@@ -86,8 +86,11 @@
   font-style: normal;
   color: var(--lilac);
 }
+/* Desce o parágrafo para a primeira linha dele nascer na mesma altura
+   da primeira linha da headline, e não na do eyebrow. Os 32px são o
+   eyebrow (14px) mais a margem superior do h2 (14px). */
 .page #recursos .rec-head__side {
-  padding-top: 4px;
+  padding-top: 32px;
 }
 .page #recursos .rec-head__side > p {
   margin: 0;
@@ -95,29 +98,6 @@
   color: var(--paper-56);
   font-size: clamp(14px, 1.05vw, 15px);
   line-height: 1.55;
-}
-
-/* Credencial da casa — sustenta tudo que as células afirmam. */
-.page #recursos .method {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 16px;
-  margin-top: 16px;
-  padding: 2px 0 2px 18px;
-  border-left: 2px solid var(--lilac);
-}
-.page #recursos .method b {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(20px, 2vw, 24px);
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.page #recursos .method span {
-  max-width: 40ch;
-  color: var(--paper-56);
-  font-size: 13.5px;
 }
 
 /* ---------- Bento ----------

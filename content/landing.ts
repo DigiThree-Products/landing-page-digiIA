@@ -43,9 +43,6 @@ export const LANDING = {
     title: `O método da ${SITE.organizacaoMae}, agora`,
     titleHighlight: 'na sua mão.',
     description: `Construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
-    proofValue: '15+ anos',
-    proofText: 'de campanhas reais viraram o critério que ela usa para decidir o que funciona.',
-
     cria: {
       verb: 'Cria',
       title: 'Saia com a campanha pronta',
@@ -110,7 +107,12 @@ export const LANDING = {
   },
   demo: {
     eyebrow: 'Como funciona',
-    title: 'Seu pedido ganha forma e evolui com cada ajuste.',
+    /* Duas linhas de propósito: o ritmo binário é o argumento. Título de
+       seção com 3 a 5 palavras é a norma nas referências; a frase longa
+       que ficava aqui virou subtítulo, que é o papel dela. */
+    title: 'Você pede.',
+    titleAccent: 'Ela entrega.',
+    subtitle: 'Seu pedido ganha forma e evolui com cada ajuste.',
     windowLabel: 'Digi.IA — demonstração',
     scenes: [
       {
