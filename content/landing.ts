@@ -43,8 +43,6 @@ export const LANDING = {
     title: `O método da ${SITE.organizacaoMae}, agora`,
     titleHighlight: 'na sua mão.',
     description: `Construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
-    proofValue: '15+ anos',
-    proofText: 'de campanhas reais viraram o critério que ela usa para decidir o que funciona.',
 
     cria: {
       verb: 'Cria',
