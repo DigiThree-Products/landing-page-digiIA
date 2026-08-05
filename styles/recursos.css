@@ -87,7 +87,7 @@
   color: var(--lilac);
 }
 .page #recursos .rec-head__side {
-  padding-top: 4px;
+  padding-top: 24px;
 }
 .page #recursos .rec-head__side > p {
   margin: 0;
