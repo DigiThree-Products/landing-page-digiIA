@@ -227,13 +227,13 @@ html.waitlist-modal-open body {
   --offer-reveal-y: 50%;
   --offer-reveal-radius: clamp(140px, 14vw, 220px);
   position: relative;
-  width: 100%;
+  width: fit-content;
   margin-top: clamp(34px, 5vh, 62px);
   isolation: isolate;
 }
 .offer-reveal__stack {
   display: grid;
-  width: 100%;
+  width: fit-content;
 }
 .offer-reveal__text {
   grid-area: 1 / 1;
