@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Reveal } from '@/components/ui/Reveal'
+import { QuestionList } from '@/components/ui/QuestionList'
 import { LANDING, type DemoScene } from '@/content/landing'
 
 const espera = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -10,7 +11,12 @@ const CENAS = LANDING.demo.scenes
 const PRIMEIRA = CENAS[0]
 
 /**
- * Como funciona.
+ * Conheça a Digi.IA na prática.
+ *
+ * Um título, dois cards irmãos: o produto rodando e as perguntas de quem está
+ * assistindo. As perguntas viviam numa seção própria lá embaixo, longe do que
+ * elas respondem; aqui a resposta fica ao lado da prova. A `<section>` continua
+ * sendo `#demo` de propósito — é a âncora que o menu do mobile usa.
  *
  * A janela nasce com a primeira cena JÁ na tela, não vazia. Antes o estado
  * inicial era vazio e a animação dependia de um IntersectionObserver sobre o
@@ -103,36 +109,46 @@ export function Demo() {
         </div>
       </Reveal>
 
-      <Reveal className="demo">
-        <div className="demo-bar">
-          <span className="dot live" aria-hidden="true" />
-          <span>{LANDING.demo.windowLabel}</span>
+      <Reveal className="demo-split">
+        <div className="demo-col">
+          <p className="pair-tag">{LANDING.demo.sceneLabel}</p>
+          <div className="demo">
+            <div className="demo-bar">
+              <span className="dot live" aria-hidden="true" />
+              <span>{LANDING.demo.windowLabel}</span>
+            </div>
+            <div className="demo-body">
+              <div className="prompt-line">
+                <span className="chev" aria-hidden="true">&rsaquo;</span>
+                <span>
+                  <span>{digitado}</span>
+                  <span className="caret" aria-hidden="true" />
+                </span>
+              </div>
+              <div className="out" aria-live="off">
+                {cena ? (
+                  <>
+                    <p className="tag">{cena.label}</p>
+                    {cena.items.map(([marca, texto], indice) => (
+                      <div
+                        className="out-item"
+                        key={marca + texto}
+                        style={{ animationDelay: `${0.22 + indice * 0.13}s` }}
+                      >
+                        <em>{marca}</em>
+                        <span>{texto}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="demo-body">
-          <div className="prompt-line">
-            <span className="chev" aria-hidden="true">&rsaquo;</span>
-            <span>
-              <span>{digitado}</span>
-              <span className="caret" aria-hidden="true" />
-            </span>
-          </div>
-          <div className="out" aria-live="off">
-            {cena ? (
-              <>
-                <p className="tag">{cena.label}</p>
-                {cena.items.map(([marca, texto], indice) => (
-                  <div
-                    className="out-item"
-                    key={marca + texto}
-                    style={{ animationDelay: `${0.22 + indice * 0.13}s` }}
-                  >
-                    <em>{marca}</em>
-                    <span>{texto}</span>
-                  </div>
-                ))}
-              </>
-            ) : null}
-          </div>
+
+        <div className="demo-col">
+          <p className="pair-tag">{LANDING.demo.questionsLabel}</p>
+          <QuestionList className="demo-faq" items={LANDING.demo.questions} />
         </div>
       </Reveal>
     </section>

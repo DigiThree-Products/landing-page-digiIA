@@ -6,12 +6,14 @@ import { LANDING } from '@/content/landing'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { MobileNav } from './MobileNav'
 
+/* Sem entrada de FAQ: as perguntas passaram a morar dentro de "#demo", ao lado
+   da demonstração que elas respondem. Um link para "#faq" agora não levaria a
+   lugar nenhum. */
 const LINKS = [
   { id: 'video', label: 'Funciona' },
   { id: 'recursos', label: 'Recursos' },
-  { id: 'demo', label: 'Demo' },
+  { id: 'demo', label: 'Na prática' },
   { id: 'oferta', label: 'Oferta' },
-  { id: 'faq', label: 'FAQ' },
 ] as const
 
 const IDS = ['cadastro', ...LINKS.map((link) => link.id)] as const
