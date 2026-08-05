@@ -287,9 +287,6 @@
 }
 .page #recursos .calendario li {
   padding: 8px 7px;
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.4);
 }
 .page #recursos .calendario b {
   display: block;
@@ -354,9 +351,6 @@
 }
 .page #recursos .campos > div {
   padding: 8px 10px;
-  border: 1px solid var(--rule);
-  border-radius: 9px;
-  background: rgba(0, 0, 0, 0.4);
 }
 .page #recursos .campos dt {
   font-family: var(--font-mono);
@@ -400,9 +394,6 @@
 .page #recursos .aulas li {
   flex: 1;
   padding: 8px 11px;
-  border: 1px solid var(--rule);
-  border-radius: 9px;
-  background: rgba(0, 0, 0, 0.36);
   color: var(--paper-80);
   font-size: 12px;
   line-height: 1.35;
