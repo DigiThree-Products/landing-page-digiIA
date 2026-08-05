@@ -176,15 +176,19 @@ body::after {
 /* ============================================================
    DEMO �?" capitulo claro em duas colunas
    ============================================================ */
+/* Cabeçalho em faixa de largura total, com a demo embaixo — e não texto
+   espremido ao lado dela. A coluna antiga tinha 359px para um título de
+   70px: razão de 5,1x, quando as referências não descem de 11x. O título
+   quebrava em 7 linhas. Em faixa, ele respira e a janela dobra de largura. */
 .page #demo {
   width: 100%;
-  min-height: 110svh;
+  min-height: 100svh;
   margin: 0;
-  padding: clamp(110px, 15vh, 170px) var(--world-edge);
-  display: grid;
-  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
-  align-items: center;
-  gap: clamp(48px, 7vw, 120px);
+  padding: clamp(84px, 10vh, 112px) var(--world-edge) clamp(48px, 6vh, 76px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(26px, 3.4vh, 42px);
   overflow: hidden;
   color: var(--ink);
   background:
@@ -194,21 +198,59 @@ body::after {
 .page #demo > .rv {
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
 }
-.page #demo .sec-head {
-  max-width: 520px;
-  margin: 0;
+.page #demo .demo-head {
+  display: block;
+  text-align: center;
 }
-.page #demo .sec-head h2 {
-  font-size: clamp(48px, 5.3vw, 78px);
-  line-height: 0.96;
+/* O rótulo da seção fica à esquerda, como nas demais seções da página.
+   Só o título e o subtítulo são centralizados. */
+.page #demo .demo-head .tag {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--violet);
+}
+.page #demo .demo-head .tag::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+/* Uma linha só: o tamanho é escolhido para a frase inteira caber na
+   largura do capítulo, e fica abaixo do h1 do hero (82px) para não
+   inverter a hierarquia da página. */
+.page #demo .demo-head h2 {
+  margin: 14px 0 0;
+  font-size: clamp(30px, 5.6vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+.page #demo .demo-head h2 span {
+  display: inline;
+}
+.page #demo .demo-head__accent {
+  color: var(--violet);
+}
+.page #demo .demo-head__sub {
+  margin: 16px auto 0;
+  max-width: 52ch;
+  color: rgba(0, 0, 0, 0.62);
+  font-size: clamp(15px, 1.35vw, 19px);
+  line-height: 1.45;
 }
 .page #demo .tag {
   color: var(--violet);
 }
 .page #demo .demo {
   width: 100%;
-  max-width: 900px;
+  max-width: none;
   border-color: rgba(248, 240, 255, 0.16);
   border-radius: 24px;
   color: var(--paper);
@@ -218,11 +260,11 @@ body::after {
   box-shadow: 0 44px 100px -54px rgba(69, 0, 249, 0.72);
 }
 .page #demo .demo-body {
-  min-height: 500px;
-  padding: clamp(26px, 4vw, 48px);
+  min-height: clamp(260px, 32vh, 340px);
+  padding: clamp(22px, 2.6vw, 34px);
 }
 .page #demo .demo-bar {
-  padding: 18px 22px;
+  padding: 16px 22px;
 }
 
 /* ============================================================
@@ -529,13 +571,13 @@ body::after {
 
   .page #demo {
     min-height: auto;
-    display: block;
+    gap: 34px;
   }
-  .page #demo > .rv + .rv {
-    margin-top: 46px;
+  .page #demo .demo-head__sub {
+    max-width: 46ch;
   }
   .page #demo .demo-body {
-    min-height: 430px;
+    min-height: 400px;
   }
 
   .page #oferta .offer-grid {
@@ -586,13 +628,15 @@ body::after {
   .page #lista-final {
     padding-block: 96px 118px;
   }
-  .page #demo .sec-head h2,
   .page #oferta .sec-head h2,
   .page #faq .sec-head h2 {
     font-size: clamp(40px, 12vw, 56px);
   }
+  .page #demo .demo-head h2 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
   .page #demo .demo-body {
-    min-height: 390px;
+    min-height: 360px;
   }
   .page .credibility-section .stat b {
     font-size: clamp(108px, 38vw, 180px);
