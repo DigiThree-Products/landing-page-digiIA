@@ -31,10 +31,6 @@ export function WhatItDoes() {
 
         <div className="rec-head__side">
           <p>{F.description}</p>
-          <div className="method">
-            <b>{F.proofValue}</b>
-            <span>{F.proofText}</span>
-          </div>
         </div>
       </Reveal>
 
