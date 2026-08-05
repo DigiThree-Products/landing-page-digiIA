@@ -157,29 +157,15 @@ export const LANDING = {
       ],
     },
   },
-  /**
-   * Conheça a Digi.IA na prática.
-   *
-   * Dois cards irmãos sob um título só: um mostra o produto rodando, o outro
-   * responde o que passa pela cabeça de quem está assistindo. Cada um leva o
-   * próprio nome — "Como funciona" e "Perguntas frequentes" —, o que faz a
-   * seção substituir dois capítulos que antes viviam distantes um do outro.
-   *
-   * Sem rótulo de seção: ele diria "Como funciona" a 150px de um card que já
-   * se chama assim.
-   *
-   * A ordem das perguntas é argumento: as três primeiras falam do que está
-   * acontecendo no card ao lado (uso), as três últimas são as de decisão
-   * (preço, risco, data). Dúvida de uso antes de compromisso.
-   */
   demo: {
-    title: 'Conheça a Digi.IA',
-    titleAccent: 'na prática.',
-    subtitle:
-      'Do pedido à entrega, em tempo real. E as dúvidas que aparecem no caminho, respondidas na hora.',
+    eyebrow: 'Como funciona',
+    /* Duas partes na mesma linha: o ritmo binário é o argumento. Título de
+       seção com 3 a 5 palavras é a norma nas referências; a frase longa
+       que ficava aqui virou subtítulo, que é o papel dela. */
+    title: 'Você pede.',
+    titleAccent: 'Ela entrega.',
+    subtitle: 'Seu pedido ganha forma e evolui com cada ajuste.',
     windowLabel: 'Digi.IA — demonstração',
-    sceneLabel: 'Como funciona',
-    questionsLabel: 'Perguntas frequentes',
     scenes: [
       {
         prompt: 'campanha de dia das mães para uma joalheria de bairro',
@@ -212,36 +198,6 @@ export const LANDING = {
         ],
       },
     ] satisfies readonly DemoScene[],
-    questions: [
-      {
-        question: 'E se eu não souber pedir do jeito certo?',
-        answer:
-          'O pedido que está rodando ao lado é uma frase em português, escrita como você falaria com um colega. Não existe técnica de prompt para aprender — se sabe explicar a campanha, sabe usar.',
-      },
-      {
-        question: 'E se a primeira entrega não for a que eu quero?',
-        answer:
-          'Você pede o ajuste e ela refaz. Cada rodada já sai em variações — como as três headlines da tela — e a conversa continua até você aprovar.',
-      },
-      {
-        question: 'O que ela faz com o material da minha marca?',
-        answer:
-          'Fica isolado na sua conta e serve só para gerar as suas peças. Nada do que você escreve aqui treina modelo nenhum.',
-      },
-      {
-        question: 'Quanto vai custar — e o desconto é garantido?',
-        answer: `Os planos saem no lançamento e quem está na lista recebe a tabela antes, já com o desconto aplicado. Ele fica vinculado ao e-mail que você cadastrar e vale por 12 meses a partir da ativação. Se a primeira turma lotar antes de ${SITE.lancamento.diaMes}, avisamos por e-mail.`,
-      },
-      {
-        question: 'O que acontece se eu não gostar?',
-        answer:
-          'Entrar na lista não é compra. No dia do lançamento você testa e decide. Se não fizer sentido, basta não ativar — nenhum dado de pagamento foi pedido até aqui.',
-      },
-      {
-        question: 'Quando exatamente libera?',
-        answer: `${SITE.lancamento.diaMes}. Quem está na lista recebe o acesso pela manhã, antes da abertura pública.`,
-      },
-    ],
   },
   offer: {
     eyebrow: 'A oferta',
@@ -254,6 +210,40 @@ export const LANDING = {
     value: '15+',
     label: 'anos de mercado',
     description: `A Digi.IA nasce dentro da ${SITE.organizacaoMae} — construída em cima de campanhas reais, não de teoria.`,
+  },
+  faq: {
+    eyebrow: 'Perguntas',
+    title: 'O que costumam perguntar antes de entrar.',
+    items: [
+      {
+        question: 'Quanto vai custar?',
+        answer:
+          'Os planos serão anunciados no lançamento. Quem está na lista recebe a tabela antes de todo mundo, já com o desconto aplicado — e decide depois de ver o preço, não antes.',
+      },
+      {
+        question: 'O desconto é garantido mesmo?',
+        answer: `Sim, enquanto houver vagas. Ele fica vinculado ao e-mail que você cadastrar e vale por 12 meses a partir da ativação. Se a primeira turma lotar antes de ${SITE.lancamento.diaMes}, avisamos por e-mail.`,
+      },
+      {
+        question: 'Preciso saber usar IA?',
+        answer:
+          'Não. Você escreve o que precisa como escreveria para um colega. Não existe técnica de prompt para aprender — se souber explicar a campanha, sabe usar.',
+      },
+      {
+        question: 'Meus dados vão treinar algum modelo?',
+        answer:
+          'Não. O conteúdo da sua marca é usado apenas para gerar as suas peças e fica isolado na sua conta.',
+      },
+      {
+        question: 'O que acontece se eu não gostar?',
+        answer:
+          'Entrar na lista não é compra. No dia do lançamento você testa e decide. Se não fizer sentido, basta não ativar — nenhum dado de pagamento foi pedido até aqui.',
+      },
+      {
+        question: 'Quando exatamente libera?',
+        answer: `${SITE.lancamento.diaMes}. Quem está na lista recebe o acesso pela manhã, antes da abertura pública.`,
+      },
+    ],
   },
   finalCta: {
     eyebrow: 'Primeira turma com condição de lançamento',
