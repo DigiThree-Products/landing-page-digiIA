@@ -260,7 +260,7 @@ body::after {
   box-shadow: 0 44px 100px -54px rgba(69, 0, 249, 0.72);
 }
 .page #demo .demo-body {
-  min-height: clamp(260px, 32vh, 340px);
+  min-height: clamp(180px, 24vh, 300px);
   padding: clamp(22px, 2.6vw, 34px);
 }
 .page #demo .demo-bar {
