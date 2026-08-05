@@ -1,0 +1,558 @@
+/* ============================================================
+   O QUE ELA FAZ — bento de uma tela
+
+   Fonte única do estilo desta seção. Antes as regras viviam em três
+   arquivos: institutional.css montava os cards, conversion.css desfazia
+   (borda, fundo, sombra) e encolhia o texto até 8,5px, e sections.css
+   guardava a base. O resultado era uma seção que ninguém lia.
+
+   Regra que governa este arquivo: caber em uma tela é restrição de
+   COMPOSIÇÃO, nunca de tamanho de fonte. Nada aqui desce de 11px. Se o
+   conteúdo não couber, a seção cresce — cortar informação com overflow
+   seria bug disfarçado de design.
+   ============================================================ */
+
+.page #recursos {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  /* O topo precisa passar da nav fixa (78px de altura, z-index 80).
+     Com a seção ocupando exatamente uma tela, padding menor que isso
+     esconderia o eyebrow atrás da barra. */
+  padding: clamp(86px, 10vh, 104px) var(--world-edge) clamp(32px, 3.8vh, 54px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(64% 62% at 16% 10%, rgba(69, 0, 249, 0.2), transparent 66%),
+    radial-gradient(42% 52% at 92% 90%, rgba(205, 130, 255, 0.1), transparent 70%),
+    var(--ink);
+}
+
+/* Malha discreta ao fundo, herdada do sistema institucional. */
+.page #recursos::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(248, 240, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 240, 255, 0.08) 1px, transparent 1px);
+  background-size: clamp(110px, 12.5vw, 180px) clamp(110px, 12.5vw, 180px);
+  mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
+}
+
+/* ---------- Cabeçalho em banda de duas colunas ----------
+   Empilhado custava ~170px de altura. Em banda cabe em ~155px e
+   ainda ganha uma coluna para a credencial. */
+.page #recursos .rec-head {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin: 0 auto clamp(18px, 2.4vh, 28px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 52px);
+  align-items: start;
+}
+.page #recursos .rec-head .tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--lilac);
+}
+.page #recursos .rec-head .tag::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+.page #recursos .rec-head h2 {
+  margin: 14px 0 0;
+  max-width: 14ch;
+  font-size: clamp(30px, 3vw, 40px);
+  line-height: 0.98;
+  letter-spacing: -0.042em;
+}
+.page #recursos .rec-head h2 em {
+  font-style: normal;
+  color: var(--lilac);
+}
+.page #recursos .rec-head__side {
+  padding-top: 4px;
+}
+.page #recursos .rec-head__side > p {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--paper-56);
+  font-size: clamp(14px, 1.05vw, 15px);
+  line-height: 1.55;
+}
+
+/* Credencial da casa — sustenta tudo que as células afirmam. */
+.page #recursos .method {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin-top: 16px;
+  padding: 2px 0 2px 18px;
+  border-left: 2px solid var(--lilac);
+}
+.page #recursos .method b {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(20px, 2vw, 24px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.page #recursos .method span {
+  max-width: 40ch;
+  color: var(--paper-56);
+  font-size: 13.5px;
+}
+
+/* ---------- Bento ----------
+   Área comunica peso. CRIA ocupa quatro vezes a área das células
+   pequenas porque é a dor que faz a pessoa comprar. */
+.page #recursos .bento {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* Linhas por conteúdo, não `1fr`. Com `1fr` as duas linhas assumem a
+     altura da mais alta — o DNA precisa de ~260px e arrastava PLANEJA,
+     que precisa de 166, junto. Eram 94px desperdiçados, o suficiente
+     para a seção estourar a tela. */
+  grid-template-rows: auto auto auto;
+  gap: 12px;
+}
+
+.page #recursos .rec-cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(248, 240, 255, 0.062), rgba(248, 240, 255, 0.014)),
+    rgba(6, 2, 18, 0.8);
+  box-shadow:
+    0 2px 3px -1px rgba(0, 0, 0, 0.5),
+    0 24px 56px -44px rgba(205, 130, 255, 0.5);
+}
+
+.page #recursos .verb {
+  display: block;
+  margin: 0 0 9px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--lilac);
+}
+.page #recursos .rec-cell h3 {
+  margin: 0;
+  max-width: 17ch;
+  font-size: clamp(18px, 1.55vw, 21px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.page #recursos .rec-cell--cria {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
+  padding: 22px;
+  border-color: var(--rule-hi);
+  background:
+    linear-gradient(158deg, rgba(69, 0, 249, 0.26), rgba(205, 130, 255, 0.045) 62%),
+    rgba(6, 2, 18, 0.9);
+}
+.page #recursos .rec-cell--cria h3 {
+  max-width: 14ch;
+  font-size: clamp(23px, 2.1vw, 30px);
+}
+.page #recursos .rec-cell__lede {
+  margin: 9px 0 0;
+  max-width: 46ch;
+  color: var(--paper-56);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.page #recursos .rec-cell--planeja { grid-column: 3 / 5; grid-row: 1; }
+.page #recursos .rec-cell--calcula { grid-column: 3; grid-row: 2; }
+.page #recursos .rec-cell--dna { grid-column: 4; grid-row: 2; }
+.page #recursos .rec-cell--repertorio {
+  grid-column: 1 / 5;
+  grid-row: 3;
+  flex-direction: row;
+  align-items: center;
+  gap: 26px;
+  padding: 13px 20px;
+}
+
+/* Superfície de saída — o produto, não um ícone. */
+.page #recursos .rec-out {
+  margin-top: auto;
+  padding-top: 12px;
+  min-height: 0;
+}
+
+/* Na célula dominante o card preenche a altura, em vez de ser
+   empurrado para a base e deixar um vão no meio. */
+.page #recursos .rec-cell--cria .rec-out {
+  flex: 1;
+  display: flex;
+  margin-top: 16px;
+  padding-top: 0;
+}
+
+/* ---------- Post gerado (CRIA) ---------- */
+.page #recursos .post {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+.page #recursos .post__bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--paper-38);
+}
+.page #recursos .post__bar b {
+  font-weight: 500;
+  color: var(--paper-80);
+}
+.page #recursos .post__dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--lilac);
+  box-shadow: 0 0 9px var(--lilac);
+}
+.page #recursos .post__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 15px;
+}
+.page #recursos .post__caption {
+  margin: 0;
+  color: var(--paper-80);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.page #recursos .post__caption i {
+  font-style: normal;
+  color: var(--lilac);
+}
+.page #recursos .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 13px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.page #recursos .chips li {
+  padding: 5px 10px;
+  border: 1px solid var(--rule-hi);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-80);
+}
+.page #recursos .chips li[data-ativa] {
+  border-color: var(--lilac);
+  background: var(--lilac);
+  color: var(--ink);
+}
+
+/* ---------- Calendário (PLANEJA) ---------- */
+.page #recursos .calendario {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.page #recursos .calendario li {
+  padding: 8px 7px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+}
+.page #recursos .calendario b {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--paper-38);
+  font-variant-numeric: tabular-nums;
+}
+.page #recursos .calendario span {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--lilac);
+}
+.page #recursos .calendario li[data-leve] span {
+  color: var(--paper-56);
+}
+
+/* ---------- Números (CALCULA) ---------- */
+.page #recursos .numeros {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.page #recursos .numeros > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule);
+}
+.page #recursos .numeros > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.page #recursos .numeros dt {
+  color: var(--paper-56);
+  font-size: 12.5px;
+}
+.page #recursos .numeros dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(17px, 1.5vw, 20px);
+  letter-spacing: -0.03em;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.page #recursos .numeros dd[data-destaque] {
+  color: var(--lilac);
+}
+
+/* ---------- Campos preenchidos (DNA ESTRATÉGICO) ---------- */
+.page #recursos .campos {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+.page #recursos .campos > div {
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.4);
+}
+.page #recursos .campos dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--paper-38);
+}
+.page #recursos .campos dd {
+  margin: 4px 0 0;
+  color: var(--paper-80);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* ---------- Prateleira de aulas (REPERTÓRIO) ---------- */
+.page #recursos .repertorio__head {
+  flex: none;
+  max-width: 28ch;
+}
+.page #recursos .repertorio__head h3 {
+  max-width: none;
+  font-size: clamp(17px, 1.4vw, 19px);
+}
+.page #recursos .repertorio__head p {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lilac);
+}
+.page #recursos .aulas {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.page #recursos .aulas li {
+  flex: 1;
+  padding: 8px 11px;
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.36);
+  color: var(--paper-80);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.page #recursos .aulas em {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 11px;
+  color: var(--paper-38);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Entrada no scroll ----------
+   O bloco inteiro não desliza; as células entram escalonadas. */
+.page #recursos .bento.rv {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.page #recursos .bento.rv .rec-cell {
+  opacity: 0;
+  transform: translateY(30px) scale(0.98);
+}
+.page #recursos .bento.rv.in .rec-cell {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+}
+.page #recursos .bento.rv.in .rec-cell--planeja { transition-delay: 0.07s; }
+.page #recursos .bento.rv.in .rec-cell--calcula { transition-delay: 0.14s; }
+.page #recursos .bento.rv.in .rec-cell--dna { transition-delay: 0.21s; }
+.page #recursos .bento.rv.in .rec-cell--repertorio { transition-delay: 0.28s; }
+
+/* ============================================================
+   Telas baixas — a seção cresce em vez de espremer.
+   Abaixo de 760px de altura não existe "uma tela" honesta para
+   este conteúdo; forçar produziria texto ilegível.
+   ============================================================ */
+@media (min-width: 1024px) and (max-height: 759px) {
+  .page #recursos {
+    min-height: auto;
+    padding-block: clamp(86px, 11vh, 104px) clamp(48px, 7vh, 80px);
+  }
+}
+
+/* ============================================================
+   Tablet e celular — empilha. "Uma tela" é meta de desktop.
+   ============================================================ */
+@media (max-width: 1023px) {
+  .page #recursos {
+    min-height: auto;
+    padding: clamp(72px, 10vh, 104px) var(--gutter);
+    display: block;
+  }
+  .page #recursos .rec-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    margin-bottom: 30px;
+  }
+  .page #recursos .rec-head h2 {
+    max-width: 16ch;
+    font-size: clamp(32px, 6.4vw, 44px);
+  }
+  .page #recursos .rec-head__side {
+    padding-top: 0;
+  }
+
+  .page #recursos .bento {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 12px;
+  }
+  .page #recursos .rec-cell,
+  .page #recursos .rec-cell--cria,
+  .page #recursos .rec-cell--planeja,
+  .page #recursos .rec-cell--calcula,
+  .page #recursos .rec-cell--dna,
+  .page #recursos .rec-cell--repertorio {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .page #recursos .rec-cell--cria .rec-out {
+    flex: none;
+    margin-top: 18px;
+  }
+  .page #recursos .post {
+    flex: none;
+  }
+  .page #recursos .post__body {
+    display: block;
+  }
+
+  /* A prateleira de aulas vira empilhamento: quatro colunas em
+     largura de celular deixariam cada aula com ~60px. */
+  .page #recursos .rec-cell--repertorio {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 22px;
+  }
+  .page #recursos .repertorio__head {
+    max-width: none;
+  }
+  .page #recursos .aulas {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .page #recursos {
+    padding-block: 92px 110px;
+  }
+  .page #recursos .rec-head h2 {
+    font-size: clamp(30px, 9vw, 40px);
+  }
+  /* Sete colunas em 320px dariam ~38px por dia. Duas linhas de
+     quatro mantêm o dia legível. */
+  .page #recursos .calendario {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page #recursos .bento.rv .rec-cell {
+    opacity: 1;
+    transform: none;
+  }
+}

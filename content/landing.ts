@@ -1,6 +1,5 @@
 import { SITE } from '@/config/site'
 
-export type FeatureIcon = 'planeja' | 'cria' | 'calcula'
 export type DemoScene = {
   prompt: string
   label: string
@@ -29,44 +28,85 @@ export const LANDING = {
     description:
       'Antes de entrar na lista, veja a Digi.IA sendo operada de verdade — do pedido em português até a peça pronta.',
   },
+  /**
+   * O que ela faz.
+   *
+   * Cada célula mostra o que SAI do produto, não o que ele promete — a tela é o
+   * argumento. Os exemplos são fictícios de propósito: nome de cliente real não
+   * vai a uma página pública sem autorização por escrito.
+   *
+   * Antes de anunciar um módulo aqui, confirme que ele roda no dia do
+   * lançamento. Módulo prometido e não entregue queima o posicionamento.
+   */
   features: {
     eyebrow: 'O que ela faz',
-    title: `O método da ${SITE.organizacaoMae}, agora na sua mão.`,
-    description: `A Digi.IA foi construída em cima da forma como a ${SITE.organizacaoMae}
-trabalha há mais de 15 anos em Comunicação, Marketing,
-Publicidade e Audiovisual. Ela não responde por achismo —
-responde pelo método.`,
+    title: `O método da ${SITE.organizacaoMae}, agora`,
+    titleHighlight: 'na sua mão.',
+    description: `Construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
     proofValue: '15+ anos',
-    proofText:
-      'de campanhas reais viraram o critério\nque ela usa para decidir o que funciona.',
-    cards: [
-      {
-        icon: 'planeja' as FeatureIcon,
-        verb: 'Planeja',
-        title: 'Nada começa na folha em branco',
-        description:
-          'Você diz o objetivo. Ela devolve a estrutura inteira, pronta para revisar e aprovar.',
-        items: ['Planejamento de conteúdo', 'Calendário editorial do mês', 'Briefings detalhados'],
-      },
-      {
-        icon: 'cria' as FeatureIcon,
-        verb: 'Cria',
-        title: 'A mesma voz em todo canal',
-        description: 'Ela aprende como sua marca fala uma vez e mantém o tom do post ao roteiro.',
-        items: [
-          'Ideias de postagem',
-          'Campanhas completas, com variações',
-          'Roteiros para vídeo e audiovisual',
+    proofText: 'de campanhas reais viraram o critério que ela usa para decidir o que funciona.',
+
+    cria: {
+      verb: 'Cria',
+      title: 'Saia com a campanha pronta',
+      description: 'Ela aprende como sua marca fala uma vez e mantém o tom do post ao roteiro.',
+      exemplo: {
+        marca: 'Pizzaria Bella',
+        contexto: '· Instagram · 8 set',
+        legenda:
+          'Segunda também merece massa fresca. Hoje o rodízio vai até 23h — e a primeira taça é por nossa conta.',
+        marcadores: '#pizzariabella #massafresca #angradosreis',
+        variacoes: [
+          { rotulo: 'Versão aprovada', ativa: true },
+          { rotulo: 'B — foco em preço', ativa: false },
+          { rotulo: 'C — happy hour', ativa: false },
+          { rotulo: 'Story 1080×1920', ativa: false },
         ],
       },
-      {
-        icon: 'calcula' as FeatureIcon,
-        verb: 'Calcula',
-        title: 'Os números junto com a criação',
-        description: 'A conta que costuma ficar para depois sai na mesma conversa da ideia.',
-        items: ['Custos com marketing', 'Projeção de ROI', 'Orçamento por campanha'],
-      },
-    ],
+    },
+
+    planeja: {
+      verb: 'Planeja',
+      title: 'Monte o mês inteiro',
+      dias: [
+        { dia: 'seg 07', formato: 'Carrossel', leve: false },
+        { dia: 'ter 08', formato: 'Reels', leve: false },
+        { dia: 'qua 09', formato: 'Story', leve: true },
+        { dia: 'qui 10', formato: 'Post', leve: false },
+        { dia: 'sex 11', formato: 'Reels', leve: false },
+        { dia: 'sáb 12', formato: 'Story', leve: true },
+        { dia: 'dom 13', formato: 'Carrossel', leve: false },
+      ],
+    },
+
+    calcula: {
+      verb: 'Calcula',
+      title: 'Saiba o custo antes',
+      linhas: [
+        { rotulo: 'Investimento', valor: 'R$ 1.840', destaque: false },
+        { rotulo: 'ROI projetado', valor: '3,2×', destaque: true },
+      ],
+    },
+
+    dna: {
+      verb: 'DNA Estratégico',
+      title: 'Por que não sai genérico',
+      campos: [
+        { rotulo: 'Tom de voz', valor: 'Direto, caloroso, sem formalidade' },
+        { rotulo: 'Público', valor: 'Famílias do bairro, 30 a 55' },
+      ],
+    },
+
+    repertorio: {
+      title: '10 aulas que ensinam a pedir',
+      selo: 'Repertório · incluso em todos os planos',
+      aulas: [
+        { codigo: 'R01', titulo: 'Post solto x plano de conteúdo' },
+        { codigo: 'R04', titulo: 'Como descrever o seu público' },
+        { codigo: 'R06', titulo: 'Campanha x post isolado' },
+        { codigo: 'R09', titulo: 'Ler o resultado sem se enganar' },
+      ],
+    },
   },
   demo: {
     eyebrow: 'Como funciona',

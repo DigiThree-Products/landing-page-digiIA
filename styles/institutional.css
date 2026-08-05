@@ -1,5 +1,5 @@
 /* ============================================================
-   SISTEMA INSTITUCIONAL ƒ?" capitulos de tela inteira
+   SISTEMA INSTITUCIONAL ï¿½?" capitulos de tela inteira
    Mantem a paleta Digi.IA e adota o ritmo do site DigiThree.
    ============================================================ */
 :root {
@@ -66,7 +66,7 @@ body::after {
 }
 
 /* ============================================================
-   HERO ƒ?" capitulo escuro, editorial e contido
+   HERO ï¿½?" capitulo escuro, editorial e contido
    ============================================================ */
 .page .hero {
   width: 100%;
@@ -116,7 +116,7 @@ body::after {
 }
 
 /* ============================================================
-   VEJA FUNCIONANDO ƒ?" superficie clara e faixa de conexao
+   VEJA FUNCIONANDO ï¿½?" superficie clara e faixa de conexao
    ============================================================ */
 .page .approach {
   width: 100%;
@@ -174,125 +174,7 @@ body::after {
 }
 
 /* ============================================================
-   O QUE ELA FAZ ƒ?" galeria escura em paineis expansivos
-   ============================================================ */
-.page #recursos {
-  width: 100%;
-  min-height: 110svh;
-  margin: 0;
-  padding: clamp(110px, 15vh, 170px) var(--world-edge);
-  overflow: hidden;
-  color: var(--paper);
-  background:
-    radial-gradient(70% 72% at 18% 18%, rgba(69, 0, 249, 0.22), transparent 68%),
-    radial-gradient(45% 55% at 88% 84%, rgba(205, 130, 255, 0.13), transparent 72%),
-    var(--ink);
-}
-.page #recursos::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.26;
-  background-image:
-    linear-gradient(rgba(248, 240, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(248, 240, 255, 0.08) 1px, transparent 1px);
-  background-size: clamp(110px, 12.5vw, 180px) clamp(110px, 12.5vw, 180px);
-  mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
-}
-.page #recursos > .rv {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: var(--world-max);
-  margin-inline: auto;
-}
-.page #recursos .sec-head {
-  max-width: 920px;
-  margin-bottom: clamp(52px, 7vw, 92px);
-}
-.page #recursos .sec-head h2 {
-  max-width: 13ch;
-  font-size: clamp(46px, 6vw, 86px);
-  line-height: 0.95;
-}
-.page #recursos .sec-head > p:not(.tag) {
-  max-width: 62ch;
-  color: var(--paper-56);
-}
-.page #recursos .method {
-  border-color: var(--lilac);
-}
-.page #recursos .cards {
-  display: flex;
-  gap: 12px;
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-.page #recursos .card {
-  position: relative;
-  min-width: 0;
-  min-height: 560px;
-  flex: 1 1 0;
-  padding: clamp(28px, 3vw, 42px);
-  overflow: hidden;
-  border: 1px solid rgba(248, 240, 255, 0.13);
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, rgba(248, 240, 255, 0.07), rgba(248, 240, 255, 0.018)),
-    rgba(6, 2, 18, 0.82);
-  box-shadow: 0 30px 80px -54px rgba(205, 130, 255, 0.65);
-  transition: flex 0.7s cubic-bezier(0.6, 0.04, 0.1, 1), transform 0.4s var(--ease), background 0.4s var(--ease);
-}
-.page #recursos .card::after {
-  position: absolute;
-  right: 24px;
-  bottom: -22px;
-  color: rgba(248, 240, 255, 0.035);
-  font-family: var(--font-display);
-  font-size: 148px;
-  font-weight: 700;
-  line-height: 1;
-}
-.page #recursos .card:nth-child(1)::after { content: '01'; }
-.page #recursos .card:nth-child(2)::after { content: '02'; }
-.page #recursos .card:nth-child(3)::after { content: '03'; }
-.page #recursos .card:hover {
-  flex: 1.28 1 0;
-  z-index: 2;
-  transform: translateY(-8px);
-  background:
-    linear-gradient(155deg, rgba(69, 0, 249, 0.3), rgba(205, 130, 255, 0.06) 62%),
-    rgba(6, 2, 18, 0.94);
-}
-.page #recursos .card h3 {
-  max-width: 13ch;
-  font-size: clamp(25px, 2.25vw, 36px);
-  line-height: 1.02;
-}
-.page #recursos .card p,
-.page #recursos .does li {
-  color: var(--paper-56);
-}
-.page #recursos .does {
-  margin-top: auto;
-  padding-top: 36px;
-  position: relative;
-  z-index: 1;
-}
-.page #recursos .card {
-  display: flex;
-  flex-direction: column;
-}
-.page #recursos .who {
-  margin-top: 52px;
-}
-
-/* ============================================================
-   DEMO ƒ?" capitulo claro em duas colunas
+   DEMO ï¿½?" capitulo claro em duas colunas
    ============================================================ */
 .page #demo {
   width: 100%;
@@ -344,7 +226,7 @@ body::after {
 }
 
 /* ============================================================
-   OFERTA ƒ?" grande bloco de cor da referencia
+   OFERTA ï¿½?" grande bloco de cor da referencia
    ============================================================ */
 .page #oferta {
   width: 100%;
@@ -417,7 +299,7 @@ body::after {
 }
 
 /* ============================================================
-   CREDIBILIDADE ƒ?" respiro claro e tipografia monumental
+   CREDIBILIDADE ï¿½?" respiro claro e tipografia monumental
    ============================================================ */
 .page .credibility-section {
   width: 100%;
@@ -463,7 +345,7 @@ body::after {
 }
 
 /* ============================================================
-   FAQ ƒ?" editorial escuro em duas colunas
+   FAQ ï¿½?" editorial escuro em duas colunas
    ============================================================ */
 .page #faq {
   width: 100%;
@@ -509,7 +391,7 @@ body::after {
 }
 
 /* ============================================================
-   CTA FINAL + FOOTER ƒ?" fechamento de tela inteira
+   CTA FINAL + FOOTER ï¿½?" fechamento de tela inteira
    ============================================================ */
 .page #lista-final {
   width: 100%;
@@ -618,26 +500,6 @@ body::after {
   filter: none;
   transform: none;
 }
-.page #recursos .cards.rv {
-  opacity: 1;
-  filter: none;
-  transform: none;
-}
-.page #recursos .cards.rv .card {
-  opacity: 0;
-  transform: translateY(40px) scale(0.97);
-}
-.page #recursos .cards.rv.in .card {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.75s var(--ease),
-    transform 0.75s var(--ease),
-    flex 0.7s cubic-bezier(0.6, 0.04, 0.1, 1),
-    background 0.4s var(--ease);
-}
-.page #recursos .cards.rv.in .card:nth-child(2) { transition-delay: 0.09s; }
-.page #recursos .cards.rv.in .card:nth-child(3) { transition-delay: 0.18s; }
 
 @media (max-width: 1023px) {
   :root { --world-edge: var(--gutter); }
@@ -657,36 +519,12 @@ body::after {
     font-size: clamp(46px, 12vw, 76px);
   }
 
-  .page #recursos,
   .page #demo,
   .page #oferta,
   .page .credibility-section,
   .page #faq,
   .page #lista-final {
     padding-inline: var(--gutter);
-  }
-
-  .page #recursos {
-    min-height: auto;
-  }
-  .page #recursos .cards {
-    width: calc(100vw - var(--gutter));
-    max-width: none;
-    margin-right: calc(var(--gutter) * -1);
-    padding-right: var(--gutter);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  .page #recursos .cards::-webkit-scrollbar { display: none; }
-  .page #recursos .card {
-    min-width: min(82vw, 390px);
-    min-height: 520px;
-    flex: none;
-    scroll-snap-align: center;
-  }
-  .page #recursos .card:hover {
-    flex: none;
   }
 
   .page #demo {
@@ -741,7 +579,6 @@ body::after {
   }
   .page .hero::after { display: none; }
 
-  .page #recursos,
   .page #demo,
   .page #oferta,
   .page .credibility-section,
@@ -749,15 +586,10 @@ body::after {
   .page #lista-final {
     padding-block: 96px 118px;
   }
-  .page #recursos .sec-head h2,
   .page #demo .sec-head h2,
   .page #oferta .sec-head h2,
   .page #faq .sec-head h2 {
     font-size: clamp(40px, 12vw, 56px);
-  }
-  .page #recursos .card {
-    min-width: min(84vw, 350px);
-    min-height: 500px;
   }
   .page #demo .demo-body {
     min-height: 390px;
@@ -777,13 +609,11 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page .rv,
-  .page #recursos .cards.rv .card {
+  .page .rv {
     opacity: 1;
     filter: none;
     transform: none;
   }
-  .page #recursos .card:hover,
   .page .approach .ghost:hover {
     transform: none;
   }
