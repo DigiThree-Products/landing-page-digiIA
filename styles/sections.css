@@ -232,6 +232,9 @@ summary::-webkit-details-marker {
 }
 .plus {
   flex: none;
+  /* A cor saiu do SVG e veio para cá: o ícone herda `currentColor`, então cada
+     contexto (papel claro, fundo escuro) escolhe o seu. */
+  color: var(--lilac);
   transition: transform 0.32s var(--ease);
 }
 details[open] .plus {

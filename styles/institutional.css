@@ -206,23 +206,9 @@ body::after {
   display: block;
   text-align: center;
 }
-/* O rótulo da seção fica à esquerda, como nas demais seções da página.
-   Só o título e o subtítulo são centralizados. */
-.page #demo .demo-head .tag {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 600;
-  color: var(--violet);
-}
-.page #demo .demo-head .tag::before {
-  content: '';
-  width: 30px;
-  height: 1px;
-  flex: none;
-  background: currentColor;
-}
+/* Sem rótulo de seção: quem nomeia os capítulos agora são os dois cards,
+   "Como funciona" e "Perguntas frequentes". Um rótulo aqui repetiria o
+   primeiro deles a 150px de distância. */
 /* Uma linha só: o tamanho é escolhido para a frase inteira caber na
    largura do capítulo, e fica abaixo do h1 do hero (82px) para não
    inverter a hierarquia da página. */
@@ -265,6 +251,77 @@ body::after {
 }
 .page #demo .demo-bar {
   padding: 16px 22px;
+}
+
+/* Os dois cards irmãos.
+   `align-items: start` de propósito: esticar o card escuro até a altura do
+   card de perguntas devolveria o vazio no pé dele que a gente acabou de tirar
+   — e o vazio cresceria durante a animação, já que as cenas têm quantidades
+   diferentes de itens. Altura desigual incomoda menos que buraco. */
+.page #demo .demo-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 3.4vw, 52px);
+  align-items: start;
+}
+.page #demo .demo-col {
+  display: flex;
+  flex-direction: column;
+}
+/* O par de rótulos é o que faz as duas metades conversarem: "Você pede. Ela
+   entrega." de um lado, "Você pergunta. A gente responde." do outro. */
+.page #demo .pair-tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--violet);
+}
+.page #demo .pair-tag::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+
+/* O acordeão nasceu numa seção escura. Aqui ele vive sobre papel, então tudo
+   que dependia do contraste claro-sobre-escuro precisa ser invertido. */
+.page #demo .demo-faq {
+  max-width: none;
+  border: 1px solid rgba(0, 0, 0, 0.11);
+  border-radius: 24px;
+  padding: clamp(10px, 1.1vw, 16px) clamp(22px, 2.4vw, 30px) clamp(14px, 1.6vw, 22px);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 34px 80px -60px rgba(0, 0, 0, 0.55);
+}
+.page #demo .demo-faq details {
+  border-bottom-color: rgba(0, 0, 0, 0.11);
+}
+.page #demo .demo-faq details:last-child {
+  border-bottom: 0;
+}
+.page #demo .demo-faq summary {
+  padding-block: 17px;
+  font-size: clamp(15px, 1.24vw, 17.5px);
+  color: var(--ink);
+}
+.page #demo .demo-faq summary:hover {
+  color: var(--violet);
+}
+.page #demo .demo-faq .plus {
+  color: var(--violet);
+}
+.page #demo .demo-faq .faq-body p {
+  max-width: none;
+  padding-bottom: 20px;
+  font-size: 14.5px;
+  color: rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================================
@@ -384,52 +441,6 @@ body::after {
   font-weight: 600;
   line-height: 1.03;
   letter-spacing: -0.045em;
-}
-
-/* ============================================================
-   FAQ �?" editorial escuro em duas colunas
-   ============================================================ */
-.page #faq {
-  width: 100%;
-  min-height: 100svh;
-  margin: 0;
-  padding: clamp(110px, 15vh, 170px) var(--world-edge);
-  display: grid;
-  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
-  align-items: start;
-  gap: clamp(54px, 9vw, 150px);
-  overflow: hidden;
-  color: var(--paper);
-  background:
-    radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%),
-    var(--ink);
-}
-.page #faq > .rv {
-  position: relative;
-  z-index: 2;
-}
-.page #faq .sec-head {
-  position: sticky;
-  top: 130px;
-  max-width: 520px;
-  margin: 0;
-}
-.page #faq .sec-head h2 {
-  font-size: clamp(48px, 5.4vw, 78px);
-  line-height: 0.96;
-}
-.page #faq .faq {
-  max-width: none;
-}
-.page #faq .faq details {
-  border-color: rgba(248, 240, 255, 0.16);
-}
-.page #faq .faq summary {
-  padding-block: 28px;
-  font-size: clamp(18px, 1.6vw, 23px);
-}
-.page #faq .faq-body p {
-  color: var(--paper-56);
 }
 
 /* ============================================================
@@ -564,7 +575,6 @@ body::after {
   .page #demo,
   .page #oferta,
   .page .credibility-section,
-  .page #faq,
   .page #lista-final {
     padding-inline: var(--gutter);
   }
@@ -578,6 +588,11 @@ body::after {
   }
   .page #demo .demo-body {
     min-height: 400px;
+  }
+  /* Empilha: a demonstração primeiro, as perguntas logo abaixo dela. */
+  .page #demo .demo-split {
+    grid-template-columns: 1fr;
+    gap: 36px;
   }
 
   .page #oferta .offer-grid {
@@ -594,17 +609,6 @@ body::after {
   }
   .page .credibility-section .cred p {
     max-width: 18ch;
-  }
-
-  .page #faq {
-    min-height: auto;
-    display: block;
-  }
-  .page #faq .sec-head {
-    position: static;
-  }
-  .page #faq > .rv + .rv {
-    margin-top: 48px;
   }
 
   .page .site-footer .foot-links {
@@ -624,12 +628,10 @@ body::after {
   .page #demo,
   .page #oferta,
   .page .credibility-section,
-  .page #faq,
   .page #lista-final {
     padding-block: 96px 118px;
   }
-  .page #oferta .sec-head h2,
-  .page #faq .sec-head h2 {
+  .page #oferta .sec-head h2 {
     font-size: clamp(40px, 12vw, 56px);
   }
   .page #demo .demo-head h2 {
