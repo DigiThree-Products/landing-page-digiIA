@@ -142,11 +142,21 @@ html.waitlist-modal-open body {
   min-height: 115dvh;
   justify-content: center;
   gap: 0;
-  padding: clamp(160px, 20vh, 220px) var(--world-edge) clamp(100px, 14vh, 160px);
+  /* Folga grande embaixo, não em cima: é lá que a faixa passa agora, e
+     o conteúdo sobe para o lugar que ela ocupava.
+     O bloco é centrado entre os dois recuos, então cada pixel a mais
+     embaixo sobe o conteúdo meio pixel — daí a diferença parecer
+     exagerada no código e discreta na tela. */
+  padding: clamp(100px, 14vh, 160px) var(--world-edge) clamp(280px, 32vh, 340px);
 }
 .offer-ticker {
   position: absolute;
-  top: clamp(72px, 9vh, 104px);
+  /* Ancorada na base da seção, não no topo. `top: auto` é explícito
+     porque a regra de celular mais abaixo também desliga o topo —
+     mantendo as duas simétricas, nenhuma esquece e a faixa não estica
+     de uma borda à outra. */
+  top: auto;
+  bottom: clamp(122px, 15vh, 165px);
   left: -3vw;
   z-index: 2;
   width: 106vw;
@@ -607,10 +617,13 @@ html.waitlist-modal-open body {
     min-height: 100svh;
     min-height: 100dvh;
     gap: 44px;
-    padding-top: 150px;
+    /* Era padding-top: a folga existia para a faixa caber em cima.
+       Ela desceu, a folga desce junto. */
+    padding-bottom: 150px;
   }
   .offer-ticker {
-    top: 84px;
+    top: auto;
+    bottom: 84px;
   }
   .offer-ticker span {
     padding: 11px 22px;
