@@ -211,21 +211,70 @@ body::after {
   gap: clamp(28px, 4.4vw, 72px);
   align-items: center;
 }
+/* `--retrato` é a única medida do retrato: a máscara e a luz da base saem
+   daqui. A luz precisa da largura da FIGURA, não da coluna — a coluna é bem
+   mais larga no mobile, e um brilho maior que a silhueta denuncia o truque. */
 .page #demo .demo-lado {
+  --retrato: 300px;
+  position: relative;
   display: flex;
   justify-content: center;
 }
+/* A luz de onde ela emerge. Sem isso a máscara abaixo lê como "recorte
+   apagado"; com a luz, a base vira origem — ela sobe de algum lugar. Fica
+   atrás do retrato (z-index negativo, contido pelo contexto de empilhamento
+   do `.rv`), nunca por cima, para não lavar o queixo e o ombro. */
+.page #demo .demo-lado::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 30%;
+  width: min(100%, var(--retrato));
+  aspect-ratio: 2.4 / 1;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--violet) 30%, transparent) 0%,
+    color-mix(in srgb, var(--violet) 10%, transparent) 45%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
 /* Governado pela altura da textura real (816x994), não por um teto fixo de
-   largura arbitrário: mantém a proporção do recorte sem distorcer. */
+   largura arbitrário: mantém a proporção do recorte sem distorcer.
+
+   A máscara não é um fade linear: linear cria uma faixa visível onde a queda
+   começa e lê como névoa sobre um recorte. Aqui a opacidade segura até ~55% e
+   só então despenca, acelerando — a silhueta parece emergir da base em vez de
+   ser apagada nela. */
 .page #demo .liquid-portrait,
 .page #demo .liquid-portrait__fallback {
   display: block;
   width: 100%;
-  max-width: 300px;
+  max-width: var(--retrato);
   aspect-ratio: 816 / 994;
   background: transparent;
-  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.94) 63%,
+    rgba(0, 0, 0, 0.72) 74%,
+    rgba(0, 0, 0, 0.4) 85%,
+    rgba(0, 0, 0, 0.12) 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.94) 63%,
+    rgba(0, 0, 0, 0.72) 74%,
+    rgba(0, 0, 0, 0.4) 85%,
+    rgba(0, 0, 0, 0.12) 94%,
+    transparent 100%
+  );
 }
 .page #demo .liquid-portrait {
   cursor: pointer;
@@ -630,9 +679,8 @@ body::after {
     grid-template-columns: 1fr;
     gap: 32px;
   }
-  .page #demo .liquid-portrait,
-  .page #demo .liquid-portrait__fallback {
-    max-width: 220px;
+  .page #demo .demo-lado {
+    --retrato: 220px;
   }
 
   .page #oferta .offer-grid {
