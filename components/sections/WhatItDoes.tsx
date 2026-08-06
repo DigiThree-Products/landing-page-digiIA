@@ -30,10 +30,6 @@ export function WhatItDoes() {
             {F.title} <em>{F.titleHighlight}</em>
           </h2>
         </div>
-
-        <div className="rec-head__side">
-          <p>{F.description}</p>
-        </div>
       </Reveal>
 
       <Reveal className="bento">
