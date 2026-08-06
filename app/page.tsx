@@ -15,8 +15,9 @@ import { LANDING } from '@/content/landing'
  * A landing.
  *
  * A ordem das seções é o argumento da página: promessa → abordagem → o que faz
- * → como funciona → oferta → credibilidade → objeções.
- * Mexer na ordem muda o argumento, não só o layout.
+ * → como funciona → credibilidade → objeções → oferta.
+ * A oferta é o destino: o site inteiro constrói o argumento até chegar nela,
+ * por último, antes do rodapé. Mexer na ordem muda o argumento, não só o layout.
  */
 export default function Home() {
   return (
@@ -34,9 +35,9 @@ export default function Home() {
           <ApproachSection />
           <WhatItDoes />
           <Demo />
-          <Offer />
           <Credibility />
           <Faq />
+          <Offer />
           <SiteFooter />
         </div>
       </div>
