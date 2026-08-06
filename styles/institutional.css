@@ -221,7 +221,7 @@ body::after {
 .page #demo .liquid-portrait__fallback {
   display: block;
   width: 100%;
-  max-width: 420px;
+  max-width: 300px;
   aspect-ratio: 816 / 994;
   background: transparent;
 }
@@ -630,7 +630,7 @@ body::after {
   }
   .page #demo .liquid-portrait,
   .page #demo .liquid-portrait__fallback {
-    max-width: 280px;
+    max-width: 220px;
   }
 
   .page #oferta .offer-grid {
