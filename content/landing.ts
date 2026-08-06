@@ -42,7 +42,6 @@ export const LANDING = {
     eyebrow: 'O que ela faz',
     title: `O método da ${SITE.organizacaoMae}, agora`,
     titleHighlight: 'na sua mão.',
-    description: `Construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
 
     cria: {
       verb: 'Cria',

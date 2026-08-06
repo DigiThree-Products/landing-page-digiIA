@@ -46,19 +46,17 @@
   mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
 }
 
-/* ---------- Cabeçalho em banda de duas colunas ----------
-   Empilhado custava ~170px de altura. Em banda cabe em ~155px e
-   ainda ganha uma coluna para a credencial. */
+/* ---------- Cabeçalho ----------
+   Era uma banda de duas colunas: título à esquerda, credencial da
+   DigiThree à direita. A credencial saiu e a segunda coluna foi junto —
+   grade de duas colunas com uma vazia não é composição, é sobra. A
+   altura do bloco não muda: quem a definia era a coluna do título. */
 .page #recursos .rec-head {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   margin: 0 auto clamp(18px, 2.4vh, 28px);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(28px, 4vw, 52px);
-  align-items: start;
 }
 .page #recursos .rec-head .tag {
   display: flex;
@@ -85,19 +83,6 @@
 .page #recursos .rec-head h2 em {
   font-style: normal;
   color: var(--lilac);
-}
-.page #recursos .rec-head__side {
-  /* Sem "method" disputando a coluna, o parágrafo se ancora no fim da
-     linha do cabeçalho — o mais perto do bento (e do Planeja) que dá
-     para chegar sem crescer a seção ou invadir a linha de baixo. */
-  align-self: end;
-}
-.page #recursos .rec-head__side > p {
-  margin: 0;
-  max-width: 52ch;
-  color: var(--paper-56);
-  font-size: clamp(14px, 1.05vw, 15px);
-  line-height: 1.55;
 }
 
 /* ---------- Bento ----------
@@ -626,16 +611,11 @@
     display: block;
   }
   .page #recursos .rec-head {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 22px;
     margin-bottom: 30px;
   }
   .page #recursos .rec-head h2 {
     max-width: 16ch;
     font-size: clamp(32px, 6.4vw, 44px);
-  }
-  .page #recursos .rec-head__side {
-    padding-top: 0;
   }
 
   .page #recursos .bento {
