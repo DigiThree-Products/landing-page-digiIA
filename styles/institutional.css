@@ -107,10 +107,6 @@ body::after {
   max-width: 48ch;
   line-height: 1.55;
 }
-.page .hero-ribbon {
-  z-index: 1;
-  opacity: 0.85;
-}
 .page .hero-obj {
   z-index: 2;
 }
@@ -131,10 +127,6 @@ body::after {
 .page .approach-stage {
   z-index: 2;
   max-width: var(--world-max);
-}
-.page .approach-ribbon {
-  z-index: 1;
-  opacity: 0.72;
 }
 .page .approach-kicker {
   color: var(--violet);

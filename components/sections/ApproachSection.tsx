@@ -25,16 +25,6 @@ export function ApproachSection() {
           scrollTrigger: { trigger: section, start: 'top 70%' },
         })
 
-        gsap.fromTo(
-          '.approach-ribbon__path',
-          { strokeDashoffset: 1 },
-          {
-            strokeDashoffset: 0,
-            ease: 'none',
-            scrollTrigger: { trigger: section, start: 'top 75%', end: 'top top', scrub: true },
-          },
-        )
-
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: section,
@@ -105,17 +95,6 @@ export function ApproachSection() {
 
   return (
     <section ref={root} id="video" className="approach" aria-labelledby="approach-title">
-      <svg className="approach-ribbon" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="approach-gradient" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" stopColor="#4500f9" stopOpacity="0" />
-            <stop offset="0.45" stopColor="#8e47fb" stopOpacity="0.7" />
-            <stop offset="1" stopColor="#cd82ff" stopOpacity="0.15" />
-          </linearGradient>
-        </defs>
-        <path className="approach-ribbon__path" pathLength="1" d="M-80 760 C 220 700 280 470 530 520 C 780 570 760 260 1010 240 C 1230 220 1320 90 1510 120" />
-      </svg>
-
       <div className="approach-stage">
         <div className="approach-layout">
           <div className="approach-media" role="img" aria-label="Espaço reservado para o vídeo de demonstração da Digi.IA">
