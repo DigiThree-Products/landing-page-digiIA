@@ -46,19 +46,17 @@
   mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
 }
 
-/* ---------- Cabeçalho em banda de duas colunas ----------
-   Empilhado custava ~170px de altura. Em banda cabe em ~155px e
-   ainda ganha uma coluna para a credencial. */
+/* ---------- Cabeçalho ----------
+   Era uma banda de duas colunas: título à esquerda, credencial da
+   DigiThree à direita. A credencial saiu e a segunda coluna foi junto —
+   grade de duas colunas com uma vazia não é composição, é sobra. A
+   altura do bloco não muda: quem a definia era a coluna do título. */
 .page #recursos .rec-head {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   margin: 0 auto clamp(18px, 2.4vh, 28px);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(28px, 4vw, 52px);
-  align-items: start;
 }
 .page #recursos .rec-head .tag {
   display: flex;
@@ -85,19 +83,6 @@
 .page #recursos .rec-head h2 em {
   font-style: normal;
   color: var(--lilac);
-}
-.page #recursos .rec-head__side {
-  /* Sem "method" disputando a coluna, o parágrafo se ancora no fim da
-     linha do cabeçalho — o mais perto do bento (e do Planeja) que dá
-     para chegar sem crescer a seção ou invadir a linha de baixo. */
-  align-self: end;
-}
-.page #recursos .rec-head__side > p {
-  margin: 0;
-  max-width: 52ch;
-  color: var(--paper-56);
-  font-size: clamp(14px, 1.05vw, 15px);
-  line-height: 1.55;
 }
 
 /* ---------- Bento ----------
@@ -287,6 +272,10 @@
 }
 .page #recursos .post__caption {
   margin: 0;
+  /* Três linhas reservadas. As legendas das variações têm comprimentos
+     diferentes: sem piso, trocar de chip faria o card pular de altura a
+     cada clique — e num bento de uma tela isso empurra a linha de baixo. */
+  min-height: 4.5em;
   color: var(--paper-80);
   font-size: 13.5px;
   line-height: 1.5;
@@ -303,19 +292,38 @@
   padding: 0;
   list-style: none;
 }
-.page #recursos .chips li {
-  padding: 5px 10px;
+/* O chip é botão de verdade: clicar troca a legenda do post. Antes era
+   um <li> inerte com aparência de controle, que é a pior combinação —
+   quem clica e não recebe resposta passa a duvidar do resto da página.
+   Altura final de 27px, acima do mínimo de 24 da WCAG 2.2 para alvo. */
+.page #recursos .chips button {
+  display: block;
+  padding: 6px 11px;
   border: 1px solid var(--rule-hi);
   border-radius: 999px;
+  background: none;
   font-family: var(--font-mono);
   font-size: 11px;
+  line-height: 1.2;
   color: var(--paper-80);
+  cursor: pointer;
+  transition:
+    border-color 0.22s var(--ease),
+    background-color 0.22s var(--ease),
+    color 0.22s var(--ease);
 }
-/* O chip aprovado inverte contra o card claro que o abriga. */
-.page #recursos .chips li[data-ativa] {
+.page #recursos .chips button:hover {
+  border-color: var(--paper-56);
+}
+/* O chip escolhido inverte contra o card claro que o abriga. */
+.page #recursos .chips button[data-ativa] {
   border-color: var(--violet);
   background: var(--violet);
   color: var(--color-paper);
+}
+.page #recursos .chips button:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
 }
 
 /* ---------- Calendário (PLANEJA) ---------- */
@@ -385,6 +393,36 @@
   color: var(--lilac);
 }
 
+/* Simulação: o investimento é arrastado por quem lê. */
+.page #recursos .calc {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.page #recursos .calc__controle {
+  width: 100%;
+  margin: 0;
+  /* `accent-color` pinta trilho e marcador na cor do card sem
+     reconstruir o controle peça por peça — e preserva o comportamento
+     nativo de teclado, que reconstrução artesanal costuma perder. */
+  accent-color: var(--paper);
+  cursor: ew-resize;
+}
+.page #recursos .calc__controle:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 3px;
+}
+/* Diz que se arrasta e que o número é projeção. Controle sem sinal de
+   que é controle não é descoberto; número financeiro sem ressalva vira
+   promessa. */
+.page #recursos .calc__nota {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--paper-38);
+}
+
 /* ---------- Campos preenchidos (DNA ESTRATÉGICO) ---------- */
 .page #recursos .campos {
   display: grid;
@@ -451,27 +489,105 @@
 }
 
 /* ---------- Entrada no scroll ----------
-   O bloco inteiro não desliza; as células entram escalonadas. */
+   O bloco inteiro não desliza: cada célula chega de um lado e freia
+   dentro da própria vaga. A direção de cada uma aponta para fora do
+   centro do grid — é o caminho que ela faria voltando para o lugar.
+   CRIA entra pela esquerda, PLANEJA desce do topo, CALCULA sobe,
+   DNA vem da direita e a faixa do Repertório fecha a composição por
+   baixo, por último.
+
+   Nada vaza para os lados: a seção é `overflow: hidden`.
+
+   Um curso só (--vem) para o conjunto inteiro manter o mesmo passo
+   quando a tela muda de tamanho.
+
+   Opacidade e deslocamento têm tempos diferentes de propósito: o card
+   fica sólido antes de parar de andar. Igualados, a entrada vira um
+   fantasma escorregando em vez de um objeto estacionando. */
 .page #recursos .bento.rv {
+  --vem: clamp(52px, 5.4vw, 88px);
+  /* Desaceleração no fim do percurso: é o freio que faz a célula
+     parecer encaixar, e não apenas parar.
+
+     Curva de terceiro grau, não exponencial. Com a exponencial que
+     estava aqui (0.16, 1, 0.3, 1) a célula cobria 97% do caminho na
+     metade do tempo — alongar a duração só esticava um rastejo final
+     invisível. Esta gasta o tempo no trecho que se enxerga e ainda
+     chega freando. */
+  --freio: cubic-bezier(0.33, 1, 0.68, 1);
   opacity: 1;
   filter: none;
   transform: none;
 }
+/* Cada célula tem o seu próprio tempo de percurso (--curso), e ele
+   cresce célula a célula. É o que separa as chegadas: com todas na
+   mesma velocidade, os atrasos sozinhos entregavam duas quase juntas.
+   Assim cada uma encosta na vaga com ~0,4s de folga da anterior. */
 .page #recursos .bento.rv .rec-cell {
   opacity: 0;
-  transform: translateY(30px) scale(0.98);
+  --curso: 1.4s;
+  /* Padrão de segurança: célula sem direção declarada sobe. Nenhuma
+     fica invisível e parada por falta de regra própria. */
+  transform: translate3d(0, var(--vem), 0) scale(0.985);
 }
+.page #recursos .bento.rv .rec-cell--cria {
+  --curso: 1.4s;
+  transform: translate3d(calc(var(--vem) * -1), 0, 0) scale(0.985);
+}
+.page #recursos .bento.rv .rec-cell--planeja {
+  --curso: 1.7s;
+  transform: translate3d(0, calc(var(--vem) * -1), 0) scale(0.985);
+}
+.page #recursos .bento.rv .rec-cell--calcula {
+  --curso: 2s;
+  transform: translate3d(0, var(--vem), 0) scale(0.985);
+}
+.page #recursos .bento.rv .rec-cell--dna {
+  --curso: 2.35s;
+  transform: translate3d(var(--vem), 0, 0) scale(0.985);
+}
+.page #recursos .bento.rv .rec-cell--repertorio {
+  --curso: 2.7s;
+  transform: translate3d(0, calc(var(--vem) * 1.35), 0) scale(0.985);
+}
+
 .page #recursos .bento.rv.in .rec-cell {
   opacity: 1;
   transform: none;
+  /* A opacidade acompanha o percurso em proporção fixa: sólida aos
+     62% do caminho, sempre. Fixá-la em um valor só faria a última
+     célula ficar opaca cedo demais em relação ao próprio trajeto. */
   transition:
-    opacity 0.7s var(--ease),
-    transform 0.7s var(--ease);
+    opacity calc(var(--curso) * 0.62) var(--ease),
+    transform var(--curso) var(--freio),
+    translate 0.24s var(--ease),
+    box-shadow 0.24s var(--ease),
+    border-color 0.24s var(--ease);
 }
-.page #recursos .bento.rv.in .rec-cell--planeja { transition-delay: 0.07s; }
-.page #recursos .bento.rv.in .rec-cell--calcula { transition-delay: 0.14s; }
-.page #recursos .bento.rv.in .rec-cell--dna { transition-delay: 0.21s; }
-.page #recursos .bento.rv.in .rec-cell--repertorio { transition-delay: 0.28s; }
+
+/* ---------- Estado tátil ----------
+   Elevação de 5px e sombra mais funda, nos 240ms de praxe. Serve para o
+   card responder ao ponteiro, não para prometer navegação: nada de
+   `cursor: pointer`, porque o card não leva a lugar nenhum. Quem é
+   clicável de fato — os chips e o controle deslizante — tem cursor,
+   foco visível e estado próprio.
+
+   A elevação usa `translate`, não `transform`: `transform` está ocupado
+   pela entrada no scroll, e as duas brigariam pela mesma propriedade. */
+@media (hover: hover) and (pointer: fine) {
+  .page #recursos .bento.rv.in .rec-cell:hover {
+    translate: 0 -5px;
+    border-color: var(--rule-hi);
+    box-shadow:
+      0 6px 11px -4px rgba(0, 0, 0, 0.45),
+      0 34px 72px -44px rgba(124, 43, 255, 0.62);
+  }
+}
+.page #recursos .bento.rv.in .rec-cell--planeja { transition-delay: 0.16s; }
+.page #recursos .bento.rv.in .rec-cell--calcula { transition-delay: 0.32s; }
+.page #recursos .bento.rv.in .rec-cell--dna { transition-delay: 0.48s; }
+/* Intervalo maior antes da faixa: ela é o fecho, não mais um card. */
+.page #recursos .bento.rv.in .rec-cell--repertorio { transition-delay: 0.66s; }
 
 /* ============================================================
    Telas baixas — a seção cresce em vez de espremer.
@@ -495,16 +611,11 @@
     display: block;
   }
   .page #recursos .rec-head {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 22px;
     margin-bottom: 30px;
   }
   .page #recursos .rec-head h2 {
     max-width: 16ch;
     font-size: clamp(32px, 6.4vw, 44px);
-  }
-  .page #recursos .rec-head__side {
-    padding-top: 0;
   }
 
   .page #recursos .bento {
@@ -512,6 +623,11 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
     gap: 12px;
+  }
+  /* Empilhado, o curso do desktop faria a coluna inteira balançar de
+     um lado para o outro. O gesto continua, com metade do percurso. */
+  .page #recursos .bento.rv {
+    --vem: 34px;
   }
   .page #recursos .rec-cell,
   .page #recursos .rec-cell--cria,

@@ -42,7 +42,6 @@ export const LANDING = {
     eyebrow: 'O que ela faz',
     title: `O método da ${SITE.organizacaoMae}, agora`,
     titleHighlight: 'na sua mão.',
-    description: `Construída em cima da forma como a ${SITE.organizacaoMae} trabalha há mais de 15 anos em Comunicação, Marketing, Publicidade e Audiovisual. Ela não responde por achismo — responde pelo método.`,
 
     cria: {
       verb: 'Cria',
@@ -51,14 +50,41 @@ export const LANDING = {
       exemplo: {
         marca: 'Pizzaria Bella',
         contexto: '· Instagram · 8 set',
-        legenda:
-          'Segunda também merece massa fresca. Hoje o rodízio vai até 23h — e a primeira taça é por nossa conta.',
-        marcadores: '#pizzariabella #massafresca #angradosreis',
+        /**
+         * Cada variação carrega a própria legenda porque os chips são
+         * controles de verdade: clicar troca o post. Antes eram rótulos
+         * inertes — aparência de controle sem a função, que é o pior
+         * dos dois mundos.
+         *
+         * A primeira entra selecionada. Ao acrescentar variação nova,
+         * manter a legenda em até três linhas: a altura do post está
+         * reservada para isso (ver .post__caption em recursos.css).
+         */
         variacoes: [
-          { rotulo: 'Versão aprovada', ativa: true },
-          { rotulo: 'B — foco em preço', ativa: false },
-          { rotulo: 'C — happy hour', ativa: false },
-          { rotulo: 'Story 1080×1920', ativa: false },
+          {
+            rotulo: 'Versão aprovada',
+            legenda:
+              'Segunda também merece massa fresca. Hoje o rodízio vai até 23h — e a primeira taça é por nossa conta.',
+            marcadores: '#pizzariabella #massafresca #angradosreis',
+          },
+          {
+            rotulo: 'B — foco em preço',
+            legenda:
+              'Rodízio de segunda a quinta por R$ 59,90. Massa feita no dia, forno a lenha, e a mesa é sua até fechar.',
+            marcadores: '#pizzariabella #rodiziodepizza #angradosreis',
+          },
+          {
+            rotulo: 'C — happy hour',
+            legenda:
+              'Das 18h às 20h o chope sai pela metade e a pizza vai do forno direto para a mesa. Saiu do trabalho, vem.',
+            marcadores: '#pizzariabella #happyhour #angradosreis',
+          },
+          {
+            rotulo: 'Story 1080×1920',
+            legenda:
+              'Massa fresca saindo do forno agora. Rodízio até as 23h. Arrasta pra cima e garante a sua mesa.',
+            marcadores: '#pizzariabella #angradosreis',
+          },
         ],
       },
     },
@@ -77,13 +103,37 @@ export const LANDING = {
       ],
     },
 
+    /**
+     * O investimento é do visitante: arrastar põe o número dele na tela,
+     * e é aí que ele para de avaliar um exemplo e passa a avaliar o
+     * próprio caso.
+     *
+     * ATENÇÃO ANTES DO LANÇAMENTO: a curva de retorno abaixo é
+     * ilustrativa — inventei os extremos para o controle ter o que
+     * mostrar. Trocar por números que a DigiThree consiga sustentar se
+     * um cliente perguntar de onde saíram.
+     */
     calcula: {
       verb: 'Calcula',
       title: 'Saiba o custo antes',
-      linhas: [
-        { rotulo: 'Investimento', valor: 'R$ 1.840', destaque: false },
-        { rotulo: 'ROI projetado', valor: '3,2×', destaque: true },
-      ],
+      investimento: {
+        rotulo: 'Investimento',
+        etiqueta: 'Investimento em mídia, em reais',
+        min: 500,
+        max: 10000,
+        passo: 100,
+        inicial: 1840,
+      },
+      retorno: {
+        rotulo: 'ROI projetado',
+        /* Duas funções em uma linha: diz que se arrasta (o controle
+           precisa de sinal) e que o número é projeção, não promessa. */
+        nota: 'Arraste para simular · projeção ilustrativa',
+        /* Retorno decrescente: o primeiro real investido rende mais que
+           o décimo milésimo. Reta simples entre os dois extremos. */
+        maior: 3.4,
+        menor: 2.6,
+      },
     },
 
     dna: {
