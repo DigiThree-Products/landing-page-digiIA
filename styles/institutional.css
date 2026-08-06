@@ -22,11 +22,13 @@ body::after {
   overflow: clip;
   background: var(--ink);
 }
-.page > .wrap {
+
+.page>.wrap {
   width: 100%;
   max-width: none;
   padding-inline: 0;
 }
+
 .page section,
 .site-footer {
   position: relative;
@@ -49,14 +51,15 @@ body::after {
 }
 
 /* Eyebrow do sistema de titulos da referencia. */
-.page .sec-head > .tag,
+.page .sec-head>.tag,
 .page .approach-kicker {
   display: flex;
   align-items: center;
   gap: 12px;
   font-weight: 600;
 }
-.page .sec-head > .tag::before,
+
+.page .sec-head>.tag::before,
 .page .approach-kicker::before {
   content: '';
   width: 32px;
@@ -80,6 +83,7 @@ body::after {
     radial-gradient(65% 80% at 86% 45%, rgba(69, 0, 249, 0.35), transparent 68%),
     var(--ink);
 }
+
 .hero::after {
   content: '+';
   position: absolute;
@@ -91,6 +95,7 @@ body::after {
   font-size: 22px;
   opacity: 0.55;
 }
+
 .page .hero-grid {
   position: relative;
   z-index: 2;
@@ -98,15 +103,18 @@ body::after {
   max-width: var(--world-max);
   margin-inline: auto;
 }
+
 .page .hero h1 {
   max-width: 10.5ch;
   font-size: clamp(48px, 5.3vw, 82px);
   line-height: 0.93;
 }
+
 .page .hero p.sub {
   max-width: 48ch;
   line-height: 1.55;
 }
+
 .page .hero-obj {
   z-index: 2;
 }
@@ -124,27 +132,34 @@ body::after {
     linear-gradient(180deg, rgba(205, 130, 255, 0.08), transparent 40%),
     var(--paper);
 }
+
 .page .approach-stage {
   z-index: 2;
   max-width: var(--world-max);
 }
+
 .page .approach-kicker {
   color: var(--violet);
 }
+
 .page .approach-title {
   max-width: 9ch;
   font-size: clamp(54px, 7.2vw, 108px);
   color: var(--ink);
 }
+
 .page .approach-description {
   color: rgba(0, 0, 0, 0.68);
 }
+
 .page .approach-foot {
   border-color: rgba(0, 0, 0, 0.16);
 }
+
 .page .approach-foot p {
   color: rgba(0, 0, 0, 0.56);
 }
+
 .page .approach .ghost {
   display: inline-flex;
   align-items: center;
@@ -158,6 +173,7 @@ body::after {
   font-weight: 650;
   transition: color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
 }
+
 .page .approach .ghost:hover {
   color: var(--paper);
   background: var(--violet);
@@ -187,13 +203,15 @@ body::after {
     radial-gradient(55% 80% at 88% 50%, rgba(205, 130, 255, 0.2), transparent 72%),
     var(--paper);
 }
-.page #demo > .rv {
+
+.page #demo>.rv {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   margin-inline: auto;
 }
+
 /* Todo o conteúdo à direita; a coluna da esquerda fica reservada para o
    componente que ainda vai entrar. Ela é declarada no grid mesmo vazia — é o
    que segura o conteúdo à direita antes de o componente existir. */
@@ -203,44 +221,118 @@ body::after {
   gap: clamp(28px, 4.4vw, 72px);
   align-items: center;
 }
+
+/* `--retrato` é a única medida do retrato: a máscara e a luz da base saem
+   daqui. A luz precisa da largura da FIGURA, não da coluna — a coluna é bem
+   mais larga no mobile, e um brilho maior que a silhueta denuncia o truque. */
 .page #demo .demo-lado {
+  --retrato: 300px;
+  position: relative;
   display: flex;
   justify-content: center;
 }
+
+/* A luz de onde ela emerge. Sem isso a máscara abaixo lê como "recorte
+   apagado"; com a luz, a base vira origem — ela sobe de algum lugar. Fica
+   atrás do retrato (z-index negativo, contido pelo contexto de empilhamento
+   do `.rv`), nunca por cima, para não lavar o queixo e o ombro. */
+.page #demo .demo-lado::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 0;
+  /* O -50% centraliza; o termo extra desloca à esquerda, para a luz cair sob
+     a massa do ombro em vez do meio geométrico da caixa. Em fração de
+     `--retrato` para acompanhar o mobile sem um segundo valor. */
+  translate: calc(-50% - var(--retrato) * 0.12) 30%;
+  /* Nunca mais larga que o próprio retrato — senão vaza para fora da
+     silhueta e vira uma mancha ao lado dele, em vez de uma luz sob ele.
+
+     `closest-side` faz os raios da elipse pararem exatamente nas laterais
+     da caixa: a luz chega às duas bordas e morre ali, alinhada ao
+     componente. Com o padrão (`farthest-corner`) o gradiente é dimensionado
+     pelos cantos, então some antes das laterais e a base parece estreita
+     demais para a silhueta. */
+  /* Largura e altura separadas de propósito: `aspect-ratio` encolheria os
+     dois eixos juntos, e aqui só o horizontal deve ceder. A altura segue a
+     razão original (2.4) para a luz continuar rasa como uma poça. */
+  width: calc(var(--retrato) * 0.7);
+  height: calc(var(--retrato) / 2.4);
+  /* A queda é achatada de propósito. Com um decaimento acentuado a luz só
+     "chega" na borda esquerda, onde o cabelo escuro do retrato a reforça; à
+     direita, contra o fundo claro, ela se dissolvia antes da lateral e o
+     conjunto ficava torto. Segurando opacidade até 78%, os dois lados
+     alcançam a borda. */
+  background: radial-gradient(ellipse closest-side at center,
+      color-mix(in srgb, var(--violet) 30%, transparent) 0%,
+      color-mix(in srgb, var(--violet) 25%, transparent) 45%,
+      color-mix(in srgb, var(--violet) 13%, transparent) 78%,
+      transparent 100%);
+  pointer-events: none;
+}
+
 /* Governado pela altura da textura real (816x994), não por um teto fixo de
-   largura arbitrário: mantém a proporção do recorte sem distorcer. */
+   largura arbitrário: mantém a proporção do recorte sem distorcer.
+
+   A máscara não é um fade linear: linear cria uma faixa visível onde a queda
+   começa e lê como névoa sobre um recorte. Aqui a opacidade segura até ~55% e
+   só então despenca, acelerando — a silhueta parece emergir da base em vez de
+   ser apagada nela. */
 .page #demo .liquid-portrait,
 .page #demo .liquid-portrait__fallback {
   display: block;
   width: 100%;
-  max-width: 420px;
+  max-width: var(--retrato);
   aspect-ratio: 816 / 994;
   background: transparent;
+  -webkit-mask-image: linear-gradient(to bottom,
+      #000 0%,
+      #000 52%,
+      rgba(0, 0, 0, 0.94) 63%,
+      rgba(0, 0, 0, 0.72) 74%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0.12) 94%,
+      transparent 100%);
+  mask-image: linear-gradient(to bottom,
+      #000 0%,
+      #000 52%,
+      rgba(0, 0, 0, 0.94) 63%,
+      rgba(0, 0, 0, 0.72) 74%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0.12) 94%,
+      transparent 100%);
 }
+
 .page #demo .liquid-portrait {
   cursor: pointer;
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
 }
+
 .page #demo .liquid-portrait:focus-visible {
   outline: 2px solid var(--violet);
   outline-offset: 6px;
 }
+
 .page #demo .liquid-portrait__fallback {
   height: auto;
 }
+
 .page #demo .demo-coluna {
   display: flex;
   flex-direction: column;
   gap: clamp(24px, 3.2vh, 40px);
 }
+
 .page #demo .demo-head {
   display: block;
   /* Centralizado fazia sentido quando o cabeçalho era faixa de largura total.
      Numa coluna, texto centralizado deixa as duas margens serrilhadas. */
   text-align: left;
 }
+
 /* O rótulo da seção fica à esquerda, como nas demais seções da página. */
 .page #demo .demo-head .tag {
   display: flex;
@@ -250,6 +342,7 @@ body::after {
   font-weight: 600;
   color: var(--violet);
 }
+
 .page #demo .demo-head .tag::before {
   content: '';
   width: 30px;
@@ -257,6 +350,7 @@ body::after {
   flex: none;
   background: currentColor;
 }
+
 /* Uma linha só: o tamanho é escolhido para a frase inteira caber na
    largura da coluna, e fica abaixo do h1 do hero (82px) para não inverter a
    hierarquia da página. Era 76px quando o cabeçalho ocupava a faixa toda;
@@ -267,12 +361,15 @@ body::after {
   line-height: 1.04;
   letter-spacing: -0.045em;
 }
+
 .page #demo .demo-head h2 span {
   display: inline;
 }
+
 .page #demo .demo-head__accent {
   color: var(--violet);
 }
+
 .page #demo .demo-head__sub {
   margin: 16px 0 0;
   max-width: 46ch;
@@ -280,9 +377,11 @@ body::after {
   font-size: clamp(15px, 1.35vw, 19px);
   line-height: 1.45;
 }
+
 .page #demo .tag {
   color: var(--violet);
 }
+
 .page #demo .demo {
   width: 100%;
   /* Quem governa a largura agora é a coluna da direita, não este teto. */
@@ -295,10 +394,12 @@ body::after {
     #07030f;
   box-shadow: 0 44px 100px -54px rgba(69, 0, 249, 0.72);
 }
+
 .page #demo .demo-body {
   min-height: clamp(110px, 16vh, 220px);
   padding: clamp(22px, 2.6vw, 34px);
 }
+
 .page #demo .demo-bar {
   padding: 16px 22px;
 }
@@ -320,6 +421,7 @@ body::after {
     radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
     linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
+
 .page #oferta::before {
   content: '';
   position: absolute;
@@ -329,26 +431,31 @@ body::after {
   border-radius: 50%;
   transform: translate(38%, 30%);
 }
-.page #oferta > .rv {
+
+.page #oferta>.rv {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   margin-inline: auto;
 }
+
 .page #oferta .sec-head {
   max-width: 940px;
   margin-bottom: clamp(48px, 7vw, 90px);
 }
+
 .page #oferta .sec-head h2 {
   max-width: 12ch;
   font-size: clamp(50px, 6.5vw, 96px);
   line-height: 0.94;
 }
+
 .page #oferta .tag,
 .page #oferta .sec-head p {
   color: rgba(248, 240, 255, 0.76);
 }
+
 .page #oferta .offer-grid {
   grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
   align-items: end;
@@ -358,6 +465,7 @@ body::after {
   border-radius: 0;
   background: transparent;
 }
+
 .page #oferta .pct {
   font-size: clamp(150px, 24vw, 330px);
   color: var(--paper);
@@ -365,10 +473,12 @@ body::after {
   -webkit-text-fill-color: currentColor;
   opacity: 0.94;
 }
+
 .page #oferta .offer-copy {
   max-width: 35ch;
   color: rgba(248, 240, 255, 0.74);
 }
+
 .page #oferta .terms li {
   padding-block: 18px;
   border-color: rgba(248, 240, 255, 0.2);
@@ -390,6 +500,7 @@ body::after {
   color: var(--ink);
   background: var(--paper);
 }
+
 .page .credibility-section .cred {
   position: relative;
   z-index: 2;
@@ -402,16 +513,19 @@ body::after {
   padding: 0;
   border: 0;
 }
+
 .page .credibility-section .stat b {
   color: var(--violet);
   font-size: clamp(110px, 17vw, 250px);
   font-weight: 700;
   line-height: 0.78;
 }
+
 .page .credibility-section .stat i {
   margin-top: 28px;
   color: rgba(0, 0, 0, 0.54);
 }
+
 .page .credibility-section .cred p {
   max-width: 23ch;
   color: var(--ink);
@@ -440,30 +554,37 @@ body::after {
     radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%),
     var(--ink);
 }
-.page #faq > .rv {
+
+.page #faq>.rv {
   position: relative;
   z-index: 2;
 }
+
 .page #faq .sec-head {
   position: sticky;
   top: 130px;
   max-width: 520px;
   margin: 0;
 }
+
 .page #faq .sec-head h2 {
   font-size: clamp(48px, 5.4vw, 78px);
   line-height: 0.96;
 }
+
 .page #faq .faq {
   max-width: none;
 }
+
 .page #faq .faq details {
   border-color: rgba(248, 240, 255, 0.16);
 }
+
 .page #faq .faq summary {
   padding-block: 28px;
   font-size: clamp(18px, 1.6vw, 23px);
 }
+
 .page #faq .faq-body p {
   color: var(--paper-56);
 }
@@ -484,6 +605,7 @@ body::after {
     radial-gradient(80% 110% at 10% 0%, rgba(205, 130, 255, 0.4), transparent 58%),
     linear-gradient(135deg, var(--abyss), var(--violet) 72%);
 }
+
 .page #lista-final::before {
   content: '';
   position: absolute;
@@ -491,6 +613,7 @@ body::after {
   pointer-events: none;
   background: linear-gradient(115deg, transparent 44%, rgba(248, 240, 255, 0.08) 44.1%, transparent 44.7%);
 }
+
 .page #lista-final .final {
   position: relative;
   z-index: 2;
@@ -501,15 +624,18 @@ body::after {
   text-align: center;
   background: transparent;
 }
+
 .page #lista-final .final h2 {
   max-width: 13ch;
   margin: 18px auto 0;
   font-size: clamp(48px, 7.2vw, 108px);
   line-height: 0.94;
 }
+
 .page #lista-final .final .assin {
   font-size: clamp(20px, 2.2vw, 30px);
 }
+
 .page #lista-final .form-block {
   max-width: 680px;
   margin: 46px auto 0;
@@ -524,21 +650,25 @@ body::after {
   border-color: rgba(248, 240, 255, 0.12);
   background: #05020b;
 }
+
 .page .site-footer .foot-top,
 .page .site-footer .foot-bot {
   width: 100%;
   max-width: var(--world-max);
   margin-inline: auto;
 }
+
 .page .site-footer .foot-sig {
   max-width: 13ch;
   font-size: clamp(26px, 3.8vw, 54px);
   color: var(--paper-56);
 }
+
 .page .site-footer .foot-links {
   max-width: 440px;
   justify-content: flex-end;
 }
+
 .page .site-footer .foot-bot {
   margin-top: 62px;
 }
@@ -557,6 +687,7 @@ body::after {
   transform: translateY(-50%);
   mix-blend-mode: difference;
 }
+
 .scroll-rail span {
   --scroll-progress: 0;
   display: block;
@@ -574,19 +705,25 @@ body::after {
   transform: translateY(34px);
   transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), filter 0.9s var(--ease);
 }
+
 .page .rv.in {
   filter: none;
   transform: none;
 }
 
 @media (max-width: 1023px) {
-  :root { --world-edge: var(--gutter); }
+  :root {
+    --world-edge: var(--gutter);
+  }
 
-  .scroll-rail { display: none; }
+  .scroll-rail {
+    display: none;
+  }
 
   .page .hero {
     padding-inline: var(--gutter);
   }
+
   .page .hero h1 {
     max-width: 11.5ch;
     font-size: clamp(42px, 10vw, 68px);
@@ -609,26 +746,30 @@ body::after {
     min-height: auto;
     gap: 34px;
   }
+
   .page #demo .demo-head__sub {
     max-width: 46ch;
   }
+
   .page #demo .demo-body {
     min-height: 400px;
   }
+
   /* Empilha: o retrato entra primeiro, contido, o conteúdo vem abaixo. */
   .page #demo .demo-layout {
     grid-template-columns: 1fr;
     gap: 32px;
   }
-  .page #demo .liquid-portrait,
-  .page #demo .liquid-portrait__fallback {
-    max-width: 280px;
+
+  .page #demo .demo-lado {
+    --retrato: 220px;
   }
 
   .page #oferta .offer-grid {
     grid-template-columns: 1fr;
     gap: 42px;
   }
+
   .page #oferta .pct {
     font-size: clamp(138px, 44vw, 230px);
   }
@@ -637,6 +778,7 @@ body::after {
     grid-template-columns: 1fr;
     gap: 48px;
   }
+
   .page .credibility-section .cred p {
     max-width: 18ch;
   }
@@ -645,10 +787,12 @@ body::after {
     min-height: auto;
     display: block;
   }
+
   .page #faq .sec-head {
     position: static;
   }
-  .page #faq > .rv + .rv {
+
+  .page #faq>.rv+.rv {
     margin-top: 48px;
   }
 
@@ -661,10 +805,14 @@ body::after {
   .page .hero {
     padding-top: 110px;
   }
+
   .page .hero h1 {
     font-size: clamp(40px, 11.5vw, 54px);
   }
-  .page .hero::after { display: none; }
+
+  .page .hero::after {
+    display: none;
+  }
 
   .page #demo,
   .page #oferta,
@@ -673,25 +821,32 @@ body::after {
   .page #lista-final {
     padding-block: 96px 118px;
   }
+
   .page #oferta .sec-head h2,
   .page #faq .sec-head h2 {
     font-size: clamp(40px, 12vw, 56px);
   }
+
   .page #demo .demo-head h2 {
     font-size: clamp(34px, 10vw, 46px);
   }
+
   .page #demo .demo-body {
     min-height: 360px;
   }
+
   .page .credibility-section .stat b {
     font-size: clamp(108px, 38vw, 180px);
   }
+
   .page .credibility-section .cred p {
     font-size: clamp(34px, 10vw, 48px);
   }
+
   .page #lista-final .final h2 {
     font-size: clamp(42px, 12vw, 60px);
   }
+
   .page .site-footer {
     padding: 60px var(--gutter) 120px;
   }
@@ -703,6 +858,7 @@ body::after {
     filter: none;
     transform: none;
   }
+
   .page .approach .ghost:hover {
     transform: none;
   }
