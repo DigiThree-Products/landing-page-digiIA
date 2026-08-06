@@ -202,12 +202,31 @@ body::after {
   max-width: var(--world-max);
   margin-inline: auto;
 }
+/* Todo o conteúdo à direita; a coluna da esquerda fica reservada para o
+   componente que ainda vai entrar. Ela é declarada no grid mesmo vazia — é o
+   que segura o conteúdo à direita antes de o componente existir. */
+.page #demo .demo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: clamp(28px, 4.4vw, 72px);
+  align-items: center;
+}
+.page #demo .demo-lado {
+  display: flex;
+  justify-content: center;
+}
+.page #demo .demo-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3.2vh, 40px);
+}
 .page #demo .demo-head {
   display: block;
-  text-align: center;
+  /* Centralizado fazia sentido quando o cabeçalho era faixa de largura total.
+     Numa coluna, texto centralizado deixa as duas margens serrilhadas. */
+  text-align: left;
 }
-/* O rótulo da seção fica à esquerda, como nas demais seções da página.
-   Só o título e o subtítulo são centralizados. */
+/* O rótulo da seção fica à esquerda, como nas demais seções da página. */
 .page #demo .demo-head .tag {
   display: flex;
   align-items: center;
@@ -224,11 +243,12 @@ body::after {
   background: currentColor;
 }
 /* Uma linha só: o tamanho é escolhido para a frase inteira caber na
-   largura do capítulo, e fica abaixo do h1 do hero (82px) para não
-   inverter a hierarquia da página. */
+   largura da coluna, e fica abaixo do h1 do hero (82px) para não inverter a
+   hierarquia da página. Era 76px quando o cabeçalho ocupava a faixa toda;
+   numa coluna de ~640px, esse tamanho quebrava a frase em três linhas. */
 .page #demo .demo-head h2 {
   margin: 14px 0 0;
-  font-size: clamp(30px, 5.6vw, 76px);
+  font-size: clamp(30px, 3.9vw, 55px);
   line-height: 1.04;
   letter-spacing: -0.045em;
 }
@@ -239,8 +259,8 @@ body::after {
   color: var(--violet);
 }
 .page #demo .demo-head__sub {
-  margin: 16px auto 0;
-  max-width: 52ch;
+  margin: 16px 0 0;
+  max-width: 46ch;
   color: rgba(0, 0, 0, 0.62);
   font-size: clamp(15px, 1.35vw, 19px);
   line-height: 1.45;
@@ -250,7 +270,8 @@ body::after {
 }
 .page #demo .demo {
   width: 100%;
-  max-width: 640px;
+  /* Quem governa a largura agora é a coluna da direita, não este teto. */
+  max-width: none;
   border-color: rgba(248, 240, 255, 0.16);
   border-radius: 24px;
   color: var(--paper);
@@ -578,6 +599,12 @@ body::after {
   }
   .page #demo .demo-body {
     min-height: 400px;
+  }
+  /* Empilha: o que vier na coluna da esquerda entra primeiro, o conteúdo
+     vem abaixo. */
+  .page #demo .demo-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .page #oferta .offer-grid {
