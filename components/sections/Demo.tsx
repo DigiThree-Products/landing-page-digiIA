@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Reveal } from '@/components/ui/Reveal'
+import { LiquidPortrait } from '@/components/ui/LiquidPortrait'
 import { LANDING, type DemoScene } from '@/content/landing'
 
 const espera = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -12,10 +13,8 @@ const PRIMEIRA = CENAS[0]
 /**
  * Como funciona.
  *
- * Duas colunas: todo o conteúdo — cabeçalho e janela da demonstração — à
- * direita, e a coluna da esquerda vazia, reservada. Ela existe no layout para
- * que o componente que vai morar ali entre sem remexer no grid; enquanto não
- * chega, a seção fica com a metade esquerda em branco de propósito.
+ * Duas colunas: o retrato líquido (`LiquidPortrait`, shader WebGL) à
+ * esquerda, todo o conteúdo — cabeçalho e janela da demonstração — à direita.
  *
  * A janela nasce com a primeira cena JÁ na tela, não vazia. Antes o estado
  * inicial era vazio e a animação dependia de um IntersectionObserver sobre o
@@ -98,8 +97,9 @@ export function Demo() {
   return (
     <section id="demo" ref={secao} aria-labelledby="demo-titulo">
       <Reveal className="demo-layout">
-        {/* Espaço reservado: o componente da esquerda entra aqui. */}
-        <div className="demo-lado" />
+        <div className="demo-lado">
+          <LiquidPortrait />
+        </div>
 
         <div className="demo-coluna">
           <div className="demo-head">
