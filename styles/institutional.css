@@ -202,27 +202,18 @@ body::after {
   max-width: var(--world-max);
   margin-inline: auto;
 }
-/* Retrato à esquerda, todo o conteúdo à direita. O retrato é recorte com
-   alfa: sem moldura, sem fundo — encosta direto no papel da seção. */
+/* Todo o conteúdo à direita; a coluna da esquerda fica reservada para o
+   componente que ainda vai entrar. Ela é declarada no grid mesmo vazia — é o
+   que segura o conteúdo à direita antes de o componente existir. */
 .page #demo .demo-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
   gap: clamp(28px, 4.4vw, 72px);
   align-items: center;
 }
-.page #demo .demo-retrato {
+.page #demo .demo-lado {
   display: flex;
   justify-content: center;
-}
-/* Governado pela altura, não pela largura. O recorte é retrato (854x1040):
-   deixar a largura mandar faria a imagem crescer mais que a coluna de texto
-   e estourar a seção, que é de uma tela só. */
-.page #demo .demo-retrato img {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: clamp(320px, 52vh, 520px);
 }
 .page #demo .demo-coluna {
   display: flex;
@@ -609,15 +600,11 @@ body::after {
   .page #demo .demo-body {
     min-height: 400px;
   }
-  /* Empilha: o retrato entra primeiro, contido, e o conteúdo vem abaixo.
-     Sem o teto de largura ele ocuparia a tela toda e empurraria a
-     demonstração para fora do primeiro scroll. */
+  /* Empilha: o que vier na coluna da esquerda entra primeiro, o conteúdo
+     vem abaixo. */
   .page #demo .demo-layout {
     grid-template-columns: 1fr;
     gap: 32px;
-  }
-  .page #demo .demo-retrato img {
-    max-height: 340px;
   }
 
   .page #oferta .offer-grid {

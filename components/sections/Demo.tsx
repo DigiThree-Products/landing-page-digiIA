@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import { Reveal } from '@/components/ui/Reveal'
 import { LANDING, type DemoScene } from '@/content/landing'
 
@@ -13,10 +12,10 @@ const PRIMEIRA = CENAS[0]
 /**
  * Como funciona.
  *
- * Duas colunas: o retrato da Digi.IA à esquerda, todo o conteúdo — cabeçalho e
- * janela da demonstração — à direita. O retrato é ilustração de marca, não
- * informação: `alt` vazio de propósito, para o leitor de tela pular direto ao
- * texto em vez de ouvir a descrição de um enfeite.
+ * Duas colunas: todo o conteúdo — cabeçalho e janela da demonstração — à
+ * direita, e a coluna da esquerda vazia, reservada. Ela existe no layout para
+ * que o componente que vai morar ali entre sem remexer no grid; enquanto não
+ * chega, a seção fica com a metade esquerda em branco de propósito.
  *
  * A janela nasce com a primeira cena JÁ na tela, não vazia. Antes o estado
  * inicial era vazio e a animação dependia de um IntersectionObserver sobre o
@@ -99,9 +98,8 @@ export function Demo() {
   return (
     <section id="demo" ref={secao} aria-labelledby="demo-titulo">
       <Reveal className="demo-layout">
-        <div className="demo-retrato">
-          <Image src="/assets/digi-ia.webp" alt="" width={854} height={1040} />
-        </div>
+        {/* Espaço reservado: o componente da esquerda entra aqui. */}
+        <div className="demo-lado" />
 
         <div className="demo-coluna">
           <div className="demo-head">
