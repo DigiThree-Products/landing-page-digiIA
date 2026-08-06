@@ -215,6 +215,29 @@ body::after {
   display: flex;
   justify-content: center;
 }
+/* Governado pela altura da textura real (816x994), não por um teto fixo de
+   largura arbitrário: mantém a proporção do recorte sem distorcer. */
+.page #demo .liquid-portrait,
+.page #demo .liquid-portrait__fallback {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 816 / 994;
+  background: transparent;
+}
+.page #demo .liquid-portrait {
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.page #demo .liquid-portrait:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 6px;
+}
+.page #demo .liquid-portrait__fallback {
+  height: auto;
+}
 .page #demo .demo-coluna {
   display: flex;
   flex-direction: column;
@@ -600,11 +623,14 @@ body::after {
   .page #demo .demo-body {
     min-height: 400px;
   }
-  /* Empilha: o que vier na coluna da esquerda entra primeiro, o conteúdo
-     vem abaixo. */
+  /* Empilha: o retrato entra primeiro, contido, o conteúdo vem abaixo. */
   .page #demo .demo-layout {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+  .page #demo .liquid-portrait,
+  .page #demo .liquid-portrait__fallback {
+    max-width: 280px;
   }
 
   .page #oferta .offer-grid {
