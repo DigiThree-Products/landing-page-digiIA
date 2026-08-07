@@ -198,6 +198,23 @@ export function HeroEstrelas() {
       const R = Math.max(rb.width, rb.height) * 0.5
 
       const abertura = NUCLEO + (SILHUETA - NUCLEO) * suave(limita(v / ABRE_ATE))
+
+      /* Ajuste de alcance — o que impede o campo de fugir da janela.
+         `R` acompanha o cérebro, e o cérebro escala 18×. Sem correção o
+         alcance máximo do campo (R × abertura × perspectiva) chegava a
+         ~4200px numa tela de 1440: medi 12 grãos visíveis de 150 no
+         clímax. O campo esvaziava no ponto exato em que devia estar mais
+         denso — o mesmo defeito que a poeira de fundo tem no scroll rápido.
+         Em vez de limitar `R` (o que encolheria o núcleo em repouso), o
+         campo INTEIRO é reescalado por um fator só quando seu alcance
+         teórico passa do alvo. Em repouso o alcance é 242px contra um alvo
+         de ~1050, então o fator é 1 e nada muda; no clímax ele cai para
+         ~0,25 e o campo passa a preencher a tela em vez de atravessá-la.
+         Um fator único preserva a distribuição — limitar grão por grão
+         empilharia todos num anel na borda. */
+      const alvoAlcance = Math.hypot(L, A) * 0.62
+      const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_MIN)
+      const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
       // v² para o campo acelerar conforme você se compromete a entrar.
       const avanco = (DERIVA + v * v * 1.15) * dt
       /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
@@ -224,7 +241,7 @@ export function HeroEstrelas() {
            ~3,1× — há passagem rente à câmera, mas o núcleo continua um
            núcleo. */
         const perspectiva = 0.6 + 0.4 / g.z
-        const espalha = R * abertura * perspectiva
+        const espalha = R * abertura * perspectiva * ajuste
         const sx = cx + g.x * espalha
         const sy = cy + g.y * espalha
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue

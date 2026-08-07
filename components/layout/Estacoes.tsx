@@ -83,6 +83,10 @@ export function Estacoes() {
            em vez de responder a cada estalo da roda. */
         scrub: 1,
         invalidateOnRefresh: true,
+        /* Abaixo da hero de propósito: ela é presa antes desta no
+           documento, e as posições daqui dependem do espaçador dela. Ver a
+           nota em Hero.tsx. */
+        refreshPriority: 1,
         onUpdate: (self) => {
           const p = self.progress
           const chegada = suave(limita(p / CHEGOU))

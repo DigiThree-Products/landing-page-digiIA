@@ -65,12 +65,22 @@ export function Hero() {
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              /* 2,4 telas, contra 1,6 de antes. O que a folga compra não é
-                 mais escala — `cerebro.webp` tem 1600px num box de 720px e
-                 já amolece perto de 9× — e sim mais TEMPO na mesma faixa de
-                 escala. Crescer mais é ocupar mais rolagem crescendo, não
-                 terminar maior. */
-              end: () => `+=${window.innerHeight * 2.4}`,
+              /* 3 telas. O cérebro precisa passar DA tela antes de o
+                 conteúdo começar, e isso são duas coisas: escala final
+                 maior (ver o tween do palco) e rolagem para chegar lá sem
+                 atropelo. */
+              end: () => `+=${window.innerHeight * 3}`,
+              /* Ordem de medição, não enfeite.
+                 Há duas seções presas em sequência: esta e a estação de
+                 "Veja funcionando" (Estacoes.tsx). O ScrollTrigger calcula
+                 as posições de todos os gatilhos num refresh, e os de baixo
+                 dependem do tamanho final do espaçador desta trava. Sem
+                 prioridade declarada a ordem é a de criação, e a segunda
+                 seção acabava medida contra uma hero que ainda não sabia
+                 seu próprio tamanho — a revelação dela disparava no lugar
+                 errado. Maior refresca primeiro, então isto vem em ordem de
+                 documento: hero 2, estação 1. */
+              refreshPriority: 2,
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
@@ -119,23 +129,27 @@ export function Hero() {
                para o centro. Só depois o mergulho — aproximar com a
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
-            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.2 }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.24 }, 0)
-            /* Segundo tempo: centrado e sozinho, agora sim ele cresce — e
-               este é o trecho longo, 62% da travessia. O ganho de escala é
-               modesto de propósito (10× contra os 9× de antes); o que mudou
-               é quanto tempo se passa dentro dele. */
-            .to('.palco', { scale: grande ? 10 : 7, ease: 'power2.in', duration: 0.62 }, 0.24)
-            /* Terceiro tempo: o branco cede.
-               O véu só começa a apagar depois de o texto ter saído (0,20),
-               então nunca há tipografia escura sobre um fundo a meio
-               caminho. Ao sumir, ele revela a poeira que já estava rodando
-               em tela cheia atrás da página — a entrega das estrelas do
-               cérebro para o campo do site acontece aqui, sem que nenhum
-               dos dois precise saber do outro. */
-            .to('.hero-veu', { autoAlpha: 0, ease: 'power1.inOut', duration: 0.36 }, 0.54)
+            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.14 }, 0)
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.18 }, 0)
+            /* Segundo tempo: centrado e sozinho, ele cresce — e cresce até
+               passar DA tela, não até encostar nela. 18× no desktop leva a
+               silhueta muito além da borda, que é o que faz a leitura ser
+               "estou dentro" em vez de "está perto".
+               Isto ocupa 70% da travessia. A imagem amolece nessa escala
+               (1600px de textura num box de 720px), e é de propósito que o
+               campo de estrelas ganhe brilho no mesmo trecho: quando a
+               superfície tem menos a mostrar, o interior tem mais. */
+            .to('.palco', { scale: grande ? 18 : 12, ease: 'power2.in', duration: 0.7 }, 0.18)
+            /* Terceiro tempo: o branco cede — e cede TARDE.
+               Antes começava em 0,54 e a poeira do site aparecia com o
+               cérebro ainda a meio caminho, o que entregava o destino antes
+               da viagem e desmontava a sensação de estar entrando. Agora o
+               branco segura até 0,82: você atravessa a silhueta inteira
+               ainda do lado de fora, e o escuro estrelado só se revela
+               quando já não há mais superfície para atravessar. */
+            .to('.hero-veu', { autoAlpha: 0, ease: 'power2.in', duration: 0.16 }, 0.82)
             // Dissolve no fim: passar do ponto só mostraria pixel esticado.
-            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.12 }, 0.88)
+            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.1 }, 0.9)
         },
       )
 
