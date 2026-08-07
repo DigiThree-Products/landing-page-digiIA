@@ -1,0 +1,173 @@
+/* ============================================================
+   HERO CLARA — o lado de fora da mente
+
+   A hero é o único bloco claro do site: fora do cérebro o mundo é
+   branco e vazio. O escuro do resto da página não é inconsistência,
+   é o destino — o interior para onde o mergulho leva.
+
+   POR QUE ESTE ARQUIVO É IMPORTADO POR ÚLTIMO
+
+   As cores originais da hero vivem em hero.css, conversion.css e
+   institutional.css, e as duas últimas são importadas depois de
+   hero.css. Subir a especificidade aqui (`.page .page .hero`) ganharia
+   a briga, mas deixaria o próximo a mexer adivinhando de onde vem cada
+   cor. Uma camada de sobreposição declarada, importada no fim, ganha
+   por ordem com a mesma especificidade — e concentra num lugar tudo o
+   que a hero clara muda, o que também torna a reversão trivial.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   A paleta invertida.
+
+   Custom properties herdam, então redefinir a família do papel aqui
+   vira a hero inteira de uma vez: `p.sub` (--paper-80), `.offer`
+   (--paper), o rótulo das unidades e o ":" do contador (--paper-38), a
+   régua do .meter (--rule) e a eyebrow (--lilac) acompanham sem que
+   nenhum dos seus seletores seja tocado.
+
+   O azul da marca no lugar de preto puro: --abyss sobre --paper dá
+   14,6:1, e a marca não usa cinza neutro em lugar nenhum.
+   ------------------------------------------------------------ */
+.page .hero {
+  --paper: var(--color-abyss);
+  --paper-80: rgb(1 3 122 / 0.78);
+  --paper-56: rgb(1 3 122 / 0.6);
+  --paper-38: rgb(1 3 122 / 0.6);
+  --rule: rgb(1 3 122 / 0.14);
+  --rule-hi: rgb(1 3 122 / 0.26);
+  /* A eyebrow e o "+" do canto vinham em lilás: 1,9:1 sobre o papel,
+     reprova a WCAG. O violeta dá 7,2:1 na mesma posição hierárquica. */
+  --lilac: var(--color-violet);
+
+  color: var(--color-abyss);
+  isolation: isolate;
+}
+
+/* ------------------------------------------------------------
+   O branco, sangrando de ponta a ponta.
+
+   `.hero` mora dentro de `.wrap` (max-width 1180px), então pintar o
+   fundo nela daria uma coluna branca com sobras preta nas laterais. O
+   véu escapa da medida com o mesmo truque que `.approach` usa, e é um
+   elemento próprio porque a timeline do mergulho o apaga: se fosse o
+   `background` da seção, apagar significaria animar cor, e o estado de
+   repouso sem script deixaria de ser garantido pelo CSS.
+   ------------------------------------------------------------ */
+.hero-veu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* `left` E `right` com sobra fixa, em vez de `width: 100vw`.
+     `vw` inclui a barra de rolagem e a `.wrap` é medida sem ela, então a
+     conta exata deixa o véu curto de um lado. A sobra de 48px é cortada
+     pelo `overflow-x: hidden` do body, então excesso não custa nada e a
+     cobertura fica garantida com barra clássica ou sobreposta.
+
+     PENDÊNCIA CONHECIDA: em captura headless sobra uma tira de ~24px do
+     fundo escuro na borda direita, entre o véu e a barra de rolagem, e ela
+     NÃO é alcançável por elemento interno — testei com `left/right: -100vw`
+     e a tira permanece, o que indica que está fora da caixa de recorte do
+     body. Não foi possível determinar em headless se aparece em navegador
+     real (o controle natural, /privacidade, é escura apesar da regra
+     `.doc`). Conferir numa janela real; se aparecer, a causa está no
+     recorte do body, não aqui. */
+  left: calc(50% - 50vw - 48px);
+  right: calc(50% - 50vw - 48px);
+  /* Atrás do conteúdo em fluxo, ainda dentro do contexto da hero. */
+  z-index: -1;
+  pointer-events: none;
+  background: var(--color-paper);
+}
+
+/* O conteúdo declara a própria camada em vez de depender da ordem de
+   pintura entre caixas posicionadas e caixas em fluxo. */
+.page .hero .hero-grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------
+   O canvas das estrelas.
+
+   Acima do conteúdo (z-index 2 > 1) porque as estrelas moram DENTRO do
+   cérebro, e o cérebro é a camada mais alta do palco. Não há conflito
+   visual com o texto: o recorte é o alfa do cérebro, então fora dele o
+   canvas é transparente. Largura de viewport porque no fim do mergulho
+   o cérebro ocupa a tela inteira, e o canvas não escala — quem cresce é
+   o retângulo que ele usa como moldura.
+   ------------------------------------------------------------ */
+.hero-estrelas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Mesma sangria simétrica do véu; ver a nota lá. */
+  left: calc(50% - 50vw - 48px);
+  right: calc(50% - 50vw - 48px);
+  z-index: 2;
+  pointer-events: none;
+  /* O grão SOMA luz ao que está embaixo em vez de cobrir.
+     O fundo destas estrelas é o cérebro, que é claro: em pintura normal um
+     ponto lilás translúcido sobre um filamento brilhante simplesmente não
+     se lê. Em `screen` ele acende os vãos escuros do desenho e se dissolve
+     sobre os traços já claros — o campo aparece ATRAVÉS do cérebro, que é o
+     que se quer, e não colado na frente dele.
+     Fora da silhueta o canvas é transparente (o recorte é feito no próprio
+     canvas), então o blend nunca toca o branco da hero. */
+  mix-blend-mode: screen;
+}
+
+/* ------------------------------------------------------------
+   O que a herança de token não alcança
+   ------------------------------------------------------------ */
+
+/* O gradiente da manchete começava em lilás — claro demais sobre papel.
+   A rampa desce para o violeta e fecha no azul: 4,2:1 no ponto mais
+   claro, e a WCAG pede 3:1 para texto de display. */
+.page .hero h1 .glow {
+  background: linear-gradient(96deg, var(--color-mid) 0%, var(--color-violet) 48%, var(--color-abyss) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* A pílula fantasma era papel translúcido sobre escuro: sobre branco
+   ficaria borda invisível e texto branco em fundo branco. Mesma forma,
+   tinta invertida. */
+.page .hero .hero-cta {
+  color: var(--color-abyss);
+  border-color: rgb(1 3 122 / 0.28);
+  background: rgb(1 3 122 / 0.05);
+}
+.page .hero .hero-cta:hover {
+  border-color: rgb(1 3 122 / 0.5);
+  background: rgb(1 3 122 / 0.09);
+}
+
+/* A seta é um círculo com gradiente sólido da marca: o glifo dentro
+   dela continua precisando do papel, não da tinta herdada. */
+.page .hero .hero-cta__arrow {
+  color: var(--color-paper);
+}
+
+/* O sublinhado da oferta acompanha a eyebrow. */
+.page .hero .offer {
+  border-bottom-color: var(--color-violet);
+}
+
+/* ------------------------------------------------------------
+   Sem script e com movimento reduzido
+
+   A hero tem de nascer branca, legível e inteira sem depender de
+   animação nenhuma: o véu é CSS, a tipografia é CSS, e o cérebro é uma
+   imagem. As estrelas são o único item opcional, e nenhum conteúdo
+   depende delas.
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .hero-veu {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .hero-estrelas {
+    display: none;
+  }
+}

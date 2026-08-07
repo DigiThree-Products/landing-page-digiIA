@@ -3,7 +3,11 @@
 import { useRef } from 'react'
 import { Countdown } from '@/components/waitlist/Countdown'
 import { HeroObject } from '@/components/sections/HeroObject'
+import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
 import { LANDING } from '@/content/landing'
+/* `mergulho` já é o nome da timeline aqui embaixo; o estado compartilhado
+   com o canvas das estrelas entra com nome próprio para não sombrear. */
+import { mergulho as estadoMergulho } from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
@@ -61,7 +65,12 @@ export function Hero() {
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              end: () => `+=${window.innerHeight * 1.6}`,
+              /* 2,4 telas, contra 1,6 de antes. O que a folga compra não é
+                 mais escala — `cerebro.webp` tem 1600px num box de 720px e
+                 já amolece perto de 9× — e sim mais TEMPO na mesma faixa de
+                 escala. Crescer mais é ocupar mais rolagem crescendo, não
+                 terminar maior. */
+              end: () => `+=${window.innerHeight * 2.4}`,
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
@@ -79,7 +88,13 @@ export function Hero() {
               } else if (passo.v <= 0.002 && avanco > 0) {
                 avanco = 0
                 mergulho.progress(0)
+              } else {
+                return
               }
+              /* Publica no mesmo passo em que a timeline anda. O canvas das
+                 estrelas lê isto para abrir o núcleo e acelerar o campo —
+                 uma fonte só para os dois, e sem round-trip pelo DOM. */
+              estadoMergulho.v = avanco
             },
           })
 
@@ -104,12 +119,23 @@ export function Hero() {
                para o centro. Só depois o mergulho — aproximar com a
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
-            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 }, 0)
-            // Segundo tempo: centrado e sozinho, agora sim ele cresce.
-            .to('.palco', { scale: grande ? 9 : 6, ease: 'power2.in', duration: 0.66 }, 0.34)
+            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.2 }, 0)
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.24 }, 0)
+            /* Segundo tempo: centrado e sozinho, agora sim ele cresce — e
+               este é o trecho longo, 62% da travessia. O ganho de escala é
+               modesto de propósito (10× contra os 9× de antes); o que mudou
+               é quanto tempo se passa dentro dele. */
+            .to('.palco', { scale: grande ? 10 : 7, ease: 'power2.in', duration: 0.62 }, 0.24)
+            /* Terceiro tempo: o branco cede.
+               O véu só começa a apagar depois de o texto ter saído (0,20),
+               então nunca há tipografia escura sobre um fundo a meio
+               caminho. Ao sumir, ele revela a poeira que já estava rodando
+               em tela cheia atrás da página — a entrega das estrelas do
+               cérebro para o campo do site acontece aqui, sem que nenhum
+               dos dois precise saber do outro. */
+            .to('.hero-veu', { autoAlpha: 0, ease: 'power1.inOut', duration: 0.36 }, 0.54)
             // Dissolve no fim: passar do ponto só mostraria pixel esticado.
-            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.16 }, 0.84)
+            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.12 }, 0.88)
         },
       )
 
@@ -120,6 +146,11 @@ export function Hero() {
 
   return (
     <header ref={root} className="hero" id="cadastro">
+      {/* O lado de fora da mente. Branco por CSS, não por script: sem JS a
+          hero nasce clara e legível, e o mergulho é que o remove. */}
+      <div className="hero-veu" aria-hidden="true" />
+      <HeroEstrelas />
+
       <div className="hero-grid">
         <div className="hero-col">
           <p className="tag hero-reveal">{LANDING.hero.eyebrow}</p>

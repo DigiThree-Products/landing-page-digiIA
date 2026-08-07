@@ -12,3 +12,7 @@
 @import '../styles/recursos.css';
 @import '../styles/responsive.css';
 @import '../styles/legal.css';
+/* Camada de sobreposição: precisa vir depois de conversion.css e
+   institutional.css, que é onde as cores escuras da hero são definidas.
+   Ver o cabeçalho do arquivo. */
+@import '../styles/hero-clara.css';
