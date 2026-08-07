@@ -25,10 +25,13 @@
   justify-content: center;
   overflow: hidden;
   color: var(--paper);
+  /* Sem a base sólida de --ink: é a única seção com passagem para a
+     poeira de fundo (components/layout/PoeiraFundo.tsx) hoje. Onde os
+     dois brilhos não alcançam, quem aparece por trás é o --ink de
+     `.page` — mesma cor, sem regressão visual onde a poeira for rala. */
   background:
     radial-gradient(64% 62% at 16% 10%, rgba(69, 0, 249, 0.2), transparent 66%),
-    radial-gradient(42% 52% at 92% 90%, rgba(205, 130, 255, 0.1), transparent 70%),
-    var(--ink);
+    radial-gradient(42% 52% at 92% 90%, rgba(205, 130, 255, 0.1), transparent 70%);
 }
 
 /* Malha discreta ao fundo, herdada do sistema institucional. */

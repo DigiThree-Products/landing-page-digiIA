@@ -1,3 +1,5 @@
+import { Estacoes } from '@/components/layout/Estacoes'
+import { PoeiraFundo } from '@/components/layout/PoeiraFundo'
 import { ScrollRail } from '@/components/layout/ScrollRail'
 import { WaitlistModalProvider } from '@/components/waitlist/WaitlistModal'
 import { Nav } from '@/components/sections/Nav'
@@ -29,6 +31,8 @@ export default function Home() {
       <ScrollRail />
 
       <div className="page">
+        <PoeiraFundo />
+        <Estacoes />
         <div className="wrap">
           <Nav />
           <Hero />

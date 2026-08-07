@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, type ReactNode } from 'react'
+import { eixoDaRevelacao } from '@/lib/poeira'
 
 type Props = {
   children: ReactNode
@@ -35,6 +36,9 @@ export function Reveal({ children, className = '' }: Props) {
     const reveal = () => {
       if (revealed) return
       revealed = true
+      const [dx, dy] = eixoDaRevelacao(el)
+      el.style.setProperty('--rv-dx', `${dx}px`)
+      el.style.setProperty('--rv-dy', `${dy}px`)
       el.classList.add('in')
       observer.disconnect()
       window.removeEventListener('scroll', requestCheck)

@@ -128,7 +128,8 @@
     opacity: 1;
     transform: none;
   }
-  #field {
+  #field,
+  #poeira {
     display: none;
   }
   /* O objeto da hero fica parado: sem flutuação, sem paralaxe, sem onda. O
