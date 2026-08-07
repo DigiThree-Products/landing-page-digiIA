@@ -25,17 +25,12 @@ export function ApproachSection() {
           scrollTrigger: { trigger: section, start: 'top 70%' },
         })
 
+        /* Sem pin: a seção agora é uma estação que se aproxima e passa
+           (components/layout/Estacoes.tsx), e prender ela na tela
+           brigaria com esse movimento. O desenho da mídia continua,
+           disparado na entrada em vez de amarrado ao scroll. */
         const timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: () => `+=${window.innerHeight * 1.38}`,
-            scrub: true,
-            pin: true,
-            pinSpacing: true,
-            invalidateOnRefresh: true,
-            anticipatePin: 1,
-          },
+          scrollTrigger: { trigger: section, start: 'top 78%' },
         })
 
         timeline
@@ -56,12 +51,6 @@ export function ApproachSection() {
             { autoAlpha: 0 },
             { autoAlpha: 1, ease: 'power2.out', duration: 0.24 },
             0.52,
-          )
-          .fromTo(
-            '.approach-copy',
-            { xPercent: 8 },
-            { xPercent: 0, ease: 'power2.inOut', duration: 0.68 },
-            0,
           )
       })
 

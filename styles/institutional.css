@@ -35,10 +35,11 @@ body::after {
   isolation: isolate;
 }
 
-/* Marcadores editoriais usados nas secoes claras. */
+/* Marcadores editoriais usados nas secoes claras. "Veja funcionando"
+   saiu da lista: virou vazio escuro, e a malha de pontos violeta foi
+   desenhada para ler sobre papel. */
 .page #demo::after,
-.page .credibility-section::after,
-.page .approach::after {
+.page .credibility-section::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -78,10 +79,10 @@ body::after {
   padding-inline: var(--world-edge);
   overflow: hidden;
   color: var(--paper);
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.88) 42%, rgba(1, 3, 122, 0.24) 100%),
-    radial-gradient(65% 80% at 86% 45%, rgba(69, 0, 249, 0.35), transparent 68%),
-    var(--ink);
+  /* Sem fundo nenhum: o véu preto que cobria a coluna de texto saiu, e
+     a hero passa a ser o próprio vazio — a poeira atravessa a primeira
+     tela inteira, não só a metade do objeto. */
+  background: none;
 }
 
 .hero::after {
@@ -122,15 +123,15 @@ body::after {
 /* ============================================================
    VEJA FUNCIONANDO �?" superficie clara e faixa de conexao
    ============================================================ */
+/* Deixou de ser parada clara: o fundo continua o mesmo escuro do
+   espaço e quem chega do fundo é o CONTEÚDO. Sem painel branco, sem
+   moldura — só o vazio e a matéria vindo de longe. */
 .page .approach {
   width: 100%;
   margin-left: 0;
-  color: var(--ink);
-  border-color: rgba(69, 0, 249, 0.16);
-  background:
-    radial-gradient(62% 82% at 84% 24%, rgba(205, 130, 255, 0.28), transparent 72%),
-    linear-gradient(180deg, rgba(205, 130, 255, 0.08), transparent 40%),
-    var(--paper);
+  color: var(--paper);
+  border-color: var(--rule);
+  background: none;
 }
 
 .page .approach-stage {
@@ -139,25 +140,25 @@ body::after {
 }
 
 .page .approach-kicker {
-  color: var(--violet);
+  color: var(--lilac);
 }
 
 .page .approach-title {
   max-width: 9ch;
   font-size: clamp(54px, 7.2vw, 108px);
-  color: var(--ink);
+  color: var(--paper);
 }
 
 .page .approach-description {
-  color: rgba(0, 0, 0, 0.68);
+  color: var(--paper-80);
 }
 
 .page .approach-foot {
-  border-color: rgba(0, 0, 0, 0.16);
+  border-color: var(--rule-hi);
 }
 
 .page .approach-foot p {
-  color: rgba(0, 0, 0, 0.56);
+  color: var(--paper-56);
 }
 
 .page .approach .ghost {
@@ -166,9 +167,9 @@ body::after {
   gap: 8px;
   min-height: 46px;
   padding: 11px 18px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--rule-hi);
   border-radius: 14px;
-  color: var(--ink);
+  color: var(--paper);
   font-size: 14px;
   font-weight: 650;
   transition: color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
@@ -199,9 +200,8 @@ body::after {
   gap: clamp(26px, 3.4vh, 42px);
   overflow: hidden;
   color: var(--ink);
-  background:
-    radial-gradient(55% 80% at 88% 50%, rgba(205, 130, 255, 0.2), transparent 72%),
-    var(--paper);
+  /* Mesmo raciocínio de .approach: a base branca vem do canvas. */
+  background: radial-gradient(55% 80% at 88% 50%, rgba(205, 130, 255, 0.2), transparent 72%);
 }
 
 .page #demo>.rv {
@@ -498,7 +498,44 @@ body::after {
   place-items: center;
   overflow: hidden;
   color: var(--ink);
-  background: var(--paper);
+  /* Mesmo raciocínio de .approach/#demo: a base branca vem do canvas. */
+}
+
+/* ============================================================
+   ESTAÇÕES
+
+   As seções claras deixam de ser faixas que cortam a tela e viram
+   objetos dentro do espaço: recuadas das bordas, com canto
+   arredondado, e a poeira passando em volta delas — não só atrás.
+   É o recuo que faz o painel existir como corpo; sem ele a seção
+   lê como recorte no fundo.
+
+   A chegada e a passagem vêm de components/layout/Estacoes.tsx, e
+   são função da posição do painel na tela — por isso subir a página
+   desfaz o movimento sozinho, sem código de direção.
+
+   O branco continua vindo do canvas (PoeiraFundo), agora como
+   retângulo arredondado na posição exata de cada painel.
+
+   Uma estação por vez: só "Veja funcionando" por enquanto. As outras
+   seções claras seguem como faixa de tela cheia, com o branco vindo do
+   canvas do mesmo jeito.
+
+   O recuo é curto de propósito — a estação precisa PREENCHER a tela ao
+   atracar. Ele existe para o canto arredondado ter onde aparecer e para
+   a poeira contornar o painel, não para emoldurá-lo.
+   ============================================================ */
+/* Dois papéis separados de propósito: a SEÇÃO é a vaga no espaço e é
+   ela que o ScrollTrigger mede e prende; o STAGE é a estação e é ele
+   que escala. Aplicar a escala na própria seção fazia o ScrollTrigger
+   medir o retângulo já encolhido e ancorar o pin no lugar errado. */
+.page .approach {
+  background: none;
+}
+.page .approach-stage {
+  margin-inline: auto;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
 }
 
 .page .credibility-section .cred {
@@ -550,9 +587,9 @@ body::after {
   gap: clamp(54px, 9vw, 150px);
   overflow: hidden;
   color: var(--paper);
-  background:
-    radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%),
-    var(--ink);
+  /* Sem a base sólida de --ink, igual a #recursos: passagem para a
+     poeira de fundo. */
+  background: radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%);
 }
 
 .page #faq>.rv {
@@ -648,7 +685,8 @@ body::after {
   padding: 72px var(--world-edge) 42px;
   color: var(--paper);
   border-color: rgba(248, 240, 255, 0.12);
-  background: #05020b;
+  /* Sem fundo próprio: passagem para a poeira de fundo, igual a
+     #recursos e #faq. */
 }
 
 .page .site-footer .foot-top,
@@ -699,10 +737,15 @@ body::after {
   transform-origin: top;
 }
 
-/* Reveals mais proximos da coreografia institucional. */
+/* Reveals mais proximos da coreografia institucional.
+
+   --rv-dx/--rv-dy vêm do Reveal.tsx no momento em que o bloco entra em
+   vista: cada um recebe seu próprio vetor, calculado a partir do modo
+   da poeira de fundo (lib/poeira.ts). Sem essas variáveis — bloco ainda
+   não revelado — cai no translateY(34px) de sempre. */
 .page .rv {
   filter: blur(7px);
-  transform: translateY(34px);
+  transform: translate3d(var(--rv-dx, 0px), var(--rv-dy, 34px), 0);
   transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), filter 0.9s var(--ease);
 }
 
