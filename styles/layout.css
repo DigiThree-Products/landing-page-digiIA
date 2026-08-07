@@ -49,6 +49,17 @@
   pointer-events: none;
   opacity: 0.9;
 }
+/* Poeira de fundo. Filho de `.page`, não irmão: `.page` tem z-index e
+   fundo próprios — fora dela, o canvas ficaria escondido atrás desse
+   fundo antes mesmo de chegar nas seções. */
+#poeira {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
 /* Leito escuro sob a coluna de texto: preserva o contraste da tipografia
    e deixa o campo de metaballs respirar à direita. */
 .vignette {

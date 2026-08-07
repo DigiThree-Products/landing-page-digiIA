@@ -64,6 +64,10 @@
 .palco {
   position: relative;
   z-index: 1;
+  /* Origem no cérebro, não no centro do palco: é o que faz o mergulho
+     ler como "entrar nele" em vez de só aproximar o conjunto. A mão se
+     abre para fora da tela enquanto o cérebro fica no eixo. */
+  transform-origin: 54% 36%;
   width: 100%;
   max-width: 720px;
   aspect-ratio: 1600 / 1195;
