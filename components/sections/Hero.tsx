@@ -42,6 +42,45 @@ export function Hero() {
         (contexto) => {
           const { grande } = contexto.conditions as { grande: boolean }
 
+          /* O tween da escala, em constantes, porque o ponto em que o
+             branco cede é DERIVADO dele. */
+          const ESCALA_FINAL = grande ? 18 : 12
+          const ESCALA_EM = 0.18
+          const ESCALA_DUR = 0.7
+
+          /**
+           * Em que ponto da travessia o cérebro passa a cobrir a tela.
+           *
+           * É quando o branco pode ceder: até ali ainda se está do lado de
+           * fora e a poeira do site entregaria o destino antes da viagem;
+           * dali em diante não há mais superfície para atravessar, e o véu
+           * já está atrás de um desenho que ocupa tudo.
+           *
+           * Derivado em vez de cravado. Um número fixo dessincroniza em
+           * silêncio na primeira vez que alguém mexer na escala final ou na
+           * janela do tween — e foi exatamente isso que aconteceu antes,
+           * quando 0,54 valia para 10× e deixou de valer para 18×.
+           *
+           * As fracoes sao do DESENHO dentro da caixa do palco, medidas na
+           * textura: o cérebro ocupa ~55% da largura e ~63% da altura, o
+           * resto é transparência e o tronco. `offsetWidth` e não
+           * `getBoundingClientRect` porque este é o tamanho de layout, imune
+           * ao transform que o próprio mergulho aplica.
+           *
+           * O expoente 3 é o `power2.in` do tween: no GSAP, power2 é cúbico.
+           * Se a ease mudar, este expoente muda com ela.
+           */
+          const cedeEm = (() => {
+            const palco = section.querySelector<HTMLElement>('.palco')
+            if (!palco?.offsetWidth) return 0.6
+            const precisa = Math.max(
+              window.innerWidth / (palco.offsetWidth * 0.55),
+              window.innerHeight / (palco.offsetHeight * 0.63),
+            )
+            const t = Math.cbrt(Math.max(0, precisa - 1) / (ESCALA_FINAL - 1))
+            return ESCALA_EM + ESCALA_DUR * Math.min(1, t)
+          })()
+
           /* Só na descida. O avanço é monotônico: acompanha a rolagem
              para baixo, congela se você voltar a subir e só volta ao
              início quando a hero é reconquistada por inteiro. Sem isso,
@@ -139,15 +178,16 @@ export function Hero() {
                (1600px de textura num box de 720px), e é de propósito que o
                campo de estrelas ganhe brilho no mesmo trecho: quando a
                superfície tem menos a mostrar, o interior tem mais. */
-            .to('.palco', { scale: grande ? 18 : 12, ease: 'power2.in', duration: 0.7 }, 0.18)
-            /* Terceiro tempo: o branco cede — e cede TARDE.
-               Antes começava em 0,54 e a poeira do site aparecia com o
-               cérebro ainda a meio caminho, o que entregava o destino antes
-               da viagem e desmontava a sensação de estar entrando. Agora o
-               branco segura até 0,82: você atravessa a silhueta inteira
-               ainda do lado de fora, e o escuro estrelado só se revela
-               quando já não há mais superfície para atravessar. */
-            .to('.hero-veu', { autoAlpha: 0, ease: 'power2.in', duration: 0.16 }, 0.82)
+            .to('.palco', { scale: ESCALA_FINAL, ease: 'power2.in', duration: ESCALA_DUR }, ESCALA_EM)
+            /* Terceiro tempo: o branco cede no instante em que o cérebro
+               passa a cobrir a tela — ver `cedeEm`. Nem antes, que
+               entregaria o destino com você ainda do lado de fora, nem
+               depois, que seria segurar um branco que ninguém mais vê. */
+            .to(
+              '.hero-veu',
+              { autoAlpha: 0, ease: 'power1.inOut', duration: Math.max(0.14, 0.86 - cedeEm) },
+              cedeEm,
+            )
             // Dissolve no fim: passar do ponto só mostraria pixel esticado.
             .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.1 }, 0.9)
         },
