@@ -114,7 +114,7 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 59 : 40, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
         },
