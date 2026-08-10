@@ -52,6 +52,13 @@ export function Hero() {
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
 
+          /* A partir desta tela (medida do topo, não do início do pin), o
+             cérebro começa a sumir e revela o fundo preto com a poeira
+             cósmica de verdade atrás dele — mesmo mecanismo que as
+             estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
+             para apagar junto o retângulo claro que o canvas pinta). */
+          const REVELA_POEIRA = 3.0
+
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
              com a rolagem para baixo e desce (reverte o mergulho) com a
@@ -117,6 +124,15 @@ export function Hero() {
               { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
+            .to(
+              section,
+              { opacity: 0, ease: 'power1.in', duration: 1 - REVELA_POEIRA / TOTAL },
+              REVELA_POEIRA / TOTAL,
+            )
+
+          return () => {
+            section.style.opacity = ''
+          }
         },
       )
 
