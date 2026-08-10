@@ -48,7 +48,7 @@ export function Hero() {
              e da centralização para o novo total, mantendo os dois no
              mesmo ponto físico de antes — só o crescimento da escala é
              que se estica até o novo fim. */
-          const SEGURA = 6.4
+          const SEGURA = 4.9
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
 
