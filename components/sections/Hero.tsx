@@ -61,6 +61,14 @@ export function Hero() {
           const REVELA_POEIRA_INICIO = 3.6
           const REVELA_POEIRA_FIM = 3.75
 
+          /* A imagem do cérebro só tem 1600px nativos: além de ~2,2x de
+             escala do palco ela já estica além da própria resolução e
+             borra. Entre estas duas telas ela cede lugar, em crossfade, a
+             uma segunda camada com o mesmo enquadramento em arquivo bem
+             maior — nítida até uma escala bem mais alta. */
+          const DETALHE_INICIO = 1.3
+          const DETALHE_FIM = 1.6
+
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
              com a rolagem para baixo e desce (reverte o mergulho) com a
@@ -131,6 +139,16 @@ export function Hero() {
               '.palco',
               { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
+            )
+            .to(
+              '.camada--cerebro',
+              { opacity: 0, ease: 'none', duration: (DETALHE_FIM - DETALHE_INICIO) / TOTAL },
+              DETALHE_INICIO / TOTAL,
+            )
+            .to(
+              '.camada--cerebro-detalhe',
+              { opacity: 1, ease: 'none', duration: (DETALHE_FIM - DETALHE_INICIO) / TOTAL },
+              DETALHE_INICIO / TOTAL,
             )
             .to(
               section,
