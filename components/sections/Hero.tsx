@@ -39,6 +39,7 @@ export function Hero() {
           const { grande } = contexto.conditions as { grande: boolean }
 
           const mergulho = gsap.timeline({ paused: true })
+          const cerebro = section.querySelector<HTMLElement>('[data-camada="cerebro"]')
 
           /* O pin segura além do fim original do mergulho (1,6 telas):
              o cérebro continua crescendo, em vez de parar, até bem perto
@@ -47,9 +48,18 @@ export function Hero() {
              e da centralização para o novo total, mantendo os dois no
              mesmo ponto físico de antes — só o crescimento da escala é
              que se estica até o novo fim. */
-          const SEGURA = 1.4
+          const SEGURA = 2.4
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
+
+          /* Entre estas duas telas (medidas do topo, não do início do
+             pin), o cérebro some e revela o fundo preto com a poeira
+             cósmica de verdade atrás dele — mesmo mecanismo que as
+             estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
+             para apagar junto o retângulo claro que o canvas pinta). Do
+             fim até o fim do pin ele fica parado, já transparente. */
+          const REVELA_POEIRA_INICIO = 3.6
+          const REVELA_POEIRA_FIM = 3.7
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
@@ -73,9 +83,21 @@ export function Hero() {
                  posição, e é isso que dá o deslize de câmera. */
               scrub: 1.1,
               invalidateOnRefresh: true,
+              /* A estação (Estacoes.tsx) mede o próprio início a partir
+                 do fim deste pin — se o dela for recalculado antes deste,
+                 ela usa uma altura de pin desatualizada e chega cedo
+                 demais, com o cérebro ainda na tela. Prioridade mais alta
+                 garante que este pin esteja com o tamanho certo primeiro. */
+              refreshPriority: 1,
             },
             onUpdate: () => {
-              mergulho.progress(passo.v <= 0.002 ? 0 : passo.v)
+              const v = passo.v <= 0.002 ? 0 : passo.v
+              mergulho.progress(v)
+              // A flutuação da .flutua (hero.css) é local ao cérebro; dentro
+              // do .palco escalado (até 59x/40x) esses poucos pixels viram
+              // um tremor enorme na tela. Suspende-a durante o mergulho,
+              // sem tocar no `transform` do HeroObject (paralaxe).
+              if (cerebro) cerebro.style.animation = v > 0 ? 'none' : ''
             },
           })
 
@@ -107,9 +129,22 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 22 : 15, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
+            .to(
+              section,
+              {
+                opacity: 0,
+                ease: 'power1.in',
+                duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
+              },
+              REVELA_POEIRA_INICIO / TOTAL,
+            )
+
+          return () => {
+            section.style.opacity = ''
+          }
         },
       )
 
