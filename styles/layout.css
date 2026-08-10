@@ -114,8 +114,5 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--paper-38);
-  border: 1px solid var(--rule);
-  padding: 6px 11px;
-  border-radius: 999px;
   white-space: nowrap;
 }
