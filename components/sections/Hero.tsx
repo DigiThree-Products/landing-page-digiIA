@@ -114,7 +114,7 @@ export function Hero() {
           </h1>
 
           <p className="sub hero-reveal">
-            {LANDING.hero.description} <span className="offer">{LANDING.hero.offer}</span>
+            {LANDING.hero.description} <a className="offer" href="#oferta">{LANDING.hero.offer}</a>
           </p>
 
           <div className="meter hero-countdown hero-reveal">
