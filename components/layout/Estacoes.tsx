@@ -80,9 +80,19 @@ export function Estacoes() {
       el.style.opacity = String(OPACIDADE_LONGE)
       el.dataset.escala = String(ESCALA_LONGE)
 
+      /* O vão do ATRASO precisa ser espaço de verdade no documento, não
+         um deslocamento na condição de início do pin: o GSAP prende o
+         elemento exatamente onde ele estava na tela no instante em que o
+         gatilho dispara, então "top+=X top" prendia a seção permanente-
+         mente X pixels acima do topo — cortando esse tanto do conteúdo
+         durante toda a leitura, não só na chegada. Com a margem, a seção
+         já chega X pixels mais abaixo no fluxo normal, e o pin prende
+         limpo em "top top". */
+      secao.style.marginTop = `${ATRASO * 100}vh`
+
       return ScrollTrigger.create({
         trigger: secao,
-        start: () => `top+=${window.innerHeight * ATRASO} top`,
+        start: 'top top',
         end: () => `+=${window.innerHeight * TRAVESSIA}`,
         pin: true,
         pinSpacing: true,
@@ -107,6 +117,9 @@ export function Estacoes() {
 
     return () => {
       gatilhos.forEach((g) => g.kill())
+      secoes.forEach((secao) => {
+        secao.style.marginTop = ''
+      })
       paineis.forEach((el) => {
         el.style.transform = ''
         el.style.opacity = ''
