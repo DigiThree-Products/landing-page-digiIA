@@ -31,6 +31,14 @@ const TRAVESSIA = 2.8
 const CHEGOU = 0.55
 const PARTIU = 0.76
 
+/**
+ * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
+ * branco depois que o mergulho da Hero termina. Sem isso a chegada começa
+ * assim que o topo da seção toca o topo da tela, o que é ainda enquanto o
+ * objeto da Hero está terminando de sumir.
+ */
+const ATRASO = 0.6
+
 const limita = (v: number) => Math.min(1, Math.max(0, v))
 /** Desacelera ao encostar na vaga, em vez de parar de repente. */
 const suave = (t: number) => t * t * (3 - 2 * t)
@@ -74,7 +82,7 @@ export function Estacoes() {
 
       return ScrollTrigger.create({
         trigger: secao,
-        start: 'top top',
+        start: () => `top+=${window.innerHeight * ATRASO} top`,
         end: () => `+=${window.innerHeight * TRAVESSIA}`,
         pin: true,
         pinSpacing: true,
