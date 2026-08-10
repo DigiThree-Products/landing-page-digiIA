@@ -107,9 +107,8 @@ export function Hero() {
             .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 }, 0)
             .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 }, 0)
             // Segundo tempo: centrado e sozinho, agora sim ele cresce.
+            // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to('.palco', { scale: grande ? 12 : 8, ease: 'power2.in', duration: 0.66 }, 0.34)
-            // Dissolve no fim: passar do ponto só mostraria pixel esticado.
-            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.16 }, 0.84)
         },
       )
 
