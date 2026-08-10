@@ -758,31 +758,6 @@ body::after {
 }
 
 /* Scroll rail discreto da referencia institucional. */
-.scroll-rail {
-  position: fixed;
-  top: 50%;
-  right: 18px;
-  z-index: 76;
-  width: 2px;
-  height: 150px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: rgba(248, 240, 255, 0.18);
-  transform: translateY(-50%);
-  mix-blend-mode: difference;
-}
-
-.scroll-rail span {
-  --scroll-progress: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--paper);
-  transform: scaleY(var(--scroll-progress));
-  transform-origin: top;
-}
-
 /* Reveals mais proximos da coreografia institucional.
 
    --rv-dx/--rv-dy vêm do Reveal.tsx no momento em que o bloco entra em
@@ -803,10 +778,6 @@ body::after {
 @media (max-width: 1023px) {
   :root {
     --world-edge: var(--gutter);
-  }
-
-  .scroll-rail {
-    display: none;
   }
 
   .page .hero {

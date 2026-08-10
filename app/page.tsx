@@ -1,6 +1,5 @@
 import { Estacoes } from '@/components/layout/Estacoes'
 import { PoeiraFundo } from '@/components/layout/PoeiraFundo'
-import { ScrollRail } from '@/components/layout/ScrollRail'
 import { WaitlistModalProvider } from '@/components/waitlist/WaitlistModal'
 import { Nav } from '@/components/sections/Nav'
 import { Hero } from '@/components/sections/Hero'
@@ -27,8 +26,6 @@ export default function Home() {
       <a className="skip" href="#oferta">
         {LANDING.skipLink}
       </a>
-
-      <ScrollRail />
 
       <div className="page">
         <PoeiraFundo />
