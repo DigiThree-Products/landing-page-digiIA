@@ -70,7 +70,7 @@ body::after {
 }
 
 /* ============================================================
-   HERO �?" capitulo escuro, editorial e contido
+   HERO — capítulo claro, editorial e contido
    ============================================================ */
 .page .hero {
   width: 100%;
@@ -78,11 +78,52 @@ body::after {
   margin: 0;
   padding-inline: var(--world-edge);
   overflow: hidden;
-  color: var(--paper);
-  /* Sem fundo nenhum: o véu preto que cobria a coluna de texto saiu, e
-     a hero passa a ser o próprio vazio — a poeira atravessa a primeira
-     tela inteira, não só a metade do objeto. */
-  background: none;
+  color: var(--ink);
+  /* Fundo sólido: a hero cobre a poeira por inteiro, como #oferta e
+     #lista-final fazem do lado escuro — aqui não há passagem nenhuma. */
+  background: var(--paper);
+}
+
+/* Textos e controles da hero foram desenhados para o vazio escuro; aqui
+   ganham o inverso claro-sobre-branco, no mesmo padrão que #demo e
+   .credibility-section já usam para as próprias seções claras. */
+.page .hero .tag {
+  color: var(--violet);
+}
+
+.page .hero h1 .glow {
+  background: linear-gradient(96deg, var(--violet) 0%, var(--mid) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.page .hero p.sub {
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.page .hero .offer {
+  color: var(--ink);
+  border-bottom-color: var(--violet);
+}
+
+.page .hero .meter {
+  border-top-color: rgba(0, 0, 0, 0.12);
+}
+
+.page .hero .unit i,
+.page .hero .sep {
+  color: rgba(0, 0, 0, 0.56);
+}
+
+.page .hero .hero-cta {
+  border-color: rgba(0, 0, 0, 0.16);
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.page .hero .hero-cta:hover {
+  border-color: var(--violet);
+  background: rgba(69, 0, 249, 0.08);
 }
 
 .hero::after {
@@ -91,7 +132,7 @@ body::after {
   right: var(--world-edge);
   bottom: 30px;
   z-index: 3;
-  color: var(--lilac);
+  color: var(--violet);
   font-family: var(--font-mono);
   font-size: 22px;
   opacity: 0.55;
