@@ -59,7 +59,7 @@ export function Hero() {
              para apagar junto o retângulo claro que o canvas pinta). Do
              fim até o fim do pin ele fica parado, já transparente. */
           const REVELA_POEIRA_INICIO = 3.6
-          const REVELA_POEIRA_FIM = 3.75
+          const REVELA_POEIRA_FIM = 3.7
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
