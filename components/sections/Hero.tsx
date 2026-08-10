@@ -38,22 +38,24 @@ export function Hero() {
         (contexto) => {
           const { grande } = contexto.conditions as { grande: boolean }
 
-          /* Só na descida. O avanço é monotônico: acompanha a rolagem
-             para baixo, congela se você voltar a subir e só volta ao
-             início quando a hero é reconquistada por inteiro. Sem isso,
-             `scrub` reproduziria o mergulho de ré — sair do cérebro de
-             costas, que não é o que a passagem conta. */
-          let avanco = 0
           const mergulho = gsap.timeline({ paused: true })
 
+          /* O pin segura além do fim original do mergulho (1,6 telas):
+             o cérebro continua crescendo, em vez de parar, até bem perto
+             de onde a próxima seção começa a chegar (mesma folga do
+             ATRASO em Estacoes.tsx). FATOR comprime as durações do texto
+             e da centralização para o novo total, mantendo os dois no
+             mesmo ponto físico de antes — só o crescimento da escala é
+             que se estica até o novo fim. */
+          const SEGURA = 1.4
+          const TOTAL = 1.6 + SEGURA
+          const FATOR = 1.6 / TOTAL
+
           /* O progresso não vem do gatilho, e sim deste valor animado com
-             `scrub`. Motivo: o `onUpdate` do próprio ScrollTrigger não
-             chega a rodar quando a rolagem volta ao zero — e como a hero
-             é a primeira seção, o `start` cai justamente no zero e
-             `onLeaveBack` também nunca dispara. Resultado: a hero voltava
-             presa no fim do mergulho, sem o texto. O callback do tween,
-             ao contrário, roda em todo passo do scrub, inclusive no
-             último. */
+             `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
+             com a rolagem para baixo e desce (reverte o mergulho) com a
+             rolagem para cima. O `<= 0.002` trava em zero exato perto do
+             topo, para não sobrar um resíduo de arredondamento do pin. */
           const passo = { v: 0 }
           gsap.to(passo, {
             v: 1,
@@ -61,7 +63,7 @@ export function Hero() {
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              end: () => `+=${window.innerHeight * 1.6}`,
+              end: () => `+=${window.innerHeight * TOTAL}`,
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
@@ -73,13 +75,7 @@ export function Hero() {
               invalidateOnRefresh: true,
             },
             onUpdate: () => {
-              if (passo.v > avanco) {
-                avanco = passo.v
-                mergulho.progress(avanco)
-              } else if (passo.v <= 0.002 && avanco > 0) {
-                avanco = 0
-                mergulho.progress(0)
-              }
+              mergulho.progress(passo.v <= 0.002 ? 0 : passo.v)
             },
           })
 
@@ -104,12 +100,16 @@ export function Hero() {
                para o centro. Só depois o mergulho — aproximar com a
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
-            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 }, 0)
-            // Segundo tempo: centrado e sozinho, agora sim ele cresce.
-            .to('.palco', { scale: grande ? 9 : 6, ease: 'power2.in', duration: 0.66 }, 0.34)
-            // Dissolve no fim: passar do ponto só mostraria pixel esticado.
-            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.16 }, 0.84)
+            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 * FATOR }, 0)
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 * FATOR }, 0)
+            // Segundo tempo: centrado e sozinho, agora sim ele cresce —
+            // até o novo fim do pin, não só até o fim do mergulho antigo.
+            // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
+            .to(
+              '.palco',
+              { scale: grande ? 22 : 15, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              0.34 * FATOR,
+            )
         },
       )
 
@@ -130,7 +130,7 @@ export function Hero() {
           </h1>
 
           <p className="sub hero-reveal">
-            {LANDING.hero.description} <span className="offer">{LANDING.hero.offer}</span>
+            {LANDING.hero.description} <a className="offer" href="#oferta">{LANDING.hero.offer}</a>
           </p>
 
           <div className="meter hero-countdown hero-reveal">

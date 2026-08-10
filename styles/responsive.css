@@ -132,7 +132,7 @@
   #poeira {
     display: none;
   }
-  /* O objeto da hero fica parado: sem flutuação, sem paralaxe, sem onda. O
+  /* O objeto da hero fica parado: sem flutuação, sem paralaxe. O
      componente também não aplica nenhuma transform neste modo. */
   .camada--cerebro {
     animation: none;
@@ -140,8 +140,5 @@
   .camada--cerebro,
   .camada--mao {
     transform: none !important;
-  }
-  .onda {
-    display: none;
   }
 }
