@@ -40,6 +40,17 @@ export function Hero() {
 
           const mergulho = gsap.timeline({ paused: true })
 
+          /* O pin segura além do fim original do mergulho (1,6 telas):
+             o cérebro continua crescendo, em vez de parar, até bem perto
+             de onde a próxima seção começa a chegar (mesma folga do
+             ATRASO em Estacoes.tsx). FATOR comprime as durações do texto
+             e da centralização para o novo total, mantendo os dois no
+             mesmo ponto físico de antes — só o crescimento da escala é
+             que se estica até o novo fim. */
+          const SEGURA = 0.6
+          const TOTAL = 1.6 + SEGURA
+          const FATOR = 1.6 / TOTAL
+
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
              com a rolagem para baixo e desce (reverte o mergulho) com a
@@ -52,7 +63,7 @@ export function Hero() {
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              end: () => `+=${window.innerHeight * 1.6}`,
+              end: () => `+=${window.innerHeight * TOTAL}`,
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
@@ -89,11 +100,16 @@ export function Hero() {
                para o centro. Só depois o mergulho — aproximar com a
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
-            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 }, 0)
-            // Segundo tempo: centrado e sozinho, agora sim ele cresce.
+            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 * FATOR }, 0)
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 * FATOR }, 0)
+            // Segundo tempo: centrado e sozinho, agora sim ele cresce —
+            // até o novo fim do pin, não só até o fim do mergulho antigo.
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
-            .to('.palco', { scale: grande ? 12 : 8, ease: 'power2.in', duration: 0.66 }, 0.34)
+            .to(
+              '.palco',
+              { scale: grande ? 16 : 11, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              0.34 * FATOR,
+            )
         },
       )
 
