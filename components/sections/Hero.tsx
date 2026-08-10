@@ -47,7 +47,7 @@ export function Hero() {
              e da centralização para o novo total, mantendo os dois no
              mesmo ponto físico de antes — só o crescimento da escala é
              que se estica até o novo fim. */
-          const SEGURA = 0.6
+          const SEGURA = 1.4
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
 
@@ -107,7 +107,7 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 16 : 11, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              { scale: grande ? 22 : 15, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
         },
