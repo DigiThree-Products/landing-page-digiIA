@@ -39,6 +39,7 @@ export function Hero() {
           const { grande } = contexto.conditions as { grande: boolean }
 
           const mergulho = gsap.timeline({ paused: true })
+          const cerebro = section.querySelector<HTMLElement>('[data-camada="cerebro"]')
 
           /* O pin segura além do fim original do mergulho (1,6 telas):
              o cérebro continua crescendo, em vez de parar, até bem perto
@@ -75,7 +76,13 @@ export function Hero() {
               invalidateOnRefresh: true,
             },
             onUpdate: () => {
-              mergulho.progress(passo.v <= 0.002 ? 0 : passo.v)
+              const v = passo.v <= 0.002 ? 0 : passo.v
+              mergulho.progress(v)
+              // A flutuação da .flutua (hero.css) é local ao cérebro; dentro
+              // do .palco escalado (até 59x/40x) esses poucos pixels viram
+              // um tremor enorme na tela. Suspende-a durante o mergulho,
+              // sem tocar no `transform` do HeroObject (paralaxe).
+              if (cerebro) cerebro.style.animation = v > 0 ? 'none' : ''
             },
           })
 
