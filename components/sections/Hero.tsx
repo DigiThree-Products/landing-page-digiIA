@@ -81,6 +81,12 @@ export function Hero() {
                  posição, e é isso que dá o deslize de câmera. */
               scrub: 1.1,
               invalidateOnRefresh: true,
+              /* A estação (Estacoes.tsx) mede o próprio início a partir
+                 do fim deste pin — se o dela for recalculado antes deste,
+                 ela usa uma altura de pin desatualizada e chega cedo
+                 demais, com o cérebro ainda na tela. Prioridade mais alta
+                 garante que este pin esteja com o tamanho certo primeiro. */
+              refreshPriority: 1,
             },
             onUpdate: () => {
               const v = passo.v <= 0.002 ? 0 : passo.v
