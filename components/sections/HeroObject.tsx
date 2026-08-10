@@ -18,18 +18,13 @@ export function HeroObject() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const cerebro = palco.querySelector<HTMLElement>('[data-camada="cerebro"]')
-    const cerebroDetalhe = palco.querySelector<HTMLElement>('[data-camada="cerebro-detalhe"]')
     const mao = palco.querySelector<HTMLElement>('[data-camada="mao"]')
     if (!cerebro || !mao) return
 
     let par = { x: 0, y: 0 } // paralaxe: -1 a 1 em cada eixo
 
     function aplicar() {
-      const t = `translate3d(${par.x * 16}px, ${par.y * 12}px, 0)`
-      cerebro!.style.transform = t
-      // Mesma paralaxe do cérebro: são a mesma forma, só trocam de nitidez
-      // no mergulho — sem isso, a camada de detalhe "descola" da outra.
-      if (cerebroDetalhe) cerebroDetalhe.style.transform = t
+      cerebro!.style.transform = `translate3d(${par.x * 16}px, ${par.y * 12}px, 0)`
       mao!.style.transform = `translate3d(${par.x * -6}px, ${par.y * -4}px, 0)`
     }
 
@@ -98,22 +93,6 @@ export function HeroObject() {
           width={1600}
           height={1195}
           decoding="async"
-        />
-        {/* Mesma imagem, em resolução bem maior — só entra quando o
-            mergulho já escalou o palco o bastante pra expor a diferença.
-            Fica invisível (opacity 0) e fora do fluxo de carregamento
-            crítico até lá; ver o crossfade em Hero.tsx. */}
-        <img
-          className="camada camada--cerebro-detalhe"
-          data-camada="cerebro-detalhe"
-          src="/assets/hero/cerebro-detalhe.webp"
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          width={4800}
-          height={3585}
-          decoding="async"
-          loading="lazy"
         />
       </div>
     </div>
