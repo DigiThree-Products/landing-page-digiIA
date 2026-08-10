@@ -34,16 +34,18 @@ export function ApproachSection() {
         })
 
         timeline
+          /* Mesmo eixo da poeira (lib/poeira.ts, eixoDaRevelacao): tudo
+             sobe até o lugar, nunca desliza de lado. */
           .fromTo(
             '.approach-media',
-            { autoAlpha: 0, xPercent: -8 },
-            { autoAlpha: 1, xPercent: 0, ease: 'power2.out', duration: 0.68 },
+            { autoAlpha: 0, y: 34 },
+            { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.68 },
             0,
           )
           .fromTo(
             '.approach-media__surface',
-            { clipPath: 'inset(0 100% 0 0 round 28px)', scale: 0.94 },
-            { clipPath: 'inset(0 0% 0 0 round 28px)', scale: 1, ease: 'power3.inOut', duration: 0.82 },
+            { clipPath: 'inset(100% 0 0 0 round 28px)', scale: 0.94 },
+            { clipPath: 'inset(0% 0 0 0 round 28px)', scale: 1, ease: 'power3.inOut', duration: 0.82 },
             0,
           )
           .fromTo(
@@ -57,9 +59,9 @@ export function ApproachSection() {
       media.add('(max-width: 1023px)', () => {
         gsap.fromTo(
           '.approach-media__surface',
-          { clipPath: 'inset(0 100% 0 0 round 22px)', scale: 0.96 },
+          { clipPath: 'inset(100% 0 0 0 round 22px)', scale: 0.96 },
           {
-            clipPath: 'inset(0 0% 0 0 round 22px)',
+            clipPath: 'inset(0% 0 0 0 round 22px)',
             scale: 1,
             duration: 1.05,
             ease: 'power3.inOut',
