@@ -38,22 +38,13 @@ export function Hero() {
         (contexto) => {
           const { grande } = contexto.conditions as { grande: boolean }
 
-          /* Só na descida. O avanço é monotônico: acompanha a rolagem
-             para baixo, congela se você voltar a subir e só volta ao
-             início quando a hero é reconquistada por inteiro. Sem isso,
-             `scrub` reproduziria o mergulho de ré — sair do cérebro de
-             costas, que não é o que a passagem conta. */
-          let avanco = 0
           const mergulho = gsap.timeline({ paused: true })
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
-             `scrub`. Motivo: o `onUpdate` do próprio ScrollTrigger não
-             chega a rodar quando a rolagem volta ao zero — e como a hero
-             é a primeira seção, o `start` cai justamente no zero e
-             `onLeaveBack` também nunca dispara. Resultado: a hero voltava
-             presa no fim do mergulho, sem o texto. O callback do tween,
-             ao contrário, roda em todo passo do scrub, inclusive no
-             último. */
+             `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
+             com a rolagem para baixo e desce (reverte o mergulho) com a
+             rolagem para cima. O `<= 0.002` trava em zero exato perto do
+             topo, para não sobrar um resíduo de arredondamento do pin. */
           const passo = { v: 0 }
           gsap.to(passo, {
             v: 1,
@@ -73,13 +64,7 @@ export function Hero() {
               invalidateOnRefresh: true,
             },
             onUpdate: () => {
-              if (passo.v > avanco) {
-                avanco = passo.v
-                mergulho.progress(avanco)
-              } else if (passo.v <= 0.002 && avanco > 0) {
-                avanco = 0
-                mergulho.progress(0)
-              }
+              mergulho.progress(passo.v <= 0.002 ? 0 : passo.v)
             },
           })
 
