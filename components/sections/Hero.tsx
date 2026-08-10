@@ -57,7 +57,7 @@ export function Hero() {
              cósmica de verdade atrás dele — mesmo mecanismo que as
              estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
              para apagar junto o retângulo claro que o canvas pinta). */
-          const REVELA_POEIRA = 3.0
+          const REVELA_POEIRA = 3.5
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
