@@ -10,47 +10,15 @@ const N_GRANDE = 150
 const N_TOQUE = 70
 
 /**
- * Profundidade mínima antes de reciclar. Em 0.16 o grão chega a ~6× o
- * raio da abertura antes de sair — passa pela periferia em vez de
- * desaparecer no meio da tela.
+ * Faixa de profundidade dos grãos — fixa por toda a vida do grão, sem voo
+ * (ver a nota grande abaixo sobre por que o campo ficou parado). Perto o
+ * bastante (`Z_PERTO`) pra dar alguma variação de tamanho e perspectiva
+ * entre os grãos; longe o bastante (`Z_LONGE`) pra nunca esticar demais.
+ * `Z_PERTO` também é o pior caso usado no ajuste de alcance, mais abaixo —
+ * uma constante só, não dois números que podem dessincronizar.
  */
-const Z_MIN = 0.16
-/**
- * Deriva de repouso: o núcleo respira mesmo sem ninguém rolar.
- * Baixa de propósito — a 0,02/s um grão leva ~20s para atravessar a
- * profundidade semeada, então o campo tem vida sem ter pressa.
- */
-const DERIVA = 0.02
-/**
- * Peso da TAXA de mudança de `v` no avanço — não da posição de `v`.
- * Mesmo princípio da poeira do site (PoeiraFundo.tsx: `Math.abs(velocidade)`):
- * o campo acelera com o gesto de rolar, não com o quanto já se mergulhou.
- * Parar no meio do mergulho acalma o campo de volta a `DERIVA`, em vez de
- * mantê-lo acelerado só por `v` estar alto. `Math.abs` garante que subir ou
- * descer só acelera — nunca inverte o sentido do voo.
- */
-const K_TAXA = 5
-/** Quanto a mesma taxa vira "força" pra trocar ponto por traço no desenho —
-    ver `forca` no laço de quadro. Mesmo padrão de PoeiraFundo.tsx:318. */
-const K_FORCA = 8
-
-/**
- * O túnel — o segundo eixo de PoeiraFundo.tsx (`camY`), portado com uma
- * diferença de propósito: lá o deslocamento segue o SINAL do scroll (subir
- * e descer movem a câmera em sentidos opostos); aqui ele só usa `taxa`,
- * igual ao voo em profundidade — sempre no mesmo sentido, só acelera ou
- * desacelera. Reintroduzir o sinal faria o campo parecer girar de marcha à
- * ré ao subir a página, o mesmo problema que a reversão do avanço já
- * resolveu. `DERIVA_DESLOC` é o batimento de repouso, como `DERIVA` é para
- * a profundidade — mais alto de propósito, para o túnel ter vida mesmo
- * parado (a profundidade já respira baixinho; o deslize pode respirar um
- * pouco mais, é isso que lê como túnel em vez de tremor). */
-const DERIVA_DESLOC = 0.05
-const K_DESLOC = 1.6
-/** Quando `|g.y - desloc|` passa disso, o grão saiu da faixa que importa e
-    renasce — um pouco além de SILHUETA, para sumir só depois da borda do
-    campo aberto, não antes. */
-const LIMITE_DESLOC = 1.4
+const Z_PERTO = 0.62
+const Z_LONGE = 1
 
 /** Abertura do núcleo, em frações do raio aparente do cérebro. */
 const NUCLEO = 0.38
@@ -82,10 +50,6 @@ type Grao = {
   brilho: number
   fase: number
   cintila: number
-  /** Posição na tela no quadro anterior — o rastro do voo rápido. `null`
-      logo após nascer, pra não puxar uma linha da posição antiga. */
-  px: number | null
-  py: number | null
 }
 
 const limita = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
@@ -111,10 +75,17 @@ function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [numbe
 /**
  * O universo dentro do cérebro.
  *
- * Em repouso é um núcleo estrelado no miolo do cérebro — pequeno, quieto,
- * do tamanho de uma sugestão. Conforme o mergulho avança, ele **abre**: os
- * grãos se espalham até a silhueta inteira e a profundidade acelera, então
- * você deixa de olhar um brilho e passa a atravessar um campo.
+ * Um núcleo estrelado no miolo do cérebro — pequeno e quase invisível em
+ * repouso, abre e cresce conforme o mergulho avança (posição via
+ * `abertura`, tamanho via `crescimento`), mas fica PARADO: sem voo, sem
+ * deslize, só ali. A sensação de viagem não é dele — é da revelação de
+ * verdade, quando a seção inteira apaga (`REVELA_EM`, ver Hero.tsx) e
+ * descobre a poeira cósmica real do site atrás do cérebro (mesmo
+ * mecanismo de PoeiraFundo.tsx, que já tem o próprio túnel). Fingir um
+ * voo próprio aqui dentro, numa silhueta pequena e recortada, competiria
+ * com essa revelação em vez de prepará-la — testado (voo em profundidade,
+ * rastro e um segundo eixo tipo túnel) e revertido por decisão: o campo
+ * pequeno lia como poluído, não como viagem.
  *
  * Quatro decisões que não são livres:
  *
@@ -139,8 +110,7 @@ function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [numbe
  *    desenhados, as duas ficavam indistinguíveis do fundo. Aditivo só
  *    vence contra um fundo escuro; aqui o fundo raramente é. Grão opaco
  *    (`normal`) com um halo largo e fraco por trás garante a leitura de
- *    brilho sem depender do que está embaixo — ver a nota no loop mais
- *    abaixo.
+ *    brilho sem depender do que está embaixo.
  *
  * Puro enfeite: sem JS, sem WebGL ou com movimento reduzido, a hero
  * continua branca, legível e completa — o cérebro é uma imagem, não um
@@ -178,13 +148,6 @@ export function HeroEstrelas() {
     let raf = 0
     let visivel = true
     let naTela = true
-    let anterior = performance.now()
-    /** `v` do quadro anterior — dá a TAXA de mudança, não a posição. */
-    let vAnterior = 0
-    /** Deslocamento acumulado do túnel — só cresce, nunca reverte (ver a
-        nota em `K_DESLOC`). `sortear()` fecha sobre esta variável para
-        semear a posição JÁ relativa ao deslocamento atual. */
-    let desloc = 0
 
     const textura = new Image()
     let prontaTextura = false
@@ -193,17 +156,13 @@ export function HeroEstrelas() {
     }
     textura.src = TEXTURA
 
-    function sortear(g: Grao, z: number) {
+    function sortear(g: Grao) {
       const ang = Math.random() * Math.PI * 2
       // sqrt para o disco encher por igual; sem ele o centro fica denso demais
       const rho = Math.sqrt(Math.random())
       g.x = Math.cos(ang) * rho
-      /* Semeado JÁ deslocado: a posição efetiva no quadro (`g.y - desloc`)
-         é quem importa para o desenho, então nascer em `desloc + valor`
-         garante que o grão apareça no lugar certo agora — e continue
-         deslizando pelo túnel depois, conforme `desloc` cresce sozinho. */
-      g.y = desloc + Math.sin(ang) * rho
-      g.z = z
+      g.y = Math.sin(ang) * rho
+      g.z = Z_PERTO + Math.random() * (Z_LONGE - Z_PERTO)
       /* Mais branco que roxo, de propósito: lilás e violeta (--mid) são
          próximos demais da própria paleta do cérebro pra se destacarem —
          testei visualmente e um grão lilás sobre um filamento lilás não
@@ -213,20 +172,11 @@ export function HeroEstrelas() {
       g.brilho = 0.7 + Math.random() * 0.3
       g.fase = Math.random() * Math.PI * 2
       g.cintila = 0.7 + Math.random() * 1.7
-      // Renasceu: nenhum rastro liga a posição antiga à nova.
-      g.px = null
-      g.py = null
     }
 
     const graos: Grao[] = Array.from({ length: N }, () => {
-      const g: Grao = { x: 0, y: 0, z: 1, tom: 0, brilho: 1, fase: 0, cintila: 1, px: null, py: null }
-      /* Semeia no terço da frente da profundidade, não na faixa inteira. Em
-         repouso o avanço é lento e a distribuição inicial é a que se vê: com
-         z uniforme boa parte dos grãos já nascia longe, espalhada pela
-         perspectiva para fora da silhueta e recortada — núcleo ralo desde o
-         primeiro quadro. A faixa cheia é alcançada durante o mergulho, que é
-         quando ela tem função. */
-      sortear(g, 0.62 + Math.random() * 0.38)
+      const g: Grao = { x: 0, y: 0, z: 1, tom: 0, brilho: 1, fase: 0, cintila: 1 }
+      sortear(g)
       return g
     })
 
@@ -242,20 +192,10 @@ export function HeroEstrelas() {
 
     function quadro(t: number) {
       raf = requestAnimationFrame(quadro)
-      if (!visivel || !naTela) {
-        anterior = t
-        return
-      }
-      const dt = Math.min((t - anterior) / 1000, 0.05)
-      anterior = t
+      if (!visivel || !naTela) return
       if (!L || !A) return
 
       const v = limita(mergulho.v)
-      /* Taxa de mudança de `v`, não `v` em si — ver a nota em `K_TAXA`.
-         `Math.max(dt, 1e-3)` só evita divisão por zero num quadro de
-         duração nula; dt já vem sempre positivo do clamp acima. */
-      const taxa = Math.abs(v - vAnterior) / Math.max(dt, 1e-3)
-      vAnterior = v
 
       /* LEITURAS primeiro, escritas depois. Os dois rects custam um
          recálculo de layout por quadro — o GSAP escreveu o transform do
@@ -281,39 +221,21 @@ export function HeroEstrelas() {
       const abertura = NUCLEO + (SILHUETA - NUCLEO) * suave(limita(v / ABRE_ATE))
 
       /* Ajuste de alcance — o que impede o campo de fugir da janela.
-         `R` acompanha o cérebro, e o cérebro escala 18×. Sem correção o
-         alcance máximo do campo (R × abertura × perspectiva) chegava a
-         ~4200px numa tela de 1440: medi 12 grãos visíveis de 150 no
-         clímax. O campo esvaziava no ponto exato em que devia estar mais
-         denso — o mesmo defeito que a poeira de fundo tem no scroll rápido.
-         Em vez de limitar `R` (o que encolheria o núcleo em repouso), o
-         campo INTEIRO é reescalado por um fator só quando seu alcance
-         teórico passa do alvo. Em repouso o alcance é 242px contra um alvo
-         de ~1050, então o fator é 1 e nada muda; no clímax ele cai para
-         ~0,25 e o campo passa a preencher a tela em vez de atravessá-la.
-         Um fator único preserva a distribuição — limitar grão por grão
-         empilharia todos num anel na borda. */
+         `R` acompanha o cérebro, e o cérebro escala 80×. Sem correção o
+         alcance máximo do campo (R × abertura × perspectiva) cresce sem
+         limite junto com a escala, e o campo esvaziava no ponto exato em
+         que devia estar mais denso. Em vez de limitar `R` (o que
+         encolheria o núcleo em repouso), o campo INTEIRO é reescalado por
+         um fator só quando seu alcance teórico passa do alvo. Perspectiva
+         no pior caso usa `Z_PERTO`, o grão mais próximo que a faixa de
+         repouso permite — sem voo não há grão mais perto que isso. */
       const alvoAlcance = Math.hypot(L, A) * 0.62
-      const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_MIN)
+      const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_PERTO)
       const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
-      // Taxa, não posição — ver a nota em `K_TAXA`.
-      const avanco = (DERIVA + taxa * K_TAXA) * dt
-      /* Mesmo papel de `forca` em PoeiraFundo.tsx:318: acima do limiar, o
-         grão desenha um traço em vez de um ponto — ver o laço abaixo. */
-      const forca = Math.min(3, taxa * K_FORCA)
-      // O túnel — ver a nota em `K_DESLOC`. Só cresce, nunca reverte.
-      desloc += (DERIVA_DESLOC + taxa * K_DESLOC) * dt
       /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
          que é uma imagem CLARA e MUITO carregada (a textura já tem os
-         próprios pontos de brilho desenhados). Com o canvas em `screen`
-         (ver hero.css) o grão soma luz: ele aparece forte nos vãos escuros
-         entre os filamentos e se dissolve sobre os traços já brilhantes —
-         que é justamente como um campo de estrelas se leria visto de
-         dentro de algo luminoso. Medido: com presença 0,9 e grão de
-         0,4–1,7px o canvas rendia ~700px de alfa>0 num quadro de 1,1
-         milhão — nem em captura lado a lado dava pra notar a diferença
-         contra a arte do cérebro. Presença baixa aqui não daria
-         "discreto", daria invisível de verdade. */
+         próprios pontos de brilho desenhados) — presença baixa aqui não
+         daria "discreto", daria invisível de verdade. */
       const presenca = 1.3 + v * 0.5
       /* De `FATOR_MINIMO` (80× menor) em `ESCALA_EM` até 1 (tamanho final)
          em `REVELA_EM` — ver a nota em `FATOR_MINIMO`. `t³`, não a
@@ -328,47 +250,17 @@ export function HeroEstrelas() {
       ctx!.globalCompositeOperation = 'source-over'
 
       for (const g of graos) {
-        g.z -= avanco
-        /* Duas razões pra renascer, não uma: profundidade esgotada (voo) ou
-           saiu da faixa que o túnel ainda mostra (deslize). As duas usam o
-           mesmo `sortear`, que já semeia relativo ao `desloc` atual — o
-           grão reentra pelo lado oposto ao que saiu, sem precisar de lógica
-           própria pra isso. */
-        if (g.z < Z_MIN || Math.abs(g.y - desloc) > LIMITE_DESLOC) sortear(g, 1)
-
-        /* Perspectiva contida: em `1/z` puro o grão a z=0,16 saltava a 6× o
-           raio do núcleo, o que despejava a maioria fora da silhueta e
-           esvaziava o núcleo em repouso. Assim z=1 fica em 1,0× e z=0,16 em
-           ~3,1× — há passagem rente à câmera, mas o núcleo continua um
-           núcleo. */
+        /* Perspectiva contida: com `g.z` fixo entre `Z_PERTO` e `Z_LONGE`,
+           a variação de tamanho/posição entre grãos é só a distinção de
+           profundidade de sempre — não há voo, então não há grão cruzando
+           essa faixa. */
         const perspectiva = 0.6 + 0.4 / g.z
         const espalha = R * abertura * perspectiva * ajuste
         const sx = cx + g.x * espalha
-        // `g.y - desloc`, não `g.y`: é a posição relativa ao túnel que
-        // conta — ver a nota em `desloc`.
-        const sy = cy + (g.y - desloc) * espalha
-        /* Capturado ANTES de qualquer `continue` abaixo, e sempre
-           atualizado: se só guardássemos px/py quando o grão está visível,
-           um grão que saiu da tela ou apagou por um instante voltaria
-           puxando um rastro velho, de vários quadros atrás. Atualizando
-           sempre, o rastro nunca é mais que um quadro. */
-        const pxAntes = g.px
-        const pyAntes = g.py
-        g.px = sx
-        g.py = sy
+        const sy = cy + g.y * espalha
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
 
-        /* Some ao nascer no fundo e ao passar rente: sem as duas bordas o
-           grão pisca ao entrar e ao sair do campo.
-           A janela de entrada é estreita (0,1) porque em repouso a semeadura
-           vive em z 0,62–1: com a janela larga que estava aqui, um terço do
-           núcleo nascia permanentemente apagado — o fade existe para o grão
-           que aparece no fundo durante o mergulho, não para punir quem está
-           parado. */
-        const entrada = Math.min(1, (1 - g.z) / 0.1)
-        const saida = Math.min(1, (g.z - Z_MIN) / 0.08)
-
-        let alfa = (0.65 + 0.5 * (1 - g.z)) * g.brilho * presenca * entrada * saida
+        let alfa = (0.65 + 0.5 * (1 - g.z)) * g.brilho * presenca
         alfa *= 1 + Math.sin(t / 1000 * g.cintila + g.fase) * 0.28
 
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a
@@ -376,13 +268,7 @@ export function HeroEstrelas() {
            recortado em vez de um brilho. Depois de abrir, quem corta é a
            máscara do cérebro e este fade sai de cena. */
         if (bordaViva) {
-          /* Medido no DISCO, não na tela.
-             Em coordenadas de tela a distância já vem multiplicada pela
-             perspectiva, então qualquer grão fundo estourava o limiar e era
-             zerado — o núcleo perdia a maior parte dos grãos e ficava
-             invisível. O raio no disco é independente da profundidade, que é
-             a grandeza que a borda do núcleo realmente descreve. */
-          const rho = Math.hypot(g.x, g.y - desloc)
+          const rho = Math.hypot(g.x, g.y)
           alfa *= 1 - suave(limita((rho - 0.72) / 0.28))
         }
         if (alfa <= 0.004) continue
@@ -396,49 +282,22 @@ export function HeroEstrelas() {
         const raio = raioFinal * crescimento
         const [r, gg, b] = PALETA[g.tom]
         const alfaCore = Math.min(1, alfa)
-        const corHalo = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
-        const corNucleo = `rgba(${r},${gg},${b},${alfaCore})`
 
-        /* Dois traços, não um: um halo largo e fraco por trás do núcleo
-           opaco. Com `mix-blend-mode: normal` (ver hero.css) o grão sozinho
-           lia como um adesivo colado — um círculo de borda dura, sem
-           relação com a luz que o cérebro já emite ao redor. O halo (2,8×
-           o raio, ~22% do alfa) devolve a leitura de brilho sem depender
-           de o composto aditivo vencer o fundo, que foi o que realmente
-           falhava antes: medido, `screen` e `plus-lighter` empatavam com
-           a própria arte do cérebro e ficavam invisíveis lado a lado.
+        /* Halo largo e fraco por trás do núcleo opaco. Com
+           `mix-blend-mode: normal` (ver hero.css) o grão sozinho lia como
+           um adesivo colado — um círculo de borda dura, sem relação com a
+           luz que o cérebro já emite ao redor. O halo (2,8× o raio, ~22%
+           do alfa) devolve a leitura de brilho sem depender de o composto
+           aditivo vencer o fundo. */
+        ctx!.beginPath()
+        ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
+        ctx!.fill()
 
-           Ponto parado, traço rápido — mesma divisão de PoeiraFundo.tsx
-           (`forca > 0.12`): sem isso, um mergulho rápido e um repouso
-           pareciam a mesma coisa, só que com o núcleo maior ou menor. O
-           traço é quem entrega "atravessando um campo" em vez de "um
-           brilho que cresce". */
-        if (pxAntes !== null && forca > 0.12) {
-          ctx!.lineCap = 'round'
-          ctx!.beginPath()
-          ctx!.moveTo(pxAntes, pyAntes!)
-          ctx!.lineTo(sx, sy)
-          ctx!.lineWidth = raio * 2 * 2.8
-          ctx!.strokeStyle = corHalo
-          ctx!.stroke()
-
-          ctx!.beginPath()
-          ctx!.moveTo(pxAntes, pyAntes!)
-          ctx!.lineTo(sx, sy)
-          ctx!.lineWidth = raio * 2
-          ctx!.strokeStyle = corNucleo
-          ctx!.stroke()
-        } else {
-          ctx!.beginPath()
-          ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
-          ctx!.fillStyle = corHalo
-          ctx!.fill()
-
-          ctx!.beginPath()
-          ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
-          ctx!.fillStyle = corNucleo
-          ctx!.fill()
-        }
+        ctx!.beginPath()
+        ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(${r},${gg},${b},${alfaCore})`
+        ctx!.fill()
       }
 
       /* O recorte. Mantém só o que cai dentro do alfa do cérebro, então as
