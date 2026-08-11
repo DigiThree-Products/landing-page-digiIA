@@ -34,6 +34,24 @@ const K_TAXA = 5
     ver `forca` no laço de quadro. Mesmo padrão de PoeiraFundo.tsx:318. */
 const K_FORCA = 8
 
+/**
+ * O túnel — o segundo eixo de PoeiraFundo.tsx (`camY`), portado com uma
+ * diferença de propósito: lá o deslocamento segue o SINAL do scroll (subir
+ * e descer movem a câmera em sentidos opostos); aqui ele só usa `taxa`,
+ * igual ao voo em profundidade — sempre no mesmo sentido, só acelera ou
+ * desacelera. Reintroduzir o sinal faria o campo parecer girar de marcha à
+ * ré ao subir a página, o mesmo problema que a reversão do avanço já
+ * resolveu. `DERIVA_DESLOC` é o batimento de repouso, como `DERIVA` é para
+ * a profundidade — mais alto de propósito, para o túnel ter vida mesmo
+ * parado (a profundidade já respira baixinho; o deslize pode respirar um
+ * pouco mais, é isso que lê como túnel em vez de tremor). */
+const DERIVA_DESLOC = 0.05
+const K_DESLOC = 1.6
+/** Quando `|g.y - desloc|` passa disso, o grão saiu da faixa que importa e
+    renasce — um pouco além de SILHUETA, para sumir só depois da borda do
+    campo aberto, não antes. */
+const LIMITE_DESLOC = 1.4
+
 /** Abertura do núcleo, em frações do raio aparente do cérebro. */
 const NUCLEO = 0.38
 const SILHUETA = 1.35
@@ -163,6 +181,10 @@ export function HeroEstrelas() {
     let anterior = performance.now()
     /** `v` do quadro anterior — dá a TAXA de mudança, não a posição. */
     let vAnterior = 0
+    /** Deslocamento acumulado do túnel — só cresce, nunca reverte (ver a
+        nota em `K_DESLOC`). `sortear()` fecha sobre esta variável para
+        semear a posição JÁ relativa ao deslocamento atual. */
+    let desloc = 0
 
     const textura = new Image()
     let prontaTextura = false
@@ -176,7 +198,11 @@ export function HeroEstrelas() {
       // sqrt para o disco encher por igual; sem ele o centro fica denso demais
       const rho = Math.sqrt(Math.random())
       g.x = Math.cos(ang) * rho
-      g.y = Math.sin(ang) * rho
+      /* Semeado JÁ deslocado: a posição efetiva no quadro (`g.y - desloc`)
+         é quem importa para o desenho, então nascer em `desloc + valor`
+         garante que o grão apareça no lugar certo agora — e continue
+         deslizando pelo túnel depois, conforme `desloc` cresce sozinho. */
+      g.y = desloc + Math.sin(ang) * rho
       g.z = z
       /* Mais branco que roxo, de propósito: lilás e violeta (--mid) são
          próximos demais da própria paleta do cérebro pra se destacarem —
@@ -275,6 +301,8 @@ export function HeroEstrelas() {
       /* Mesmo papel de `forca` em PoeiraFundo.tsx:318: acima do limiar, o
          grão desenha um traço em vez de um ponto — ver o laço abaixo. */
       const forca = Math.min(3, taxa * K_FORCA)
+      // O túnel — ver a nota em `K_DESLOC`. Só cresce, nunca reverte.
+      desloc += (DERIVA_DESLOC + taxa * K_DESLOC) * dt
       /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
          que é uma imagem CLARA e MUITO carregada (a textura já tem os
          próprios pontos de brilho desenhados). Com o canvas em `screen`
@@ -301,7 +329,12 @@ export function HeroEstrelas() {
 
       for (const g of graos) {
         g.z -= avanco
-        if (g.z < Z_MIN) sortear(g, 1)
+        /* Duas razões pra renascer, não uma: profundidade esgotada (voo) ou
+           saiu da faixa que o túnel ainda mostra (deslize). As duas usam o
+           mesmo `sortear`, que já semeia relativo ao `desloc` atual — o
+           grão reentra pelo lado oposto ao que saiu, sem precisar de lógica
+           própria pra isso. */
+        if (g.z < Z_MIN || Math.abs(g.y - desloc) > LIMITE_DESLOC) sortear(g, 1)
 
         /* Perspectiva contida: em `1/z` puro o grão a z=0,16 saltava a 6× o
            raio do núcleo, o que despejava a maioria fora da silhueta e
@@ -311,7 +344,9 @@ export function HeroEstrelas() {
         const perspectiva = 0.6 + 0.4 / g.z
         const espalha = R * abertura * perspectiva * ajuste
         const sx = cx + g.x * espalha
-        const sy = cy + g.y * espalha
+        // `g.y - desloc`, não `g.y`: é a posição relativa ao túnel que
+        // conta — ver a nota em `desloc`.
+        const sy = cy + (g.y - desloc) * espalha
         /* Capturado ANTES de qualquer `continue` abaixo, e sempre
            atualizado: se só guardássemos px/py quando o grão está visível,
            um grão que saiu da tela ou apagou por um instante voltaria
@@ -347,7 +382,7 @@ export function HeroEstrelas() {
              zerado — o núcleo perdia a maior parte dos grãos e ficava
              invisível. O raio no disco é independente da profundidade, que é
              a grandeza que a borda do núcleo realmente descreve. */
-          const rho = Math.hypot(g.x, g.y)
+          const rho = Math.hypot(g.x, g.y - desloc)
           alfa *= 1 - suave(limita((rho - 0.72) / 0.28))
         }
         if (alfa <= 0.004) continue
