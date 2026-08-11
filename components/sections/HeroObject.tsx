@@ -1,17 +1,32 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { ESCALA_EM, mergulho } from '@/lib/mergulho'
 
 /**
  * O objeto da hero — um cérebro sustentado por uma mão robótica, em duas
  * camadas empilhadas. Segurar fecha a mão e ergue o cérebro; o cursor
- * inclina a cena de leve. Congela por inteiro durante a rolagem — ver
- * `rolando` — porque a mesma imagem também responde ao mergulho da hero
- * (Hero.tsx), e um flutuar de 7s por cima de um scale de scroll lia como
- * tremedeira, não como vida própria. É deleite: nenhuma informação da
- * página depende disso, por isso o conjunto inteiro é um único role="img"
- * com um rótulo só, não um controle focável. Com prefers-reduced-motion
- * nada disso roda.
+ * inclina a cena de leve. Duas coisas desligam essa interatividade, e
+ * nenhuma delas mexe no crescimento/opacidade que Hero.tsx anima — só na
+ * resposta ao mouse:
+ *
+ * 1. Congela por inteiro durante a rolagem — ver `rolando` — porque a
+ *    mesma imagem também responde ao mergulho, e um flutuar de 7s por
+ *    cima de um scale de scroll lia como tremedeira, não como vida
+ *    própria.
+ * 2. Some de vez a partir de `ESCALA_EM` — ver `mergulho` — porque dali
+ *    em diante o objeto já está crescendo além da tela: segurar ou
+ *    inclinar um cérebro nesse tamanho não lê mais como brincar com um
+ *    objeto pequeno, lê como a cena reagindo errado enquanto ela devia
+ *    estar só te engolindo. Isto SIM precisa de um laço de quadro: com
+ *    `scrub` o GSAP continua alcançando `mergulho.v` por até ~1,1s depois
+ *    do último evento de scroll, sem gerar scroll nenhum nesse meio tempo
+ *    — reavaliar só no listener deixava a classe presa no valor de
+ *    quando a rolagem parou, não no valor real.
+ *
+ * É deleite: nenhuma informação da página depende disso, por isso o
+ * conjunto inteiro é um único role="img" com um rótulo só, não um
+ * controle focável. Com prefers-reduced-motion nada disso roda.
  */
 export function HeroObject() {
   const palcoRef = useRef<HTMLDivElement>(null)
@@ -82,8 +97,14 @@ export function HeroObject() {
       }, ROLAGEM_FOLGA)
     }
 
+    // Verdadeiro só na janela em que faz sentido reagir ao mouse: nem
+    // durante a rolagem, nem depois que o objeto já cresce além da tela.
+    function interativo() {
+      return !rolando && mergulho.v < ESCALA_EM
+    }
+
     function segurar(ev: PointerEvent) {
-      if (preso || rolando) return
+      if (preso || !interativo()) return
       preso = true
       clearTimeout(timer)
 
@@ -118,7 +139,7 @@ export function HeroObject() {
 
     // A inclinação é só do mouse: no toque ela brigaria com o scroll.
     function aoMover(ev: PointerEvent) {
-      if (ev.pointerType !== 'mouse' || rolando) return
+      if (ev.pointerType !== 'mouse' || !interativo()) return
       const r = palco!.getBoundingClientRect()
       par = {
         x: ((ev.clientX - r.left) / r.width - 0.5) * 2,
@@ -128,6 +149,7 @@ export function HeroObject() {
     }
 
     function aoSair() {
+      if (!interativo()) return
       par = { x: 0, y: 0 }
       aplicar()
     }
@@ -151,7 +173,18 @@ export function HeroObject() {
 
     aplicar()
 
+    /* Laço só para `imerso`: leve o bastante (uma comparação e um
+       `classList.toggle`, que já é ele mesmo um no-op quando o estado não
+       muda) para rodar a vida inteira do componente sem custo de
+       verdade — e é o único jeito de acompanhar `mergulho.v` com
+       fidelidade, já que ele se move sozinho por baixo do `scrub`. */
+    let raf = requestAnimationFrame(function quadro() {
+      palco!.classList.toggle('imerso', mergulho.v >= ESCALA_EM)
+      raf = requestAnimationFrame(quadro)
+    })
+
     return () => {
+      cancelAnimationFrame(raf)
       clearTimeout(timer)
       clearTimeout(timerRolagem)
       palco.removeEventListener('pointerdown', aoPressionar)

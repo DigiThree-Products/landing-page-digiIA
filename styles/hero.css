@@ -108,6 +108,11 @@
   transition: none;
 }
 .palco.rolando .camada--cerebro { animation-play-state: paused; }
+/* Desligado de vez a partir de ESCALA_EM (lib/mergulho.ts): o objeto já
+   está crescendo além da tela, e o flutuar de repouso por baixo da escala
+   do scroll é a mesma tremedeira que `.rolando` evita — só que permanente
+   em vez de só durante o gesto de rolar. */
+.palco.imerso .camada--cerebro { animation-play-state: paused; }
 .onda {
   position: absolute;
   z-index: 3;

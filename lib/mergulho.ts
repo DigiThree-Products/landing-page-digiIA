@@ -22,3 +22,15 @@ export const mergulho = {
   /** 0 = cérebro ao longe, 1 = dentro dele. */
   v: 0,
 }
+
+/**
+ * Fração do mergulho em que a centralização termina e a escala começa
+ * (mesmo ponto — ver a nota sobre `desloca` em Hero.tsx). Exportada daqui
+ * porque HeroObject.tsx também precisa dela: a partir deste ponto o objeto
+ * deixa de ser um cérebro pequeno e apertável e passa a ser uma imagem que
+ * já está crescendo além da tela, então segurar, a paralaxe do cursor e o
+ * flutuar ocioso são desligados — do contrário competiriam com a própria
+ * escala. Uma constante fixada duas vezes é a mesma dessincronia que o
+ * `cedeEm` já ensinou a evitar.
+ */
+export const ESCALA_EM = 0.18
