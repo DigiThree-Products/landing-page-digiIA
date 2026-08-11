@@ -35,3 +35,15 @@ export const mergulho = {
  * ensinou a evitar.
  */
 export const ESCALA_EM = 0.136
+
+/**
+ * Fração do mergulho em que a seção inteira começa a apagar, revelando a
+ * poeira cósmica de verdade atrás do cérebro (mesmo ponto — ver a nota
+ * sobre `REVELA_POEIRA_INICIO`/`TOTAL` em Hero.tsx: `3,6 / 4,0`).
+ * Exportada daqui pelo mesmo motivo que `ESCALA_EM`: `HeroEstrelas.tsx`
+ * precisa saber quando o crescimento dos grãos termina — o núcleo estrelado
+ * tem que chegar ao tamanho final ANTES de a seção começar a sumir, não
+ * durante, senão o grão ainda estaria visivelmente mudando de tamanho
+ * enquanto tudo ao redor já está apagando.
+ */
+export const REVELA_EM = 0.9

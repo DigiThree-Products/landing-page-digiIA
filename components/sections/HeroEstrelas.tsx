@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { mergulho } from '@/lib/mergulho'
+import { ESCALA_EM, mergulho, REVELA_EM } from '@/lib/mergulho'
 
 const TEXTURA = '/assets/hero/cerebro.webp'
 
@@ -43,6 +43,17 @@ const SILHUETA = 1.35
    estar visivelmente ainda se espalhando no instante em que tudo começa
    a escurecer. */
 const ABRE_ATE = 0.88
+
+/**
+ * Crescimento do GRÃO, separado da abertura do núcleo (que é sobre
+ * posição, não tamanho). O grão nasce 80× menor que o tamanho final, no
+ * mesmo instante em que o cérebro começa a crescer (`ESCALA_EM`), e chega
+ * ao tamanho final no mesmo instante em que a seção começa a apagar
+ * (`REVELA_EM`) — acompanha o scroll junto com o cérebro, na mesma janela.
+ * `power2.in` do GSAP é cúbico (`t³`), não quadrático — usar a mesma curva
+ * aqui é o que faz o grão "crescer junto", não só terminar no mesmo lugar.
+ */
+const FATOR_MINIMO = 1 / 80
 
 type Grao = {
   /** Posição no disco unitário; o raio já sai com distribuição uniforme em área. */
@@ -276,7 +287,13 @@ export function HeroEstrelas() {
          contra a arte do cérebro. Presença baixa aqui não daria
          "discreto", daria invisível de verdade. */
       const presenca = 1.3 + v * 0.5
-      const engorda = 1 + v * 0.7
+      /* De `FATOR_MINIMO` (80× menor) em `ESCALA_EM` até 1 (tamanho final)
+         em `REVELA_EM` — ver a nota em `FATOR_MINIMO`. `t³`, não a
+         `suave()` de sempre: é a mesma curva do `power2.in` que anima
+         `.palco`, para o grão crescer no mesmo ritmo do cérebro, não só
+         terminar no mesmo tamanho na mesma hora. */
+      const tCresce = limita((v - ESCALA_EM) / (REVELA_EM - ESCALA_EM))
+      const crescimento = FATOR_MINIMO + (1 - FATOR_MINIMO) * tCresce * tCresce * tCresce
       const bordaViva = abertura < 1.05
 
       ctx!.clearRect(0, 0, L, A)
@@ -335,15 +352,13 @@ export function HeroEstrelas() {
         }
         if (alfa <= 0.004) continue
 
-        /* Grande o bastante pra vencer a própria arte do cérebro, que já
-           tem dezenas de pontos de luz desenhados na textura. Medido:
-           com o piso/teto/cor anteriores (1–2,6px, cor sorteada igual
-           entre as três) o canvas somava ~1200px de alfa>0 num quadro de
-           1,1 milhão, e lado a lado com o canvas escondido a captura era
-           indistinguível a olho nu — inclusive no grão de maior alfa,
-           ampliado 10×. Piso 2 e teto 4,5 continuam distinguindo
-           profundidade (grão fundo vs. grão perto) sem virar bolha. */
-        const raio = Math.min(4.5, Math.max(2, (0.62 / g.z) * 2.2 * engorda))
+        /* Mesmo piso/teto/constantes de PoeiraFundo.tsx (0,5–5px, `1,6/z`
+           × 0,42) — é o tamanho final, o mesmo da poeira do site, que o
+           grão só atinge de verdade em `REVELA_EM`. Antes disso ele nasce
+           `crescimento` vezes menor (até 80× em `ESCALA_EM`) e cresce com
+           o scroll — ver a nota em `FATOR_MINIMO`. */
+        const raioFinal = Math.min(5, Math.max(0.5, (1.6 / g.z) * 0.42))
+        const raio = raioFinal * crescimento
         const [r, gg, b] = PALETA[g.tom]
         const alfaCore = Math.min(1, alfa)
         const corHalo = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`

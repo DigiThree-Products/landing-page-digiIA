@@ -7,7 +7,7 @@ import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
 import { LANDING } from '@/content/landing'
 /* `mergulho` já é o nome da timeline aqui embaixo; o estado compartilhado
    com o canvas das estrelas entra com nome próprio para não sombrear. */
-import { ESCALA_EM, mergulho as estadoMergulho } from '@/lib/mergulho'
+import { ESCALA_EM, mergulho as estadoMergulho, REVELA_EM } from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
@@ -148,7 +148,11 @@ export function Hero() {
                 ease: 'power1.in',
                 duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
               },
-              REVELA_POEIRA_INICIO / TOTAL,
+              // Mesmo valor de REVELA_POEIRA_INICIO/TOTAL, mas importado de
+              // lib/mergulho.ts: HeroEstrelas.tsx também precisa saber este
+              // ponto, e uma fração calculada duas vezes é a mesma
+              // dessincronia que ESCALA_EM já existe para evitar.
+              REVELA_EM,
             )
 
           return () => {
