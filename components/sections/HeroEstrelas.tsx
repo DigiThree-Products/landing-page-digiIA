@@ -25,8 +25,12 @@ const DERIVA = 0.02
 /** Abertura do núcleo, em frações do raio aparente do cérebro. */
 const NUCLEO = 0.3
 const SILHUETA = 1.35
-/** Em que ponto do mergulho a abertura termina de abrir. */
-const ABRE_ATE = 0.85
+/* Em que ponto do mergulho a abertura termina de abrir. A seção inteira
+   começa a apagar em 3,6/4,0 = 0,9 do trajeto (ver REVELA_POEIRA_INICIO
+   em Hero.tsx) — o núcleo termina de abrir um pouco antes disso, para não
+   estar visivelmente ainda se espalhando no instante em que tudo começa
+   a escurecer. */
+const ABRE_ATE = 0.88
 
 type Grao = {
   /** Posição no disco unitário; o raio já sai com distribuição uniforme em área. */
@@ -309,7 +313,7 @@ export function HeroEstrelas() {
     window.addEventListener('resize', aoRedimensionar)
     document.addEventListener('visibilitychange', aoTrocarVisibilidade)
 
-    /* A hero é a primeira seção e fica presa por 2,4 telas; passado isso
+    /* A hero é a primeira seção e fica presa por 4 telas; passado isso
        não há motivo para seguir desenhando atrás do conteúdo. */
     const observador = new IntersectionObserver(
       ([entrada]) => {

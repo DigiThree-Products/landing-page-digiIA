@@ -13,10 +13,10 @@
  *    Junto num arquivo, a definição fica onde os dois olham — o mesmo
  *    motivo de lib/poeira.ts existir.
  *
- * `v` é monotônico na descida por decisão da hero (ver a nota sobre
- * `avanco` em Hero.tsx): sobe com a rolagem, congela ao subir e só zera
- * quando a hero é reconquistada. Quem lê não precisa saber disso — só
- * que 0 é "fora" e 1 é "dentro".
+ * `v` segue a rolagem nos dois sentidos (bidirecional — ver o `onUpdate`
+ * em Hero.tsx): sobe ao descer, desce ao subir, no mesmo ritmo amortecido
+ * do `scrub`. Quem lê não precisa saber disso — só que 0 é "fora" e 1 é
+ * "dentro".
  */
 export const mergulho = {
   /** 0 = cérebro ao longe, 1 = dentro dele. */
@@ -25,12 +25,13 @@ export const mergulho = {
 
 /**
  * Fração do mergulho em que a centralização termina e a escala começa
- * (mesmo ponto — ver a nota sobre `desloca` em Hero.tsx). Exportada daqui
- * porque HeroObject.tsx também precisa dela: a partir deste ponto o objeto
- * deixa de ser um cérebro pequeno e apertável e passa a ser uma imagem que
- * já está crescendo além da tela, então segurar, a paralaxe do cursor e o
- * flutuar ocioso são desligados — do contrário competiriam com a própria
- * escala. Uma constante fixada duas vezes é a mesma dessincronia que o
- * `cedeEm` já ensinou a evitar.
+ * (mesmo ponto — ver a nota sobre `desloca` em Hero.tsx: `0,34 * FATOR`,
+ * onde FATOR = 1,6/4,0). Exportada daqui porque HeroObject.tsx também
+ * precisa dela: a partir deste ponto o objeto deixa de ser um cérebro
+ * pequeno e apertável e passa a ser uma imagem que já está crescendo além
+ * da tela, então segurar, a paralaxe do cursor e o flutuar ocioso são
+ * desligados — do contrário competiriam com a própria escala. Uma
+ * constante fixada duas vezes é a mesma dessincronia que o `cedeEm` já
+ * ensinou a evitar.
  */
-export const ESCALA_EM = 0.18
+export const ESCALA_EM = 0.136

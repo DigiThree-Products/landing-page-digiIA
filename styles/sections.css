@@ -321,6 +321,9 @@ details[open] .faq-body {
   border-top: 1px solid var(--rule);
   padding-block: 44px 60px;
   margin-top: clamp(70px, 10vh, 120px);
+  background:
+    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
+    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
 .foot-top {
   display: flex;
@@ -332,12 +335,13 @@ details[open] .faq-body {
 .foot-sig {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(19px, 2.6vw, 30px);
+  font-size: clamp(14px, 1.5vw, 20px);
   letter-spacing: -0.03em;
   color: var(--paper-56);
-  max-width: 12ch;
+  max-width: none;
+  white-space: nowrap;
   /* Também dependia da margem padrão do navegador, que o preflight zera. */
-  margin: 1em 0;
+  margin: 0.75em 0;
 }
 .foot-links {
   display: flex;

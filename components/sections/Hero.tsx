@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { Countdown } from '@/components/waitlist/Countdown'
 import { HeroObject } from '@/components/sections/HeroObject'
 import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
@@ -12,65 +12,6 @@ import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
   const root = useRef<HTMLElement>(null)
-
-  /**
-   * A sangria do véu e das estrelas, medida — não estimada.
-   *
-   * `hero-clara.css` sangrava `.hero-veu`/`.hero-estrelas` até a borda da
-   * janela com `calc(50% - 50vw - 48px)`. Essa conta supõe que `.hero` está
-   * centralizada no viewport por herança normal de layout — verdade em
-   * repouso, mas `.hero` passa a maior parte do tempo PRESA (`position:
-   * fixed`, largura e padding recalculados pelo próprio GSAP para imitar o
-   * lugar de origem — ver a nota do pin em Hero.tsx). `vw` inclui a barra
-   * de rolagem; a largura que o `.hero` preso usa, não. A mesma conta que
-   * fecha em um navegador sobra alguns pixels de fundo escuro no outro,
-   * dependendo só da largura exata da barra — foi assim que a faixa de
-   * ~24px na borda direita apareceu, confirmada em navegador real depois
-   * de não se reproduzir em captura headless.
-   *
-   * Em vez de adivinhar essa largura, mede-se o retângulo real de `.hero`
-   * contra `document.documentElement.clientWidth` (a largura de fato
-   * disponível, sem a barra) e publica-se `--sangria-esq` (deslocamento à
-   * esquerda) e `--sangria-largura` (largura final) — LARGURA em vez de um
-   * segundo deslocamento à direita de propósito: `<canvas>` é elemento
-   * substituído, e `left`+`right` sem `width` explícito não o estica —
-   * ele usa o tamanho intrínseco (300×150 por padrão) e ignora `right`. As
-   * estrelas nunca chegaram a se sobrepor ao cérebro por causa disso; só
-   * não dava pra notar porque a própria textura do cérebro já tem pontos
-   * brilhantes desenhados. `width` explícito tira as duas camadas dessa
-   * regra especial e faz o `<canvas>` esticar igual a um `<div>` faria.
-   *
-   * Reage a duas coisas: redimensionar a janela, e o próprio GSAP mudando
-   * o estilo de `.hero` ao prender/soltar — um `MutationObserver` no
-   * atributo `style` pega isso sem depender de escutar rolagem.
-   *
-   * Roda incondicional (fora do `useGSAP` de cima, que sai cedo com
-   * `prefers-reduced-motion`): com movimento reduzido `.hero` nunca é
-   * presa, então é sempre o caso "estimado" que precisa da medição real.
-   * A conta antiga continua como valor inicial das variáveis CSS — sem JS
-   * (ou antes da hidratação terminar), ela é o que se tem.
-   */
-  useEffect(() => {
-    const secao = root.current
-    if (!secao) return
-
-    function medir() {
-      const r = secao!.getBoundingClientRect()
-      const largura = document.documentElement.clientWidth
-      secao!.style.setProperty('--sangria-esq', `${-r.left}px`)
-      secao!.style.setProperty('--sangria-largura', `${largura}px`)
-    }
-
-    medir()
-    window.addEventListener('resize', medir)
-    const observador = new MutationObserver(medir)
-    observador.observe(secao, { attributes: true, attributeFilter: ['style'] })
-
-    return () => {
-      window.removeEventListener('resize', medir)
-      observador.disconnect()
-    }
-  }, [])
 
   useGSAP(
     () => {
@@ -101,59 +42,34 @@ export function Hero() {
         (contexto) => {
           const { grande } = contexto.conditions as { grande: boolean }
 
-          /* O tween da escala, em constantes, porque o ponto em que o
-             branco cede é DERIVADO dele. */
-          const ESCALA_FINAL = grande ? 18 : 12
-          const ESCALA_DUR = 0.7
-
-          /**
-           * Em que ponto da travessia o cérebro passa a cobrir a tela.
-           *
-           * É quando o branco pode ceder: até ali ainda se está do lado de
-           * fora e a poeira do site entregaria o destino antes da viagem;
-           * dali em diante não há mais superfície para atravessar, e o véu
-           * já está atrás de um desenho que ocupa tudo.
-           *
-           * Derivado em vez de cravado. Um número fixo dessincroniza em
-           * silêncio na primeira vez que alguém mexer na escala final ou na
-           * janela do tween — e foi exatamente isso que aconteceu antes,
-           * quando 0,54 valia para 10× e deixou de valer para 18×.
-           *
-           * As fracoes sao do DESENHO dentro da caixa do palco, medidas na
-           * textura: o cérebro ocupa ~55% da largura e ~63% da altura, o
-           * resto é transparência e o tronco. `offsetWidth` e não
-           * `getBoundingClientRect` porque este é o tamanho de layout, imune
-           * ao transform que o próprio mergulho aplica.
-           *
-           * O expoente 3 é o `power2.in` do tween: no GSAP, power2 é cúbico.
-           * Se a ease mudar, este expoente muda com ela.
-           */
-          const cedeEm = (() => {
-            const palco = section.querySelector<HTMLElement>('.palco')
-            if (!palco?.offsetWidth) return 0.6
-            const precisa = Math.max(
-              window.innerWidth / (palco.offsetWidth * 0.55),
-              window.innerHeight / (palco.offsetHeight * 0.63),
-            )
-            const t = Math.cbrt(Math.max(0, precisa - 1) / (ESCALA_FINAL - 1))
-            return ESCALA_EM + ESCALA_DUR * Math.min(1, t)
-          })()
-
-          /* Nos dois sentidos. O progresso segue a rolagem igual em
-             qualquer direção — subir reproduz o mergulho ao contrário, no
-             mesmo ritmo amortecido de `scrub`, em vez de congelar no
-             lugar e só voltar ao início quando a hero é reconquistada
-             por inteiro. */
           const mergulho = gsap.timeline({ paused: true })
+          const cerebro = section.querySelector<HTMLElement>('[data-camada="cerebro"]')
+
+          /* O pin segura além do fim original do mergulho (1,6 telas):
+             o cérebro continua crescendo, em vez de parar, até bem perto
+             de onde a próxima seção começa a chegar (mesma folga do
+             ATRASO em Estacoes.tsx). FATOR comprime as durações do texto
+             e da centralização para o novo total, mantendo os dois no
+             mesmo ponto físico de antes — só o crescimento da escala é
+             que se estica até o novo fim. */
+          const SEGURA = 2.4
+          const TOTAL = 1.6 + SEGURA
+          const FATOR = 1.6 / TOTAL
+
+          /* Entre estas duas telas (medidas do topo, não do início do
+             pin), o cérebro some e revela o fundo preto com a poeira
+             cósmica de verdade atrás dele — mesmo mecanismo que as
+             estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
+             para apagar junto o retângulo claro que o canvas pinta). Do
+             fim até o fim do pin ele fica parado, já transparente. */
+          const REVELA_POEIRA_INICIO = 3.6
+          const REVELA_POEIRA_FIM = 3.7
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
-             `scrub`. Motivo: o `onUpdate` do próprio ScrollTrigger não
-             chega a rodar quando a rolagem volta ao zero — e como a hero
-             é a primeira seção, o `start` cai justamente no zero e
-             `onLeaveBack` também nunca dispara. Resultado: a hero voltava
-             presa no fim do mergulho, sem o texto. O callback do tween,
-             ao contrário, roda em todo passo do scrub, inclusive no
-             último. */
+             `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
+             com a rolagem para baixo e desce (reverte o mergulho) com a
+             rolagem para cima. O `<= 0.002` trava em zero exato perto do
+             topo, para não sobrar um resíduo de arredondamento do pin. */
           const passo = { v: 0 }
           gsap.to(passo, {
             v: 1,
@@ -161,22 +77,7 @@ export function Hero() {
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              /* 3 telas. O cérebro precisa passar DA tela antes de o
-                 conteúdo começar, e isso são duas coisas: escala final
-                 maior (ver o tween do palco) e rolagem para chegar lá sem
-                 atropelo. */
-              end: () => `+=${window.innerHeight * 3}`,
-              /* Ordem de medição, não enfeite.
-                 Há duas seções presas em sequência: esta e a estação de
-                 "Veja funcionando" (Estacoes.tsx). O ScrollTrigger calcula
-                 as posições de todos os gatilhos num refresh, e os de baixo
-                 dependem do tamanho final do espaçador desta trava. Sem
-                 prioridade declarada a ordem é a de criação, e a segunda
-                 seção acabava medida contra uma hero que ainda não sabia
-                 seu próprio tamanho — a revelação dela disparava no lugar
-                 errado. Maior refresca primeiro, então isto vem em ordem de
-                 documento: hero 2, estação 1. */
-              refreshPriority: 2,
+              end: () => `+=${window.innerHeight * TOTAL}`,
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
@@ -186,14 +87,26 @@ export function Hero() {
                  posição, e é isso que dá o deslize de câmera. */
               scrub: 1.1,
               invalidateOnRefresh: true,
+              /* A estação (Estacoes.tsx) mede o próprio início a partir
+                 do fim deste pin — se o dela for recalculado antes deste,
+                 ela usa uma altura de pin desatualizada e chega cedo
+                 demais, com o cérebro ainda na tela. Prioridade mais alta
+                 garante que este pin esteja com o tamanho certo primeiro. */
+              refreshPriority: 1,
             },
             onUpdate: () => {
-              mergulho.progress(passo.v)
+              const v = passo.v <= 0.002 ? 0 : passo.v
+              mergulho.progress(v)
+              // A flutuação da .flutua (hero.css) é local ao cérebro; dentro
+              // do .palco escalado (até 80x/54x) esses poucos pixels viram
+              // um tremor enorme na tela. Suspende-a durante o mergulho,
+              // sem tocar no `transform` do HeroObject (paralaxe/segurar).
+              if (cerebro) cerebro.style.animation = v > 0 ? 'none' : ''
               /* Publica no mesmo passo em que a timeline anda. O canvas das
                  estrelas e a interatividade do objeto (HeroObject.tsx) leem
                  isto para abrir/fechar o núcleo e ligar/desligar a mão —
                  uma fonte só para os três, e sem round-trip pelo DOM. */
-              estadoMergulho.v = passo.v
+              estadoMergulho.v = v
             },
           })
 
@@ -218,28 +131,29 @@ export function Hero() {
                para o centro. Só depois o mergulho — aproximar com a
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
-            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.14 }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.18 }, 0)
-            /* Segundo tempo: centrado e sozinho, ele cresce — e cresce até
-               passar DA tela, não até encostar nela. 18× no desktop leva a
-               silhueta muito além da borda, que é o que faz a leitura ser
-               "estou dentro" em vez de "está perto".
-               Isto ocupa 70% da travessia. A imagem amolece nessa escala
-               (1600px de textura num box de 720px), e é de propósito que o
-               campo de estrelas ganhe brilho no mesmo trecho: quando a
-               superfície tem menos a mostrar, o interior tem mais. */
-            .to('.palco', { scale: ESCALA_FINAL, ease: 'power2.in', duration: ESCALA_DUR }, ESCALA_EM)
-            /* Terceiro tempo: o branco cede no instante em que o cérebro
-               passa a cobrir a tela — ver `cedeEm`. Nem antes, que
-               entregaria o destino com você ainda do lado de fora, nem
-               depois, que seria segurar um branco que ninguém mais vê. */
+            .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 * FATOR }, 0)
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 * FATOR }, 0)
+            // Segundo tempo: centrado e sozinho, agora sim ele cresce —
+            // até o novo fim do pin, não só até o fim do mergulho antigo.
+            // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
-              '.hero-veu',
-              { autoAlpha: 0, ease: 'power1.inOut', duration: Math.max(0.14, 0.86 - cedeEm) },
-              cedeEm,
+              '.palco',
+              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              0.34 * FATOR,
             )
-            // Dissolve no fim: passar do ponto só mostraria pixel esticado.
-            .to('.hero-obj', { autoAlpha: 0, ease: 'none', duration: 0.1 }, 0.9)
+            .to(
+              section,
+              {
+                opacity: 0,
+                ease: 'power1.in',
+                duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
+              },
+              REVELA_POEIRA_INICIO / TOTAL,
+            )
+
+          return () => {
+            section.style.opacity = ''
+          }
         },
       )
 
@@ -250,9 +164,11 @@ export function Hero() {
 
   return (
     <header ref={root} className="hero" id="cadastro">
-      {/* O lado de fora da mente. Branco por CSS, não por script: sem JS a
-          hero nasce clara e legível, e o mergulho é que o remove. */}
-      <div className="hero-veu" aria-hidden="true" />
+      {/* As estrelas moram dentro do cérebro (recorte pelo alfa da própria
+          textura, ver HeroEstrelas.tsx) — não dependem de a hero ter fundo
+          branco, então continuam existindo aqui mesmo sem um véu dedicado:
+          quem revela o que vem depois é a seção inteira (ver `mergulho`
+          acima), estrelas inclusas. */}
       <HeroEstrelas />
 
       <div className="hero-grid">
@@ -265,7 +181,7 @@ export function Hero() {
           </h1>
 
           <p className="sub hero-reveal">
-            {LANDING.hero.description} <span className="offer">{LANDING.hero.offer}</span>
+            {LANDING.hero.description} <a className="offer" href="#oferta">{LANDING.hero.offer}</a>
           </p>
 
           <div className="meter hero-countdown hero-reveal">
