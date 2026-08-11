@@ -21,6 +21,18 @@ const Z_MIN = 0.16
  * profundidade semeada, então o campo tem vida sem ter pressa.
  */
 const DERIVA = 0.02
+/**
+ * Peso da TAXA de mudança de `v` no avanço — não da posição de `v`.
+ * Mesmo princípio da poeira do site (PoeiraFundo.tsx: `Math.abs(velocidade)`):
+ * o campo acelera com o gesto de rolar, não com o quanto já se mergulhou.
+ * Parar no meio do mergulho acalma o campo de volta a `DERIVA`, em vez de
+ * mantê-lo acelerado só por `v` estar alto. `Math.abs` garante que subir ou
+ * descer só acelera — nunca inverte o sentido do voo.
+ */
+const K_TAXA = 5
+/** Quanto a mesma taxa vira "força" pra trocar ponto por traço no desenho —
+    ver `forca` no laço de quadro. Mesmo padrão de PoeiraFundo.tsx:318. */
+const K_FORCA = 8
 
 /** Abertura do núcleo, em frações do raio aparente do cérebro. */
 const NUCLEO = 0.38
@@ -41,6 +53,10 @@ type Grao = {
   brilho: number
   fase: number
   cintila: number
+  /** Posição na tela no quadro anterior — o rastro do voo rápido. `null`
+      logo após nascer, pra não puxar uma linha da posição antiga. */
+  px: number | null
+  py: number | null
 }
 
 const limita = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
@@ -134,6 +150,8 @@ export function HeroEstrelas() {
     let visivel = true
     let naTela = true
     let anterior = performance.now()
+    /** `v` do quadro anterior — dá a TAXA de mudança, não a posição. */
+    let vAnterior = 0
 
     const textura = new Image()
     let prontaTextura = false
@@ -158,10 +176,13 @@ export function HeroEstrelas() {
       g.brilho = 0.7 + Math.random() * 0.3
       g.fase = Math.random() * Math.PI * 2
       g.cintila = 0.7 + Math.random() * 1.7
+      // Renasceu: nenhum rastro liga a posição antiga à nova.
+      g.px = null
+      g.py = null
     }
 
     const graos: Grao[] = Array.from({ length: N }, () => {
-      const g: Grao = { x: 0, y: 0, z: 1, tom: 0, brilho: 1, fase: 0, cintila: 1 }
+      const g: Grao = { x: 0, y: 0, z: 1, tom: 0, brilho: 1, fase: 0, cintila: 1, px: null, py: null }
       /* Semeia no terço da frente da profundidade, não na faixa inteira. Em
          repouso o avanço é lento e a distribuição inicial é a que se vê: com
          z uniforme boa parte dos grãos já nascia longe, espalhada pela
@@ -193,6 +214,11 @@ export function HeroEstrelas() {
       if (!L || !A) return
 
       const v = limita(mergulho.v)
+      /* Taxa de mudança de `v`, não `v` em si — ver a nota em `K_TAXA`.
+         `Math.max(dt, 1e-3)` só evita divisão por zero num quadro de
+         duração nula; dt já vem sempre positivo do clamp acima. */
+      const taxa = Math.abs(v - vAnterior) / Math.max(dt, 1e-3)
+      vAnterior = v
 
       /* LEITURAS primeiro, escritas depois. Os dois rects custam um
          recálculo de layout por quadro — o GSAP escreveu o transform do
@@ -233,8 +259,11 @@ export function HeroEstrelas() {
       const alvoAlcance = Math.hypot(L, A) * 0.62
       const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_MIN)
       const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
-      // v² para o campo acelerar conforme você se compromete a entrar.
-      const avanco = (DERIVA + v * v * 1.15) * dt
+      // Taxa, não posição — ver a nota em `K_TAXA`.
+      const avanco = (DERIVA + taxa * K_TAXA) * dt
+      /* Mesmo papel de `forca` em PoeiraFundo.tsx:318: acima do limiar, o
+         grão desenha um traço em vez de um ponto — ver o laço abaixo. */
+      const forca = Math.min(3, taxa * K_FORCA)
       /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
          que é uma imagem CLARA e MUITO carregada (a textura já tem os
          próprios pontos de brilho desenhados). Com o canvas em `screen`
@@ -266,6 +295,15 @@ export function HeroEstrelas() {
         const espalha = R * abertura * perspectiva * ajuste
         const sx = cx + g.x * espalha
         const sy = cy + g.y * espalha
+        /* Capturado ANTES de qualquer `continue` abaixo, e sempre
+           atualizado: se só guardássemos px/py quando o grão está visível,
+           um grão que saiu da tela ou apagou por um instante voltaria
+           puxando um rastro velho, de vários quadros atrás. Atualizando
+           sempre, o rastro nunca é mais que um quadro. */
+        const pxAntes = g.px
+        const pyAntes = g.py
+        g.px = sx
+        g.py = sy
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
 
         /* Some ao nascer no fundo e ao passar rente: sem as duas bordas o
@@ -308,6 +346,8 @@ export function HeroEstrelas() {
         const raio = Math.min(4.5, Math.max(2, (0.62 / g.z) * 2.2 * engorda))
         const [r, gg, b] = PALETA[g.tom]
         const alfaCore = Math.min(1, alfa)
+        const corHalo = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
+        const corNucleo = `rgba(${r},${gg},${b},${alfaCore})`
 
         /* Dois traços, não um: um halo largo e fraco por trás do núcleo
            opaco. Com `mix-blend-mode: normal` (ver hero.css) o grão sozinho
@@ -316,16 +356,39 @@ export function HeroEstrelas() {
            o raio, ~22% do alfa) devolve a leitura de brilho sem depender
            de o composto aditivo vencer o fundo, que foi o que realmente
            falhava antes: medido, `screen` e `plus-lighter` empatavam com
-           a própria arte do cérebro e ficavam invisíveis lado a lado. */
-        ctx!.beginPath()
-        ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
-        ctx!.fill()
+           a própria arte do cérebro e ficavam invisíveis lado a lado.
 
-        ctx!.beginPath()
-        ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${r},${gg},${b},${alfaCore})`
-        ctx!.fill()
+           Ponto parado, traço rápido — mesma divisão de PoeiraFundo.tsx
+           (`forca > 0.12`): sem isso, um mergulho rápido e um repouso
+           pareciam a mesma coisa, só que com o núcleo maior ou menor. O
+           traço é quem entrega "atravessando um campo" em vez de "um
+           brilho que cresce". */
+        if (pxAntes !== null && forca > 0.12) {
+          ctx!.lineCap = 'round'
+          ctx!.beginPath()
+          ctx!.moveTo(pxAntes, pyAntes!)
+          ctx!.lineTo(sx, sy)
+          ctx!.lineWidth = raio * 2 * 2.8
+          ctx!.strokeStyle = corHalo
+          ctx!.stroke()
+
+          ctx!.beginPath()
+          ctx!.moveTo(pxAntes, pyAntes!)
+          ctx!.lineTo(sx, sy)
+          ctx!.lineWidth = raio * 2
+          ctx!.strokeStyle = corNucleo
+          ctx!.stroke()
+        } else {
+          ctx!.beginPath()
+          ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
+          ctx!.fillStyle = corHalo
+          ctx!.fill()
+
+          ctx!.beginPath()
+          ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
+          ctx!.fillStyle = corNucleo
+          ctx!.fill()
+        }
       }
 
       /* O recorte. Mantém só o que cai dentro do alfa do cérebro, então as
