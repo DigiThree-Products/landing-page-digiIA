@@ -32,14 +32,21 @@ const ABRE_ATE = 0.88
 
 /**
  * Crescimento do GRÃO, separado da abertura do núcleo (que é sobre
- * posição, não tamanho). O grão nasce 80× menor que o tamanho final, no
+ * posição, não tamanho). O grão nasce menor que o tamanho final, no
  * mesmo instante em que o cérebro começa a crescer (`ESCALA_EM`), e chega
  * ao tamanho final no mesmo instante em que a seção começa a apagar
  * (`REVELA_EM`) — acompanha o scroll junto com o cérebro, na mesma janela.
  * `power2.in` do GSAP é cúbico (`t³`), não quadrático — usar a mesma curva
  * aqui é o que faz o grão "crescer junto", não só terminar no mesmo lugar.
- */
-const FATOR_MINIMO = 1 / 80
+ *
+ * Era 1/80. Com o voo removido (ver a nota grande abaixo) o tamanho final
+ * também encolheu — sem grão passando perto da câmera, o pior caso de
+ * `raioFinal` não passa de ~1,7px — e 1/80 disso é bem menos que meio
+ * pixel: nada que um canvas rasterize de verdade, o núcleo nascia
+ * literalmente zerado (medido). Sem a proporção de 80× sobreviver a essa
+ * conta, o piso subiu para algo que ainda rasteriza como um ponto fraco,
+ * não invisível. */
+const FATOR_MINIMO = 1 / 6
 
 type Grao = {
   /** Posição no disco unitário; o raio já sai com distribuição uniforme em área. */
@@ -237,7 +244,7 @@ export function HeroEstrelas() {
          próprios pontos de brilho desenhados) — presença baixa aqui não
          daria "discreto", daria invisível de verdade. */
       const presenca = 1.3 + v * 0.5
-      /* De `FATOR_MINIMO` (80× menor) em `ESCALA_EM` até 1 (tamanho final)
+      /* De `FATOR_MINIMO` em `ESCALA_EM` até 1 (tamanho final)
          em `REVELA_EM` — ver a nota em `FATOR_MINIMO`. `t³`, não a
          `suave()` de sempre: é a mesma curva do `power2.in` que anima
          `.palco`, para o grão crescer no mesmo ritmo do cérebro, não só
@@ -273,12 +280,15 @@ export function HeroEstrelas() {
         }
         if (alfa <= 0.004) continue
 
-        /* Mesmo piso/teto/constantes de PoeiraFundo.tsx (0,5–5px, `1,6/z`
-           × 0,42) — é o tamanho final, o mesmo da poeira do site, que o
-           grão só atinge de verdade em `REVELA_EM`. Antes disso ele nasce
-           `crescimento` vezes menor (até 80× em `ESCALA_EM`) e cresce com
-           o scroll — ver a nota em `FATOR_MINIMO`. */
-        const raioFinal = Math.min(5, Math.max(0.5, (1.6 / g.z) * 0.42))
+        /* Tamanho final — o grão só atinge de verdade em `REVELA_EM`. Antes
+           disso ele nasce `crescimento` vezes menor (ver `FATOR_MINIMO`) e
+           cresce com o scroll. Não é mais o mesmo tamanho de
+           PoeiraFundo.tsx (0,42 de multiplicador) — pedido do usuário pra
+           ficar mais visível, então subiu para 0,7. Piso e teto (1–3,5px)
+           são só rede de segurança agora: sem voo, `g.z` fica sempre entre
+           `Z_PERTO` e `Z_LONGE`, e nesse intervalo a fórmula nua já rende
+           ~1,12–1,81px sozinha, nunca tocando nenhum dos dois limites. */
+        const raioFinal = Math.min(3.5, Math.max(1, (1.6 / g.z) * 0.7))
         const raio = raioFinal * crescimento
         const [r, gg, b] = PALETA[g.tom]
         const alfaCore = Math.min(1, alfa)
