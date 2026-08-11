@@ -4,10 +4,14 @@ import { useEffect, useRef } from 'react'
 
 /**
  * O objeto da hero — um cérebro sustentado por uma mão robótica, em duas
- * camadas empilhadas. Segurar levanta o cérebro e afrouxa a mão; o cursor
- * inclina a cena de leve. É deleite: nenhuma informação da página depende
- * disso, por isso o conjunto inteiro é um único role="img" com um rótulo só,
- * não um controle focável. Com prefers-reduced-motion nada disso roda.
+ * camadas empilhadas. Segurar fecha a mão e ergue o cérebro; o cursor
+ * inclina a cena de leve. Congela por inteiro durante a rolagem — ver
+ * `rolando` — porque a mesma imagem também responde ao mergulho da hero
+ * (Hero.tsx), e um flutuar de 7s por cima de um scale de scroll lia como
+ * tremedeira, não como vida própria. É deleite: nenhuma informação da
+ * página depende disso, por isso o conjunto inteiro é um único role="img"
+ * com um rótulo só, não um controle focável. Com prefers-reduced-motion
+ * nada disso roda.
  */
 export function HeroObject() {
   const palcoRef = useRef<HTMLDivElement>(null)
@@ -22,17 +26,28 @@ export function HeroObject() {
     if (!cerebro || !mao) return
 
     const ABRE = 1000 // quanto a mão leva para relaxar de volta
+    /* Quanto esperar depois do último evento de rolagem para considerar
+       "parado" de novo. Curto de propósito: é o intervalo em que o
+       usuário já soltou a roda/o dedo, não uma pausa de leitura. */
+    const ROLAGEM_FOLGA = 160
     let preso = false
+    let rolando = false
     let timer: ReturnType<typeof setTimeout>
+    let timerRolagem: ReturnType<typeof setTimeout>
     let par = { x: 0, y: 0 } // paralaxe: -1 a 1 em cada eixo
 
     function aplicar() {
       const alto = palco!.classList.contains('segurando')
+      /* A subida do cérebro é modesta de propósito: alto o bastante para
+         ler como "erguido", raso o bastante para não abrir um vão entre
+         ele e a mão — sem isso a leitura vira "o cérebro escapa", não
+         "a mão segura e levanta". A mão sobe junto, por menos, para
+         acompanhar em vez de ficar para trás. */
       cerebro!.style.transform =
-        `translate3d(${par.x * 16}px, ${par.y * 12 + (alto ? -46 : 0)}px, 0) scale(${alto ? 1.06 : 1})`
+        `translate3d(${par.x * 16}px, ${par.y * 12 + (alto ? -20 : 0)}px, 0) scale(${alto ? 1.04 : 1})`
       mao!.style.transform =
-        `translate3d(${par.x * -6}px, ${par.y * -4 + (alto ? -9 : 0)}px, 0)` +
-        ` rotate(${alto ? -1.4 : 0}deg) scaleX(${alto ? 0.93 : 1})`
+        `translate3d(${par.x * -6}px, ${par.y * -4 + (alto ? -14 : 0)}px, 0)` +
+        ` rotate(${alto ? -3.2 : 0}deg) scaleX(${alto ? 0.84 : 1})`
     }
 
     function marcar(fase: 'segurando' | 'soltando' | null) {
@@ -41,8 +56,34 @@ export function HeroObject() {
       aplicar()
     }
 
+    /* Para tudo no lugar em que está: cancela um hold em andamento sem a
+       transição de soltar (`.rolando` zera `transition` em CSS) e pausa o
+       flutuar. Não existe estado "parcial" congelado — o hold só chega a
+       existir por um gesto que a rolagem já impede de começar, então
+       parar nunca precisa lidar com uma pose no meio do caminho. */
+    function congelar() {
+      if (preso) {
+        preso = false
+        clearTimeout(timer)
+        marcar(null)
+      }
+      palco!.classList.add('rolando')
+    }
+
+    function aoRolar() {
+      if (!rolando) {
+        rolando = true
+        congelar()
+      }
+      clearTimeout(timerRolagem)
+      timerRolagem = setTimeout(() => {
+        rolando = false
+        palco!.classList.remove('rolando')
+      }, ROLAGEM_FOLGA)
+    }
+
     function segurar(ev: PointerEvent) {
-      if (preso) return
+      if (preso || rolando) return
       preso = true
       clearTimeout(timer)
 
@@ -77,7 +118,7 @@ export function HeroObject() {
 
     // A inclinação é só do mouse: no toque ela brigaria com o scroll.
     function aoMover(ev: PointerEvent) {
-      if (ev.pointerType !== 'mouse') return
+      if (ev.pointerType !== 'mouse' || rolando) return
       const r = palco!.getBoundingClientRect()
       par = {
         x: ((ev.clientX - r.left) / r.width - 0.5) * 2,
@@ -105,11 +146,14 @@ export function HeroObject() {
     window.addEventListener('blur', soltar)
     palco.addEventListener('pointermove', aoMover)
     palco.addEventListener('pointerleave', aoSair)
+    // No documento, não no palco: a rolagem não nasce dele.
+    window.addEventListener('scroll', aoRolar, { passive: true })
 
     aplicar()
 
     return () => {
       clearTimeout(timer)
+      clearTimeout(timerRolagem)
       palco.removeEventListener('pointerdown', aoPressionar)
       palco.removeEventListener('lostpointercapture', soltar)
       window.removeEventListener('pointerup', soltar)
@@ -117,6 +161,7 @@ export function HeroObject() {
       window.removeEventListener('blur', soltar)
       palco.removeEventListener('pointermove', aoMover)
       palco.removeEventListener('pointerleave', aoSair)
+      window.removeEventListener('scroll', aoRolar)
     }
   }, [])
 

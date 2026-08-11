@@ -43,7 +43,7 @@
 .hero .form-block { max-width: 540px; }
 .hero .meter { max-width: 540px; }
 
-/* Objeto em camadas. Segurar levanta o cérebro e afrouxa a mão. */
+/* Objeto em camadas. Segurar fecha a mão e ergue o cérebro. */
 .hero-obj {
   position: relative;
   min-width: 0;
@@ -98,6 +98,16 @@
 }
 .palco.segurando .camada--cerebro { filter: brightness(1.35) saturate(1.15); animation-play-state: paused; }
 .palco.segurando .camada--mao { filter: brightness(1.1); }
+/* Parado de verdade durante a rolagem: sem transição (a pose atual não
+   desliza para o repouso, ela simplesmente para) e com o flutuar em pausa.
+   O objeto também responde ao mergulho da hero (Hero.tsx) — dois motivos
+   de movimento na mesma imagem, ao mesmo tempo, é o que lia como
+   tremedeira em vez de vida própria. */
+.palco.rolando .camada--cerebro,
+.palco.rolando .camada--mao {
+  transition: none;
+}
+.palco.rolando .camada--cerebro { animation-play-state: paused; }
 .onda {
   position: absolute;
   z-index: 3;
