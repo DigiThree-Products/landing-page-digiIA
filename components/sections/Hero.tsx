@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Countdown } from '@/components/waitlist/Countdown'
 import { HeroObject } from '@/components/sections/HeroObject'
 import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
@@ -12,6 +12,65 @@ import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
   const root = useRef<HTMLElement>(null)
+
+  /**
+   * A sangria do véu e das estrelas, medida — não estimada.
+   *
+   * `hero-clara.css` sangrava `.hero-veu`/`.hero-estrelas` até a borda da
+   * janela com `calc(50% - 50vw - 48px)`. Essa conta supõe que `.hero` está
+   * centralizada no viewport por herança normal de layout — verdade em
+   * repouso, mas `.hero` passa a maior parte do tempo PRESA (`position:
+   * fixed`, largura e padding recalculados pelo próprio GSAP para imitar o
+   * lugar de origem — ver a nota do pin em Hero.tsx). `vw` inclui a barra
+   * de rolagem; a largura que o `.hero` preso usa, não. A mesma conta que
+   * fecha em um navegador sobra alguns pixels de fundo escuro no outro,
+   * dependendo só da largura exata da barra — foi assim que a faixa de
+   * ~24px na borda direita apareceu, confirmada em navegador real depois
+   * de não se reproduzir em captura headless.
+   *
+   * Em vez de adivinhar essa largura, mede-se o retângulo real de `.hero`
+   * contra `document.documentElement.clientWidth` (a largura de fato
+   * disponível, sem a barra) e publica-se `--sangria-esq` (deslocamento à
+   * esquerda) e `--sangria-largura` (largura final) — LARGURA em vez de um
+   * segundo deslocamento à direita de propósito: `<canvas>` é elemento
+   * substituído, e `left`+`right` sem `width` explícito não o estica —
+   * ele usa o tamanho intrínseco (300×150 por padrão) e ignora `right`. As
+   * estrelas nunca chegaram a se sobrepor ao cérebro por causa disso; só
+   * não dava pra notar porque a própria textura do cérebro já tem pontos
+   * brilhantes desenhados. `width` explícito tira as duas camadas dessa
+   * regra especial e faz o `<canvas>` esticar igual a um `<div>` faria.
+   *
+   * Reage a duas coisas: redimensionar a janela, e o próprio GSAP mudando
+   * o estilo de `.hero` ao prender/soltar — um `MutationObserver` no
+   * atributo `style` pega isso sem depender de escutar rolagem.
+   *
+   * Roda incondicional (fora do `useGSAP` de cima, que sai cedo com
+   * `prefers-reduced-motion`): com movimento reduzido `.hero` nunca é
+   * presa, então é sempre o caso "estimado" que precisa da medição real.
+   * A conta antiga continua como valor inicial das variáveis CSS — sem JS
+   * (ou antes da hidratação terminar), ela é o que se tem.
+   */
+  useEffect(() => {
+    const secao = root.current
+    if (!secao) return
+
+    function medir() {
+      const r = secao!.getBoundingClientRect()
+      const largura = document.documentElement.clientWidth
+      secao!.style.setProperty('--sangria-esq', `${-r.left}px`)
+      secao!.style.setProperty('--sangria-largura', `${largura}px`)
+    }
+
+    medir()
+    window.addEventListener('resize', medir)
+    const observador = new MutationObserver(medir)
+    observador.observe(secao, { attributes: true, attributeFilter: ['style'] })
+
+    return () => {
+      window.removeEventListener('resize', medir)
+      observador.disconnect()
+    }
+  }, [])
 
   useGSAP(
     () => {

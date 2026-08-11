@@ -57,22 +57,19 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  /* `left` E `right` com sobra fixa, em vez de `width: 100vw`.
-     `vw` inclui a barra de rolagem e a `.wrap` é medida sem ela, então a
-     conta exata deixa o véu curto de um lado. A sobra de 48px é cortada
-     pelo `overflow-x: hidden` do body, então excesso não custa nada e a
-     cobertura fica garantida com barra clássica ou sobreposta.
-
-     PENDÊNCIA CONHECIDA: em captura headless sobra uma tira de ~24px do
-     fundo escuro na borda direita, entre o véu e a barra de rolagem, e ela
-     NÃO é alcançável por elemento interno — testei com `left/right: -100vw`
-     e a tira permanece, o que indica que está fora da caixa de recorte do
-     body. Não foi possível determinar em headless se aparece em navegador
-     real (o controle natural, /privacidade, é escura apesar da regra
-     `.doc`). Conferir numa janela real; se aparecer, a causa está no
-     recorte do body, não aqui. */
-  left: calc(50% - 50vw - 48px);
-  right: calc(50% - 50vw - 48px);
+  /* Sangria MEDIDA, não estimada em `vw` — ver a nota grande em Hero.tsx
+     sobre `--sangria-esq`/`--sangria-largura`: foi essa estimativa que
+     deixava uma tira do fundo escuro visível na borda direita em navegador
+     real. `left` + `width` (não `left` + `right`): a mesma variável serve
+     este `<div>` e o `<canvas>` das estrelas logo abaixo, e `right` sem
+     `width` explícito não estica um elemento substituído — ver a nota lá.
+     O `calc()` antigo continua como valor inicial, para antes da
+     hidratação terminar e para quando não há JS — nesses casos ele erra
+     por, no máximo, a largura de uma barra de rolagem, e não há para onde
+     essa imprecisão ir além de um pixel a mais recortado pelo
+     `overflow-x: hidden` do body. */
+  left: var(--sangria-esq, calc(50% - 50vw - 48px));
+  width: var(--sangria-largura, calc(100vw + 96px));
   /* Atrás do conteúdo em fluxo, ainda dentro do contexto da hero. */
   z-index: -1;
   pointer-events: none;
@@ -99,10 +96,18 @@
 .hero-estrelas {
   position: absolute;
   top: 0;
-  bottom: 0;
-  /* Mesma sangria simétrica do véu; ver a nota lá. */
-  left: calc(50% - 50vw - 48px);
-  right: calc(50% - 50vw - 48px);
+  /* `height: 100%`, não `bottom: 0`: pelo mesmo motivo do `width` abaixo,
+     `top` + `bottom` sem altura explícita também cai no tamanho
+     intrínseco (150px) num elemento substituído. Verticalmente não há
+     sangria pra medir — o canvas só precisa acompanhar a altura de
+     `.hero`, sem escapar dela. */
+  height: 100%;
+  /* Mesma sangria medida do véu — e aqui `width` explícito não é só
+     estética: SEM ele este `<canvas>` (elemento substituído) ignoraria
+     `right` e usaria seu tamanho intrínseco de 300×150, nem chegando perto
+     de onde o cérebro realmente fica. Ver a nota em Hero.tsx. */
+  left: var(--sangria-esq, calc(50% - 50vw - 48px));
+  width: var(--sangria-largura, calc(100vw + 96px));
   z-index: 2;
   pointer-events: none;
   /* O grão SOMA luz ao que está embaixo em vez de cobrir.
