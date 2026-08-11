@@ -8,11 +8,18 @@
   align-items: center;
   isolation: isolate;
 }
-/* Relativa e numa camada própria: as estrelas (`.hero-estrelas`, mais
-   abaixo) pintam acima do conteúdo em fluxo, não atrás dele. */
+/* SEM `position`/`z-index` aqui de propósito — `institutional.css`
+   (`.page .hero-grid`, duas classes) já declara os dois com mais
+   especificidade que qualquer regra de uma classe só neste arquivo
+   conseguiria vencer. Foi exatamente essa dessincronia — eu supondo
+   `z-index: 1` aqui, `.page .hero-grid` de fato valendo `2` — que fez o
+   canvas das estrelas pintar atrás do cérebro por semanas inteiras, sem
+   nenhuma mudança de blend mode, tamanho ou cor jamais tendo chance de
+   corrigir: `.hero-estrelas` empatava em z-index 2 e perdia o desempate
+   por ordem do documento (o grid vem depois no JSX). `.hero-estrelas`
+   agora usa 3 — acima do que `institutional.css` realmente aplica, não
+   do que este arquivo declarava. */
 .hero-grid {
-  position: relative;
-  z-index: 1;
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
@@ -22,10 +29,18 @@
 /* ------------------------------------------------------------
    O canvas das estrelas — o núcleo estrelado dentro do cérebro.
 
-   Acima do conteúdo (z-index 2 > 1) porque as estrelas moram DENTRO do
+   Acima do conteúdo (z-index 3) porque as estrelas moram DENTRO do
    cérebro, e o cérebro é a camada mais alta do palco. Não há conflito
    visual com o texto: o recorte é o alfa do cérebro (feito no próprio
    canvas), então fora dele é transparente.
+
+   O número é 3, não 2: `.hero-grid` (ver acima) recebe `z-index: 2` de
+   `institutional.css`, fora deste arquivo. Um empate em 2 aqui perderia o
+   desempate por ordem do documento — o canvas nasce antes do grid no JSX
+   — e pintaria atrás do cérebro sem erro nenhum no console, sem nenhuma
+   propriedade "errada", só perdendo a disputa de camada. Foi assim que o
+   campo ficou invisível por várias rodadas de ajuste de brilho/cor: elas
+   nunca tinham chance de aparecer, estavam sempre atrás.
 
    `width`/`height` explícitos, não só `inset: 0`: `<canvas>` é elemento
    substituído, e sem tamanho explícito ele ignora `right`/`bottom` e usa
@@ -38,7 +53,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   /* Composição normal, não mais uma mescla aditiva.
      `screen` e depois `plus-lighter` foram as duas primeiras tentativas —
