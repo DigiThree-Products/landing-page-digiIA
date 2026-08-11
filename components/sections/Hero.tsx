@@ -139,12 +139,11 @@ export function Hero() {
             return ESCALA_EM + ESCALA_DUR * Math.min(1, t)
           })()
 
-          /* Só na descida. O avanço é monotônico: acompanha a rolagem
-             para baixo, congela se você voltar a subir e só volta ao
-             início quando a hero é reconquistada por inteiro. Sem isso,
-             `scrub` reproduziria o mergulho de ré — sair do cérebro de
-             costas, que não é o que a passagem conta. */
-          let avanco = 0
+          /* Nos dois sentidos. O progresso segue a rolagem igual em
+             qualquer direção — subir reproduz o mergulho ao contrário, no
+             mesmo ritmo amortecido de `scrub`, em vez de congelar no
+             lugar e só voltar ao início quando a hero é reconquistada
+             por inteiro. */
           const mergulho = gsap.timeline({ paused: true })
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
@@ -189,19 +188,12 @@ export function Hero() {
               invalidateOnRefresh: true,
             },
             onUpdate: () => {
-              if (passo.v > avanco) {
-                avanco = passo.v
-                mergulho.progress(avanco)
-              } else if (passo.v <= 0.002 && avanco > 0) {
-                avanco = 0
-                mergulho.progress(0)
-              } else {
-                return
-              }
+              mergulho.progress(passo.v)
               /* Publica no mesmo passo em que a timeline anda. O canvas das
-                 estrelas lê isto para abrir o núcleo e acelerar o campo —
-                 uma fonte só para os dois, e sem round-trip pelo DOM. */
-              estadoMergulho.v = avanco
+                 estrelas e a interatividade do objeto (HeroObject.tsx) leem
+                 isto para abrir/fechar o núcleo e ligar/desligar a mão —
+                 uma fonte só para os três, e sem round-trip pelo DOM. */
+              estadoMergulho.v = passo.v
             },
           })
 
