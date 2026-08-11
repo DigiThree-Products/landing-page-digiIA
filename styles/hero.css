@@ -40,15 +40,21 @@
   height: 100%;
   z-index: 2;
   pointer-events: none;
-  /* O grão SOMA luz ao que está embaixo em vez de cobrir: sobre o
-     cérebro (claro), pintura normal simplesmente não se lê. `screen`
-     (1-(1-a)(1-b)) foi a primeira tentativa, mas tem retorno decrescente
-     contra um fundo já claro — medido: o campo ficava indistinguível da
-     arte do cérebro mesmo com o dobro do alfa. `plus-lighter` soma as
-     cores direto (a+b, sem a curva do screen), então o grão estoura pra
-     branco puro onde cai, garantido de aparecer não importa o que esteja
-     embaixo. */
-  mix-blend-mode: plus-lighter;
+  /* Composição normal, não mais uma mescla aditiva.
+     `screen` e depois `plus-lighter` foram as duas primeiras tentativas —
+     ambas somam luz ao que está embaixo em vez de cobrir, o que soa certo
+     para um brilho "atravessando" o cérebro. Só que medido lado a lado
+     (canvas ligado vs. escondido, mesma região, ampliado): as duas
+     empatavam com a própria arte do cérebro, que já tem dezenas de
+     pontos de luz desenhados, e ficavam indistinguíveis mesmo depois de
+     triplicar tamanho e alfa dos grãos. Um blend aditivo só vence onde o
+     fundo está ESCURO — aqui o fundo é uma imagem clara em quase toda
+     parte, então a soma nunca tinha onde crescer. `normal` pinta o grão
+     com a própria cor, opaco de verdade, garantido de aparecer não
+     importa o que esteja embaixo — o halo suave por trás de cada grão
+     (ver HeroEstrelas.tsx) é quem devolve a leitura de brilho que o
+     blend aditivo dava de graça. */
+  mix-blend-mode: normal;
 }
 .hero-col { min-width: 0; max-width: 570px; }
 .hero h1 {

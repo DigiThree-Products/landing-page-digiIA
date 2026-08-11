@@ -71,11 +71,11 @@ function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [numbe
  * grãos se espalham até a silhueta inteira e a profundidade acelera, então
  * você deixa de olhar um brilho e passa a atravessar um campo.
  *
- * Três decisões que não são livres:
+ * Quatro decisões que não são livres:
  *
- * 1. **O canvas não é filho de `.palco`.** O palco escala até 11× no
+ * 1. **O canvas não é filho de `.palco`.** O palco escala até 80× no
  *    mergulho, e um canvas escalado por CSS escala os pixels: as estrelas
- *    ficariam 11× maiores e borradas, o oposto do que se quer. Aqui ele
+ *    ficariam 80× maiores e borradas, o oposto do que se quer. Aqui ele
  *    fica em resolução 1:1 e a projeção usa o retângulo aparente do
  *    cérebro, lido a cada quadro. Assim o tamanho do grão é escolhido, não
  *    herdado.
@@ -87,6 +87,15 @@ function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [numbe
  *    a imagem está ampliada além do nativo e amolece. O campo ganhando
  *    presença move a atenção da superfície para o interior justamente
  *    onde a superfície tem menos a mostrar.
+ * 4. **Composição normal, com halo, não mescla aditiva.** `screen` e
+ *    `plus-lighter` pareciam a escolha óbvia (o campo deveria somar luz,
+ *    não cobrir) — mas medido lado a lado contra a própria arte do
+ *    cérebro, que já é uma imagem clara e carregada de pontos de brilho
+ *    desenhados, as duas ficavam indistinguíveis do fundo. Aditivo só
+ *    vence contra um fundo escuro; aqui o fundo raramente é. Grão opaco
+ *    (`normal`) com um halo largo e fraco por trás garante a leitura de
+ *    brilho sem depender do que está embaixo — ver a nota no loop mais
+ *    abaixo.
  *
  * Puro enfeite: sem JS, sem WebGL ou com movimento reduzido, a hero
  * continua branca, legível e completa — o cérebro é uma imagem, não um
@@ -298,9 +307,24 @@ export function HeroEstrelas() {
            profundidade (grão fundo vs. grão perto) sem virar bolha. */
         const raio = Math.min(4.5, Math.max(2, (0.62 / g.z) * 2.2 * engorda))
         const [r, gg, b] = PALETA[g.tom]
+        const alfaCore = Math.min(1, alfa)
+
+        /* Dois traços, não um: um halo largo e fraco por trás do núcleo
+           opaco. Com `mix-blend-mode: normal` (ver hero.css) o grão sozinho
+           lia como um adesivo colado — um círculo de borda dura, sem
+           relação com a luz que o cérebro já emite ao redor. O halo (2,8×
+           o raio, ~22% do alfa) devolve a leitura de brilho sem depender
+           de o composto aditivo vencer o fundo, que foi o que realmente
+           falhava antes: medido, `screen` e `plus-lighter` empatavam com
+           a própria arte do cérebro e ficavam invisíveis lado a lado. */
+        ctx!.beginPath()
+        ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
+        ctx!.fill()
+
         ctx!.beginPath()
         ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${r},${gg},${b},${Math.min(1, alfa)})`
+        ctx!.fillStyle = `rgba(${r},${gg},${b},${alfaCore})`
         ctx!.fill()
       }
 
