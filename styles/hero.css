@@ -8,12 +8,68 @@
   align-items: center;
   isolation: isolate;
 }
+/* SEM `position`/`z-index` aqui de propósito — `institutional.css`
+   (`.page .hero-grid`, duas classes) já declara os dois com mais
+   especificidade que qualquer regra de uma classe só neste arquivo
+   conseguiria vencer. Foi exatamente essa dessincronia — eu supondo
+   `z-index: 1` aqui, `.page .hero-grid` de fato valendo `2` — que fez o
+   canvas das estrelas pintar atrás do cérebro por semanas inteiras, sem
+   nenhuma mudança de blend mode, tamanho ou cor jamais tendo chance de
+   corrigir: `.hero-estrelas` empatava em z-index 2 e perdia o desempate
+   por ordem do documento (o grid vem depois no JSX). `.hero-estrelas`
+   agora usa 3 — acima do que `institutional.css` realmente aplica, não
+   do que este arquivo declarava. */
 .hero-grid {
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
   align-items: center;
   gap: clamp(34px, 5vw, 82px);
+}
+/* ------------------------------------------------------------
+   O canvas das estrelas — o núcleo estrelado dentro do cérebro.
+
+   Acima do conteúdo (z-index 3) porque as estrelas moram DENTRO do
+   cérebro, e o cérebro é a camada mais alta do palco. Não há conflito
+   visual com o texto: o recorte é o alfa do cérebro (feito no próprio
+   canvas), então fora dele é transparente.
+
+   O número é 3, não 2: `.hero-grid` (ver acima) recebe `z-index: 2` de
+   `institutional.css`, fora deste arquivo. Um empate em 2 aqui perderia o
+   desempate por ordem do documento — o canvas nasce antes do grid no JSX
+   — e pintaria atrás do cérebro sem erro nenhum no console, sem nenhuma
+   propriedade "errada", só perdendo a disputa de camada. Foi assim que o
+   campo ficou invisível por várias rodadas de ajuste de brilho/cor: elas
+   nunca tinham chance de aparecer, estavam sempre atrás.
+
+   `width`/`height` explícitos, não só `inset: 0`: `<canvas>` é elemento
+   substituído, e sem tamanho explícito ele ignora `right`/`bottom` e usa
+   o tamanho intrínseco (300×150) — nem chega perto de cobrir a hero. Sem
+   sangria em `vw`: `.hero` já nasce exatamente do tamanho da janela (o
+   `.wrap` é irrestrito — ver layout.css/institutional.css), preso ou não,
+   então o próprio retângulo de `.hero` já é a borda certa. */
+.hero-estrelas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  /* Composição normal, não mais uma mescla aditiva.
+     `screen` e depois `plus-lighter` foram as duas primeiras tentativas —
+     ambas somam luz ao que está embaixo em vez de cobrir, o que soa certo
+     para um brilho "atravessando" o cérebro. Só que medido lado a lado
+     (canvas ligado vs. escondido, mesma região, ampliado): as duas
+     empatavam com a própria arte do cérebro, que já tem dezenas de
+     pontos de luz desenhados, e ficavam indistinguíveis mesmo depois de
+     triplicar tamanho e alfa dos grãos. Um blend aditivo só vence onde o
+     fundo está ESCURO — aqui o fundo é uma imagem clara em quase toda
+     parte, então a soma nunca tinha onde crescer. `normal` pinta o grão
+     com a própria cor, opaco de verdade, garantido de aparecer não
+     importa o que esteja embaixo — o halo suave por trás de cada grão
+     (ver HeroEstrelas.tsx) é quem devolve a leitura de brilho que o
+     blend aditivo dava de graça. */
+  mix-blend-mode: normal;
 }
 .hero-col { min-width: 0; max-width: 570px; }
 .hero h1 {
@@ -43,7 +99,8 @@
 .hero .form-block { max-width: 540px; }
 .hero .meter { max-width: 540px; }
 
-/* Objeto em camadas. Segurar levanta o cérebro e afrouxa a mão. */
+/* Objeto em camadas. Segurar fecha a mão e ergue o cérebro; o cursor
+   inclina de leve. */
 .hero-obj {
   position: relative;
   min-width: 0;
@@ -88,7 +145,44 @@
   transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), filter 0.38s var(--ease);
 }
 .camada--cerebro { animation: flutua 7s ease-in-out infinite; }
+.palco.segurando .camada--cerebro,
+.palco.segurando .camada--mao {
+  transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s var(--ease);
+}
+.palco.soltando .camada--cerebro,
+.palco.soltando .camada--mao {
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s var(--ease);
+}
+.palco.segurando .camada--cerebro { filter: brightness(1.35) saturate(1.15); animation-play-state: paused; }
+.palco.segurando .camada--mao { filter: brightness(1.1); }
+/* Parado de verdade durante a rolagem: sem transição (a pose atual não
+   desliza para o repouso, ela simplesmente para) e com o flutuar em pausa.
+   O objeto também responde ao mergulho da hero (Hero.tsx) — dois motivos
+   de movimento na mesma imagem, ao mesmo tempo, é o que lia como
+   tremedeira em vez de vida própria. */
+.palco.rolando .camada--cerebro,
+.palco.rolando .camada--mao {
+  transition: none;
+}
+.palco.rolando .camada--cerebro { animation-play-state: paused; }
+/* `.imerso` não precisa pausar o `flutua` aqui: Hero.tsx já cancela essa
+   animação por inline style (`cerebro.style.animation = 'none'`) durante
+   todo o mergulho, e inline sempre vence classe. A classe existe só para
+   o JS de HeroObject.tsx (`interativo()`) saber quando desligar segurar e
+   a paralaxe — ver a nota no topo do arquivo. */
+.onda {
+  position: absolute;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid var(--lilac);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: onda 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
 @keyframes flutua { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes onda { 0% { transform: scale(1); opacity: 0.95; } 100% { transform: scale(16); opacity: 0; } }
 
 @media (max-width: 980px) {
   .hero { min-height: auto; align-items: stretch; }

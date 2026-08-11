@@ -100,7 +100,15 @@ export function PoeiraFundo() {
        A cor do texto não muda em runtime, então isso é medido uma vez. */
     let secoes: { el: HTMLElement; claro: number; raioBase: number }[] = []
     function mapearSecoes() {
-      const alvos = document.querySelectorAll<HTMLElement>('.page .hero, .page section, .page .site-footer')
+      /* A hero está FORA daqui de propósito. Ela tem o próprio campo, o
+         núcleo estrelado recortado dentro do cérebro (HeroEstrelas), e
+         pinta o próprio branco em CSS.
+         Deixá-la no mapa não seria apenas redundante: como a hero clara tem
+         texto escuro, a heurística abaixo a marcaria como zona clara e os
+         grãos ali sairiam em silhueta. Quando o véu branco cede no fim do
+         mergulho, o fundo já é escuro — silhueta escura sobre escuro é grão
+         invisível, e a entrega do núcleo para este campo não aconteceria. */
+      const alvos = document.querySelectorAll<HTMLElement>('.page section, .page .site-footer')
       secoes = Array.from(alvos, (secao) => {
         const m = getComputedStyle(secao).color.match(/-?\d+(\.\d+)?/g)
         const lum = m && m.length >= 3

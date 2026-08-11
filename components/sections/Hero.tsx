@@ -3,7 +3,11 @@
 import { useRef } from 'react'
 import { Countdown } from '@/components/waitlist/Countdown'
 import { HeroObject } from '@/components/sections/HeroObject'
+import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
 import { LANDING } from '@/content/landing'
+/* `mergulho` já é o nome da timeline aqui embaixo; o estado compartilhado
+   com o canvas das estrelas entra com nome próprio para não sombrear. */
+import { ESCALA_EM, mergulho as estadoMergulho, REVELA_EM } from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
@@ -94,10 +98,15 @@ export function Hero() {
               const v = passo.v <= 0.002 ? 0 : passo.v
               mergulho.progress(v)
               // A flutuação da .flutua (hero.css) é local ao cérebro; dentro
-              // do .palco escalado (até 59x/40x) esses poucos pixels viram
+              // do .palco escalado (até 80x/54x) esses poucos pixels viram
               // um tremor enorme na tela. Suspende-a durante o mergulho,
-              // sem tocar no `transform` do HeroObject (paralaxe).
+              // sem tocar no `transform` do HeroObject (paralaxe/segurar).
               if (cerebro) cerebro.style.animation = v > 0 ? 'none' : ''
+              /* Publica no mesmo passo em que a timeline anda. O canvas das
+                 estrelas e a interatividade do objeto (HeroObject.tsx) leem
+                 isto para abrir/fechar o núcleo e ligar/desligar a mão —
+                 uma fonte só para os três, e sem round-trip pelo DOM. */
+              estadoMergulho.v = v
             },
           })
 
@@ -139,7 +148,11 @@ export function Hero() {
                 ease: 'power1.in',
                 duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
               },
-              REVELA_POEIRA_INICIO / TOTAL,
+              // Mesmo valor de REVELA_POEIRA_INICIO/TOTAL, mas importado de
+              // lib/mergulho.ts: HeroEstrelas.tsx também precisa saber este
+              // ponto, e uma fração calculada duas vezes é a mesma
+              // dessincronia que ESCALA_EM já existe para evitar.
+              REVELA_EM,
             )
 
           return () => {
@@ -155,6 +168,13 @@ export function Hero() {
 
   return (
     <header ref={root} className="hero" id="cadastro">
+      {/* As estrelas moram dentro do cérebro (recorte pelo alfa da própria
+          textura, ver HeroEstrelas.tsx) — não dependem de a hero ter fundo
+          branco, então continuam existindo aqui mesmo sem um véu dedicado:
+          quem revela o que vem depois é a seção inteira (ver `mergulho`
+          acima), estrelas inclusas. */}
+      <HeroEstrelas />
+
       <div className="hero-grid">
         <div className="hero-col">
           <p className="tag hero-reveal">{LANDING.hero.eyebrow}</p>
