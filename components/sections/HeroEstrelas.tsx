@@ -23,7 +23,7 @@ const Z_MIN = 0.16
 const DERIVA = 0.02
 
 /** Abertura do núcleo, em frações do raio aparente do cérebro. */
-const NUCLEO = 0.3
+const NUCLEO = 0.38
 const SILHUETA = 1.35
 /* Em que ponto do mergulho a abertura termina de abrir. A seção inteira
    começa a apagar em 3,6/4,0 = 0,9 do trajeto (ver REVELA_POEIRA_INICIO
@@ -140,8 +140,13 @@ export function HeroEstrelas() {
       g.x = Math.cos(ang) * rho
       g.y = Math.sin(ang) * rho
       g.z = z
-      g.tom = (Math.random() * PALETA.length) | 0
-      g.brilho = 0.45 + Math.random() * 0.55
+      /* Mais branco que roxo, de propósito: lilás e violeta (--mid) são
+         próximos demais da própria paleta do cérebro pra se destacarem —
+         testei visualmente e um grão lilás sobre um filamento lilás não
+         lê como grão nenhum. O branco (--paper) estoura de verdade contra
+         qualquer coisa embaixo. */
+      g.tom = Math.random() < 0.55 ? 2 : (Math.random() * 2) | 0
+      g.brilho = 0.7 + Math.random() * 0.3
       g.fase = Math.random() * Math.PI * 2
       g.cintila = 0.7 + Math.random() * 1.7
     }
@@ -222,13 +227,17 @@ export function HeroEstrelas() {
       // v² para o campo acelerar conforme você se compromete a entrar.
       const avanco = (DERIVA + v * v * 1.15) * dt
       /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
-         que é uma imagem CLARA. Com o canvas em `screen` (ver hero-clara.css)
-         o grão soma luz: ele aparece forte nos vãos escuros entre os
-         filamentos e se dissolve sobre os traços já brilhantes — que é
-         justamente como um campo de estrelas se leria visto de dentro de
-         algo luminoso. Presença baixa aqui não daria "discreto", daria
-         "invisível". */
-      const presenca = 0.9 + v * 0.5
+         que é uma imagem CLARA e MUITO carregada (a textura já tem os
+         próprios pontos de brilho desenhados). Com o canvas em `screen`
+         (ver hero.css) o grão soma luz: ele aparece forte nos vãos escuros
+         entre os filamentos e se dissolve sobre os traços já brilhantes —
+         que é justamente como um campo de estrelas se leria visto de
+         dentro de algo luminoso. Medido: com presença 0,9 e grão de
+         0,4–1,7px o canvas rendia ~700px de alfa>0 num quadro de 1,1
+         milhão — nem em captura lado a lado dava pra notar a diferença
+         contra a arte do cérebro. Presença baixa aqui não daria
+         "discreto", daria invisível de verdade. */
+      const presenca = 1.3 + v * 0.5
       const engorda = 1 + v * 0.7
       const bordaViva = abertura < 1.05
 
@@ -260,7 +269,7 @@ export function HeroEstrelas() {
         const entrada = Math.min(1, (1 - g.z) / 0.1)
         const saida = Math.min(1, (g.z - Z_MIN) / 0.08)
 
-        let alfa = (0.42 + 0.5 * (1 - g.z)) * g.brilho * presenca * entrada * saida
+        let alfa = (0.65 + 0.5 * (1 - g.z)) * g.brilho * presenca * entrada * saida
         alfa *= 1 + Math.sin(t / 1000 * g.cintila + g.fase) * 0.28
 
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a
@@ -279,18 +288,19 @@ export function HeroEstrelas() {
         }
         if (alfa <= 0.004) continue
 
-        /* Bem menores que os da poeira de fundo, que vão de 0,5 a 5px: aqui
-           o teto é 1,7 e o piso 0,4.
-           A constante é 0,62 e não 0,3 porque com o valor anterior a conta
-           dava 0,19–0,30 na faixa de repouso — TODO grão batia no piso e o
-           núcleo perdia a leitura de profundidade, virando um chuvisco de
-           pontos idênticos. Agora o repouso rende ~0,53 a 0,85px, então o
-           grão fundo e o grão perto se distinguem sem nenhum deles crescer. */
-        const raio = Math.min(1.7, Math.max(0.4, (0.62 / g.z) * 0.85 * engorda))
+        /* Grande o bastante pra vencer a própria arte do cérebro, que já
+           tem dezenas de pontos de luz desenhados na textura. Medido:
+           com o piso/teto/cor anteriores (1–2,6px, cor sorteada igual
+           entre as três) o canvas somava ~1200px de alfa>0 num quadro de
+           1,1 milhão, e lado a lado com o canvas escondido a captura era
+           indistinguível a olho nu — inclusive no grão de maior alfa,
+           ampliado 10×. Piso 2 e teto 4,5 continuam distinguindo
+           profundidade (grão fundo vs. grão perto) sem virar bolha. */
+        const raio = Math.min(4.5, Math.max(2, (0.62 / g.z) * 2.2 * engorda))
         const [r, gg, b] = PALETA[g.tom]
         ctx!.beginPath()
         ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${r},${gg},${b},${Math.min(0.95, alfa)})`
+        ctx!.fillStyle = `rgba(${r},${gg},${b},${Math.min(1, alfa)})`
         ctx!.fill()
       }
 

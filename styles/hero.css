@@ -41,10 +41,14 @@
   z-index: 2;
   pointer-events: none;
   /* O grão SOMA luz ao que está embaixo em vez de cobrir: sobre o
-     cérebro (claro), pintura normal simplesmente não se lê — em
-     `screen` ele acende os vãos escuros do desenho e se dissolve sobre
-     os traços já claros, então o campo aparece ATRAVÉS do cérebro. */
-  mix-blend-mode: screen;
+     cérebro (claro), pintura normal simplesmente não se lê. `screen`
+     (1-(1-a)(1-b)) foi a primeira tentativa, mas tem retorno decrescente
+     contra um fundo já claro — medido: o campo ficava indistinguível da
+     arte do cérebro mesmo com o dobro do alfa. `plus-lighter` soma as
+     cores direto (a+b, sem a curva do screen), então o grão estoura pra
+     branco puro onde cai, garantido de aparecer não importa o que esteja
+     embaixo. */
+  mix-blend-mode: plus-lighter;
 }
 .hero-col { min-width: 0; max-width: 570px; }
 .hero h1 {
