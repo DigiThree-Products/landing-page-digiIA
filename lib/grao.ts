@@ -124,10 +124,10 @@ export function progresso(v: number, de: number, ate: number): number {
 /**
  * Multiplicador do raio sobre `raioDoGrao`.
  *
- * O valor de repouso 0,397 é `(1 / 0,42) × (1/6)`: reproduz exatamente o
- * tamanho que o núcleo tinha em repouso antes desta mudança, com o
- * `FATOR_MINIMO` antigo e a razão entre as duas fórmulas de raio já
- * embutidos. Quem cresce de verdade durante o mergulho não é só este
+ * O valor de repouso 0,397 é `(1 / 0,42) × (1/6)` arredondado (o exato é
+ * 0,396825…): reproduz o tamanho que o núcleo tinha em repouso antes
+ * desta mudança, com o `FATOR_MINIMO` antigo e a razão entre as duas
+ * fórmulas de raio já embutidos. Quem cresce de verdade durante o mergulho não é só este
  * ganho — é ele junto com `zConvergente`, e é a soma dos dois que faz o
  * campo ganhar VARIAÇÃO em vez de só ficar maior.
  */

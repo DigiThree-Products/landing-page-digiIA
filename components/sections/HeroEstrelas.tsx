@@ -326,10 +326,18 @@ export function HeroEstrelas() {
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a
            borda — e ela precisa ser macia, senão o campo lê como um disco
            recortado em vez de um brilho. Depois de abrir, quem corta é a
-           máscara do cérebro e este fade sai de cena. */
-        if (bordaViva) {
+           máscara do cérebro e este fade sai de cena.
+
+           `rho` é a distância no DISCO, não na tela, e a posição do grão
+           deixa de ser a do disco conforme converge para o alvo uniforme.
+           Por isso a máscara perde força junto com `p`: a borda macia
+           pertence ao disco, e o disco vai deixando de existir. Sem esse
+           fator, o grão já espalhado continuaria sendo escurecido por uma
+           distância de onde ele não está mais — escurecimento sem relação
+           com o que se vê na tela. */
+        if (bordaViva && p < 1) {
           const rho = Math.hypot(g.x, g.y)
-          alfa *= 1 - suave(limita((rho - 0.72) / 0.28))
+          alfa *= 1 - suave(limita((rho - 0.72) / 0.28)) * (1 - p)
         }
         if (alfa <= 0.004) continue
 
