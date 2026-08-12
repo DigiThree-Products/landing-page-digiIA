@@ -65,20 +65,20 @@ export function Hero() {
              revela o fundo preto com a poeira cósmica de verdade atrás
              dele, mesmo mecanismo que as estações usam
              (`el.style.opacity`, lido por PoeiraFundo.tsx para apagar
-             junto o retângulo claro que o canvas pinta). Do fim dela até o
-             fim do pin ele fica parado, já transparente.
+             junto o retângulo claro que o canvas pinta).
 
              Ela mora em `REVELA_EM`/`REVELA_FIM_EM` (lib/mergulho.ts), não
-             aqui: em telas medidas do topo são 3,5→3,8 de 4,0, e o núcleo
+             aqui: em telas medidas do topo são 3,5→4,0 de 4,0, e o núcleo
              estrelado precisa exatamente dos mesmos dois pontos. Havia
              constantes locais com esses números, e eram armadilha — quem
-             editasse o 3,8 aqui, ao lado desta explicação, não mudaria
+             editasse um deles aqui, ao lado desta explicação, não mudaria
              nada, porque a timeline lê as frações importadas.
 
-             Era 0,1 tela (3,6→3,7) e foi para 0,3 para dar espaço ao que o
-             núcleo faz aqui dentro. A folga saiu do fim do pin, que já era
-             só espera: `TOTAL` não mudou e as seções seguintes não sentem
-             nada. */
+             Era 0,1 tela (3,6→3,7), foi para 0,3 e agora ocupa a folga
+             inteira até o fim do pin. Não sobra mais trecho com o cérebro
+             transparente parado esperando: ele apaga exatamente quando o
+             pin acaba, e a escala termina junto. `TOTAL` nunca mudou, então
+             as seções seguintes não sentem nada. */
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
@@ -153,7 +153,12 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              /* 90×, e agora ele chega lá de verdade. Antes o alvo era 80
+                 mas a seção terminava de apagar em `v = 0,95`, onde a
+                 escala vale ~67× — os últimos 13× rodavam com o cérebro já
+                 invisível, puro custo sem nada na tela. Com a dissolução
+                 indo até o fim do pin, o alvo passou a ser o que se vê. */
+              { scale: grande ? 90 : 60, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
             .to(
