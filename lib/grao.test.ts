@@ -19,7 +19,6 @@ import {
   suave,
   TETO_ALFA,
   viesBranco,
-  zConvergente,
 } from './grao.ts'
 
 const perto = (a: number, b: number) => assert.equal(Number(a.toFixed(6)), Number(b.toFixed(6)))
@@ -127,12 +126,6 @@ test('corComVies caminha da cor até o branco', () => {
   assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 0), [200, 100, 250])
   assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 1), [248, 240, 255])
   assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 0.5), [224, 170, 253])
-})
-
-test('zConvergente vai do repouso ao alvo', () => {
-  perto(zConvergente(0.62, 0.05, 0), 0.62)
-  perto(zConvergente(0.62, 0.05, 1), 0.05)
-  perto(zConvergente(0.62, 0.05, 0.5), 0.335)
 })
 
 /* As duas agendas têm que se encontrar exatamente onde a dissolução

@@ -21,7 +21,6 @@ import {
   suave,
   TETO_ALFA,
   viesBranco,
-  zConvergente,
 } from '@/lib/grao'
 import { ESCALA_EM, mergulho, REVELA_EM, REVELA_FIM_EM } from '@/lib/mergulho'
 
@@ -37,10 +36,9 @@ const { grande: N_GRANDE, toque: N_TOQUE } = CONTAGEM_GRAOS
  * Faixa de profundidade de REPOUSO — a que governa a projeção do disco.
  *
  * Fica fixa, e é ela que mantém `perspectiva` e o ajuste de alcance
- * válidos: a profundidade que CONVERGE (ver `zConvergente` no laço) desce
- * até 0,05, onde a perspectiva valeria 8,6 e jogaria o grão para fora da
- * tela. Por isso as duas são coisas separadas — esta projeta, aquela só
- * governa raio e alfa.
+ * válidos: a profundidade VIVA (`g.z`, que voa) desce até 0,05, onde a
+ * perspectiva valeria 8,6 e jogaria o grão para fora da tela. Por isso as
+ * duas são coisas separadas — esta projeta o disco parado, aquela voa.
  *
  * `Z_PERTO` também é o pior caso usado no ajuste de alcance, mais abaixo —
  * uma constante só, não dois números que podem dessincronizar.
@@ -63,39 +61,54 @@ const ABRE_ATE = 0.85
 
 /**
  * Um grão, aqui, é a identidade compartilhada com o campo do site mais
- * duas profundidades e uma posição no disco.
+ * duas profundidades e duas posições.
  *
- * `zRepouso` projeta (a perspectiva do disco depende dela e só dela);
- * `zFundo` é o alvo em `FAIXA_Z` para onde a profundidade caminha, e só
- * governa raio e alfa. Separar as duas é o que permite o campo ganhar a
- * profundidade do site sem os grãos voarem para fora da tela.
+ * As duas profundidades existem porque o grão é projetado de dois jeitos
+ * ao mesmo tempo, misturados pela rampa do voo: `zRepouso` projeta o disco
+ * parado do repouso, e `z` — a viva, que voa e recicla — projeta o modelo
+ * do site. Uma só não serve: a viva desce até 0,05, onde a perspectiva do
+ * disco valeria 8,6 e jogaria o grão para fora da tela.
  */
 type Grao = Identidade & {
   /** Posição no disco unitário; o raio já sai com distribuição uniforme em área. */
   x: number
   y: number
+  /** Profundidade do disco em repouso — só projeta, nunca voa. */
   zRepouso: number
-  zFundo: number
-  /** Alvo da posição, em fração de tela [0,1]. Guardado em fração e não
-      em pixels para sobreviver a resize sem o grão pular de lugar. */
-  alvoX: number
-  alvoY: number
+  /**
+   * Profundidade VIVA: desce com o voo e recicla ao passar pela câmera.
+   * Nasce na faixa de repouso, então em `v = 0` o campo é exatamente o que
+   * era antes; conforme voa, ela desce e recicla, e a distribuição se
+   * espalha sozinha por `FAIXA_Z` — sem ninguém interpolar nada.
+   */
+  z: number
+  /**
+   * Coordenadas no modelo do campo do site, sorteadas proporcionais a `z`.
+   * É esse truque que faz `x / z` cair uniforme na janela qualquer que
+   * seja a profundidade — e é por isso que o grão escorre para FORA
+   * conforme se aproxima, em vez de só ficar maior.
+   */
+  mx: number
+  my: number
 }
 
 /**
  * O universo dentro do cérebro.
  *
  * Um núcleo estrelado no miolo do cérebro — pequeno e quase invisível em
- * repouso, abre e cresce conforme o mergulho avança (posição via
- * `abertura`, tamanho via `ganhoRaio` junto com `zConvergente`), mas fica
- * PARADO: sem voo, sem deslize, só ali. A sensação de viagem não é dele —
- * é da revelação de verdade, quando a seção inteira apaga (`REVELA_EM`,
- * ver Hero.tsx) e descobre a poeira cósmica real do site atrás do cérebro
- * (mesmo mecanismo de PoeiraFundo.tsx, que já tem o próprio túnel).
- * Fingir um voo próprio aqui dentro, numa silhueta pequena e recortada,
- * competiria com essa revelação em vez de prepará-la — testado (voo em
- * profundidade, rastro e um segundo eixo tipo túnel) e revertido por
- * decisão: o campo pequeno lia como poluído, não como viagem.
+ * repouso, abre e cresce conforme o mergulho avança — e VOA, com o campo
+ * escorrendo para fora e reciclando, como o do site.
+ *
+ * O voo já foi removido daqui uma vez (commit `28b1802`) porque lia como
+ * poluição, não como viagem. Essa leitura estava certa **para onde ele
+ * rodava**: um disco pequeno e parado, com o campo em repouso. O que
+ * mudou é que agora ele tem amplitude ZERO no repouso e entra junto com a
+ * descida, quando o cérebro já cresceu e não existe mais disco pequeno.
+ *
+ * Ele voltou porque a travessia sem ele não tinha continuidade: o campo do
+ * site chega voando, e um núcleo parado ao lado dele denuncia que são dois
+ * campos diferentes por mais que tamanho, cor, alfa e densidade estejam
+ * casados. Movimento era o sétimo eixo, e o único que faltava.
  *
  * **Este campo converge para o do site.** O look próprio dele — grão
  * maior, mais opaco, com halo, mais branco — não é um conjunto de
@@ -167,6 +180,9 @@ export function HeroEstrelas() {
     let raf = 0
     let visivel = true
     let naTela = true
+    /** Estado do voo: o quadro anterior, para tirar dt e a velocidade do mergulho. */
+    let tAnterior = 0
+    let vAnterior = 0
 
     const textura = new Image()
     let prontaTextura = false
@@ -175,6 +191,21 @@ export function HeroEstrelas() {
     }
     textura.src = TEXTURA
 
+    /**
+     * Posição no modelo do site, para uma dada profundidade.
+     *
+     * `mx` proporcional a `z` é o que cancela a divisão da perspectiva:
+     * `mx / z` cai uniforme na janela venha o grão de onde vier. Separado
+     * de `sortear` porque a reciclagem do voo precisa disto sozinho — um
+     * grão que volta para o fundo troca de lugar, não de identidade.
+     */
+    function semearModelo(g: Grao, z: number) {
+      const escala = Math.min(L, spanY) * 0.62 || 1
+      g.z = z
+      g.mx = (Math.random() * 2 - 1) * (((L / 2 + 90) * z) / escala)
+      g.my = (Math.random() * 2 - 1) * (((spanY / 2 + 90) * z) / escala)
+    }
+
     function sortear(g: Grao) {
       const ang = Math.random() * Math.PI * 2
       // sqrt para o disco encher por igual; sem ele o centro fica denso demais
@@ -182,9 +213,10 @@ export function HeroEstrelas() {
       g.x = Math.cos(ang) * rho
       g.y = Math.sin(ang) * rho
       g.zRepouso = Z_PERTO + Math.random() * (Z_LONGE - Z_PERTO)
-      g.zFundo = FAIXA_Z[0] + Math.random() * (FAIXA_Z[1] - FAIXA_Z[0])
-      g.alvoX = Math.random()
-      g.alvoY = Math.random()
+      /* A profundidade viva NASCE na faixa de repouso, não em FAIXA_Z: é o
+         que faz o campo em `v = 0` ser exatamente o aprovado. Ela só se
+         espalha por FAIXA_Z depois, voando e reciclando. */
+      semearModelo(g, g.zRepouso)
       /* Identidade sorteada nas faixas do campo do site, não em faixas
          próprias. `brilho` é sorteado uma vez, no nascimento — faixas
          divergentes seriam uma diferença que nenhum multiplicador faz
@@ -206,9 +238,9 @@ export function HeroEstrelas() {
         x: 0,
         y: 0,
         zRepouso: 1,
-        zFundo: 1,
-        alvoX: 0,
-        alvoY: 0,
+        z: 1,
+        mx: 0,
+        my: 0,
         tom: 0,
         brilho: 1,
         fase: 0,
@@ -226,7 +258,7 @@ export function HeroEstrelas() {
       /* A altura em que os grãos se distribuem NÃO é a do canvas.
          Até 980px a hero perde o `min-height: 100svh` (hero.css) e passa a
          ter a altura do conteúdo — plausivelmente o dobro da janela. Como
-         a posição converge para `alvoY * span`, usar `A` ali espalharia os
+         o modelo do site sorteia posição contra esse span, usar `A` ali espalharia os
          110 grãos por uma caixa da qual só metade está na tela, enquanto o
          campo do site põe os mesmos 110 dentro da janela. A densidade que
          a contagem igual existe para casar se desfaria justamente no
@@ -243,6 +275,17 @@ export function HeroEstrelas() {
       if (!L || !A) return
 
       const v = limita(mergulho.v)
+
+      /* O motor do voo é a velocidade do PRÓPRIO mergulho, não uma leitura
+         de scroll paralela. `mergulho.v` já vem amortecido pelo `scrub` do
+         GSAP, então herda de graça o deslize de câmera em vez do solavanco
+         da roda — e significa literalmente "quão rápido você está
+         entrando". Uma segunda leitura de scroll aqui seria um segundo
+         número podendo divergir do primeiro. */
+      const dt = Math.min((t - tAnterior) / 1000, 0.05)
+      tAnterior = t
+      const dv = dt > 0 ? Math.abs(v - vAnterior) / dt : 0
+      vAnterior = v
 
       /* LEITURAS primeiro, escritas depois. Os dois rects custam um
          recálculo de layout por quadro — o GSAP escreveu o transform do
@@ -291,6 +334,17 @@ export function HeroEstrelas() {
       const tGeo = progresso(v, ESCALA_EM, REVELA_EM)
       const ganho = ganhoRaio(tGeo)
       const vies = viesBranco(tGeo)
+      /* A rampa do voo. ZERO em repouso — a reversão do commit 28b1802
+         continua valendo onde ela foi tomada: voo num disco pequeno e
+         parado lia como poluição, não como viagem. O que mudou é que aqui
+         ele entra junto com a descida, quando o cérebro já está crescendo
+         e não existe mais disco pequeno.
+
+         `DERIVA_Z` é a mesma base do campo do site; o termo da velocidade
+         é o que faz rolar mais rápido parecer entrar mais rápido. */
+      const rampa = suave(tGeo)
+      const avanco = (0.05 + dv * 0.55) * dt * rampa
+      const escalaModelo = Math.min(L, spanY) * 0.62 || 1
       /* Fotometria converge DENTRO da janela de dissolução, não com a
          geometria. Enquanto o cérebro cobre a tela o fundo do grão é uma
          imagem CLARA e MUITO carregada — a textura já tem os próprios
@@ -318,33 +372,40 @@ export function HeroEstrelas() {
       ctx!.globalCompositeOperation = 'source-over'
 
       for (const g of graos) {
-        /* A projeção usa a profundidade de REPOUSO, fixa. É o que mantém
-           `perspectiva` e `ajuste` válidos: com a profundidade que
-           converge (que desce até 0,05) isto valeria 8,6 e jogaria o grão
-           para fora da tela. Sem voo, nenhum grão cruza esta faixa. */
+        /* O VOO. A profundidade viva desce e recicla ao passar pela
+           câmera — é isto que faz o grão escorrer para fora em vez de só
+           ficar maior, e é o que faltava para a travessia ter continuidade
+           de movimento. Ao reciclar ele volta ao fundo e troca de lugar,
+           não de identidade: o mesmo grão continua sendo o mesmo grão.
+
+           E é o voo que dispensa três mecanismos que existiam aqui antes.
+           A faixa de profundidade se espalha sozinha por `FAIXA_Z` porque
+           os grãos descem e voltam; o tamanho ganha variação pelo mesmo
+           motivo; e a distribuição na tela vira a do site de graça, porque
+           `mx / z` cai uniforme na janela. Não há mais nada interpolando
+           entre dois modelos — só um modelo, ganhando velocidade. */
+        g.z -= avanco
+        if (g.z < FAIXA_Z[0]) semearModelo(g, FAIXA_Z[1])
+        const z = g.z
+
+        /* A projeção do DISCO usa a profundidade de repouso, fixa: é ela
+           que mantém `perspectiva` e `ajuste` válidos, porque a viva desce
+           até 0,05 e ali a perspectiva valeria 8,6. */
         const perspectiva = 0.6 + 0.4 / g.zRepouso
         const espalha = R * abertura * perspectiva * ajuste
         const discoX = cx + g.x * espalha
         const discoY = cy + g.y * espalha
 
-        /* A posição converge em espaço de TELA, não no modelo.
-           O campo do site distribui os grãos uniformemente na janela — ele
-           sorteia `x` proporcional a `z`, o que cancela a divisão da
-           perspectiva — enquanto este os distribui num disco em volta do
-           cérebro. São dois modelos incompatíveis; interpolar as posições
-           finais casa as distribuições sem nenhum precisar virar o outro.
-           Sem isto o campo terminaria com a densidade concentrada no meio,
-           onde o do site a tem espalhada. */
-        const p = suave(tGeo)
-        const sx = discoX + (g.alvoX * L - discoX) * p
-        const sy = discoY + (g.alvoY * spanY - discoY) * p
+        /* Duas projeções do mesmo grão, misturadas pela rampa: o disco
+           parado do repouso e o modelo do site em movimento. Em `v = 0` só
+           existe o disco — o campo aprovado, intocado. Convergido, só
+           existe o do site, escorrendo. */
+        const modeloX = cx + (g.mx / z) * escalaModelo
+        const modeloY = cy + (g.my / z) * escalaModelo
+        const p = rampa
+        const sx = discoX + (modeloX - discoX) * p
+        const sy = discoY + (modeloY - discoY) * p
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
-
-        /* A profundidade que converge governa só raio e alfa. É ela que
-           faz o campo GANHAR variação: em repouso todo grão é médio; no
-           fim há muitos finos e alguns grandes, que é o desenho do campo
-           do site. */
-        const z = zConvergente(g.zRepouso, g.zFundo, tGeo)
 
         /* `fadeProximo` não é herança cega do campo de fundo. Lá ele
            existe porque o grão é reciclado e piscaria ao sair; aqui nada

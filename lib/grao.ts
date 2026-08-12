@@ -128,8 +128,8 @@ export function progresso(v: number, de: number, ate: number): number {
  * 0,396825…): reproduz o tamanho que o núcleo tinha em repouso antes
  * desta mudança, com o `FATOR_MINIMO` antigo e a razão entre as duas
  * fórmulas de raio já embutidos. Quem cresce de verdade durante o mergulho não é só este
- * ganho — é ele junto com `zConvergente`, e é a soma dos dois que faz o
- * campo ganhar VARIAÇÃO em vez de só ficar maior.
+ * ganho — é ele junto com o voo, e é a soma dos dois que faz o campo
+ * ganhar VARIAÇÃO em vez de só ficar maior.
  */
 const RAIO_REPOUSO = 0.397
 export function ganhoRaio(t: number): number {
@@ -173,17 +173,6 @@ export function corComVies(cor: RGB, branco: RGB, vies: number): RGB {
   ]
 }
 
-/**
- * A profundidade do grão caminha da faixa de repouso do núcleo até um
- * alvo sorteado em `FAIXA_Z`.
- *
- * Governa SÓ raio e alfa. A posição converge por outro caminho (ver
- * HeroEstrelas), porque abrir `z` até 0,05 na projeção do disco faria a
- * perspectiva valer 8,6 e jogaria os grãos para fora da tela.
- */
-export function zConvergente(zRepouso: number, zFundo: number, t: number): number {
-  return zRepouso + (zFundo - zRepouso) * suave(t)
-}
 
 /**
  * Quantos grãos o campo tem. Os dois campos usam a MESMA contagem: durante
