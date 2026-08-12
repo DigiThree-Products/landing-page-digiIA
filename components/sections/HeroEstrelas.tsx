@@ -74,6 +74,10 @@ type Grao = Identidade & {
   y: number
   zRepouso: number
   zFundo: number
+  /** Alvo da posição, em fração de tela [0,1]. Guardado em fração e não
+      em pixels para sobreviver a resize sem o grão pular de lugar. */
+  alvoX: number
+  alvoY: number
 }
 
 /**
@@ -175,6 +179,8 @@ export function HeroEstrelas() {
       g.y = Math.sin(ang) * rho
       g.zRepouso = Z_PERTO + Math.random() * (Z_LONGE - Z_PERTO)
       g.zFundo = FAIXA_Z[0] + Math.random() * (FAIXA_Z[1] - FAIXA_Z[0])
+      g.alvoX = Math.random()
+      g.alvoY = Math.random()
       /* Identidade sorteada nas faixas do campo do site, não em faixas
          próprias. `brilho` é sorteado uma vez, no nascimento — faixas
          divergentes seriam uma diferença que nenhum multiplicador faz
@@ -197,6 +203,8 @@ export function HeroEstrelas() {
         y: 0,
         zRepouso: 1,
         zFundo: 1,
+        alvoX: 0,
+        alvoY: 0,
         tom: 0,
         brilho: 1,
         fase: 0,
@@ -285,8 +293,20 @@ export function HeroEstrelas() {
            para fora da tela. Sem voo, nenhum grão cruza esta faixa. */
         const perspectiva = 0.6 + 0.4 / g.zRepouso
         const espalha = R * abertura * perspectiva * ajuste
-        const sx = cx + g.x * espalha
-        const sy = cy + g.y * espalha
+        const discoX = cx + g.x * espalha
+        const discoY = cy + g.y * espalha
+
+        /* A posição converge em espaço de TELA, não no modelo.
+           O campo do site distribui os grãos uniformemente na janela — ele
+           sorteia `x` proporcional a `z`, o que cancela a divisão da
+           perspectiva — enquanto este os distribui num disco em volta do
+           cérebro. São dois modelos incompatíveis; interpolar as posições
+           finais casa as distribuições sem nenhum precisar virar o outro.
+           Sem isto o campo terminaria com a densidade concentrada no meio,
+           onde o do site a tem espalhada. */
+        const p = suave(tGeo)
+        const sx = discoX + (g.alvoX * L - discoX) * p
+        const sy = discoY + (g.alvoY * A - discoY) * p
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
 
         /* A profundidade que converge governa só raio e alfa. É ela que
