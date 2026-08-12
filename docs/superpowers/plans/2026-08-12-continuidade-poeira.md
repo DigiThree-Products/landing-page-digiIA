@@ -692,6 +692,7 @@ import {
   cintilacao,
   corComVies,
   FAIXA_Z,
+  ganhoAlfa,
   ganhoRaio,
   type Identidade,
   limita,
@@ -802,8 +803,10 @@ Substituir o bloco de `presenca` até `crescimento` (`:244-253`) por:
       const tGeo = progresso(v, ESCALA_EM, REVELA_EM)
       const ganho = ganhoRaio(tGeo)
       const vies = viesBranco(tGeo)
-      /* Presença ainda constante nesta task; a fotometria entra depois. */
-      const presenca = 4
+      /* Presença ainda constante nesta task — o valor de repouso da curva,
+         não um número solto. A fotometria entra na Task 7 e troca isto
+         por `ganhoAlfa(tFoto)`. */
+      const presenca = ganhoAlfa(0)
 ```
 
 Substituir o corpo do laço `for (const g of graos)` (`:259-313`) por:
@@ -994,11 +997,11 @@ Alfa e halo não podem convergir com a geometria: enquanto o cérebro cobre a te
 
 - [ ] **Step 1: Importar o que falta**
 
-Acrescentar `REVELA_FIM_EM` ao import de `@/lib/mergulho` e `ganhoAlfa`, `ganhoHalo` ao de `@/lib/grao`.
+Acrescentar `REVELA_FIM_EM` ao import de `@/lib/mergulho` e `ganhoHalo` ao de `@/lib/grao` (`ganhoAlfa` já entrou na Task 5).
 
 - [ ] **Step 2: Trocar a presença constante pelas curvas**
 
-Substituir a linha `const presenca = 4` (posta na Task 5) por:
+Substituir a linha `const presenca = ganhoAlfa(0)` (posta na Task 5) por:
 
 ```ts
       /* Fotometria converge dentro da janela de dissolução, não com a
