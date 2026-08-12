@@ -3,14 +3,21 @@ import assert from 'node:assert/strict'
 import {
   alfaDoGrao,
   cintilacao,
+  corComVies,
   corDoToken,
   FAIXA_Z,
+  ganhoAlfa,
+  ganhoHalo,
+  ganhoRaio,
   limita,
   paletaEmissao,
+  progresso,
   raioDoGrao,
   sortearIdentidade,
   suave,
   TETO_ALFA,
+  viesBranco,
+  zConvergente,
 } from './grao.ts'
 
 const perto = (a: number, b: number) => assert.equal(Number(a.toFixed(6)), Number(b.toFixed(6)))
@@ -76,4 +83,66 @@ test('limita e suave', () => {
 test('constantes do campo', () => {
   assert.deepEqual(FAIXA_Z, [0.05, 1])
   perto(TETO_ALFA, 0.92)
+})
+
+/* ------------------------------------------------------------------
+   Convergência do núcleo da hero para este campo.
+   ------------------------------------------------------------------ */
+
+test('progresso normaliza e limita a janela', () => {
+  perto(progresso(0.136, 0.136, 0.875), 0)
+  perto(progresso(0.875, 0.136, 0.875), 1)
+  perto(progresso(0, 0.136, 0.875), 0)
+  perto(progresso(1, 0.136, 0.875), 1)
+  perto(progresso(0.5055, 0.136, 0.875), 0.5)
+})
+
+test('ganhoRaio sai do repouso e chega em 1', () => {
+  perto(ganhoRaio(0), 0.397)
+  perto(ganhoRaio(1), 1)
+  perto(ganhoRaio(0.5), 0.6985)
+})
+
+test('ganhoAlfa decai de 4 para 1', () => {
+  perto(ganhoAlfa(0), 4)
+  perto(ganhoAlfa(1), 1)
+  perto(ganhoAlfa(0.5), 2.5)
+})
+
+test('ganhoHalo decai de 1 para 0', () => {
+  perto(ganhoHalo(0), 1)
+  perto(ganhoHalo(1), 0)
+  perto(ganhoHalo(0.5), 0.5)
+})
+
+test('viesBranco decai de 0,33 para 0', () => {
+  perto(viesBranco(0), 0.33)
+  perto(viesBranco(1), 0)
+  perto(viesBranco(0.5), 0.165)
+})
+
+test('corComVies caminha da cor até o branco', () => {
+  assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 0), [200, 100, 250])
+  assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 1), [248, 240, 255])
+  assert.deepEqual(corComVies([200, 100, 250], [248, 240, 255], 0.5), [224, 170, 253])
+})
+
+test('zConvergente vai do repouso ao alvo', () => {
+  perto(zConvergente(0.62, 0.05, 0), 0.62)
+  perto(zConvergente(0.62, 0.05, 1), 0.05)
+  perto(zConvergente(0.62, 0.05, 0.5), 0.335)
+})
+
+/* As duas agendas têm que se encontrar exatamente onde a dissolução
+   começa: a geometria termina em REVELA_EM e a fotometria parte de lá.
+   Um vão entre elas seria um instante com o grão em estado indefinido. */
+test('as duas agendas se encontram em REVELA_EM sem vao', () => {
+  const ESCALA = 0.136
+  const REVELA = 0.875
+  const FIM = 0.95
+  perto(progresso(REVELA, ESCALA, REVELA), 1)
+  perto(progresso(REVELA, REVELA, FIM), 0)
+  perto(ganhoRaio(progresso(REVELA, ESCALA, REVELA)), 1)
+  perto(ganhoAlfa(progresso(REVELA, REVELA, FIM)), 4)
+  perto(ganhoHalo(progresso(FIM, REVELA, FIM)), 0)
 })
