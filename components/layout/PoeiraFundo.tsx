@@ -106,6 +106,13 @@ export function PoeiraFundo() {
        o que lê como acelerar para dentro do site em vez de ser jogado
        nele. Voltar a 1 refaz a igualdade exata. */
     const FRACAO_ENTRADA = 0.55
+    /* Ritmo do campo DEPOIS da travessia, em fração da velocidade própria.
+       Vale para toda a página abaixo da hero, não só para a costura: uma
+       vez passado o pin, `mergulho.v` fica em 1 e este é o ganho que
+       permanece. Era 1 — a velocidade original do campo, de antes de tudo
+       isto. Desceu porque, mesmo com a entrada casada, o campo seguia
+       rápido demais para a leitura de estar viajando por dentro. */
+    const RITMO_APOS = 0.6
 
     const raiz = getComputedStyle(document.documentElement)
     const ler = (nome: string) => raiz.getPropertyValue(nome)
@@ -347,7 +354,7 @@ export function PoeiraFundo() {
       const forca = Math.min(Math.abs(velocidade), 3)
 
       /* Entrada: este campo chega ABAIXO da velocidade do campo de dentro
-         do cérebro e vai ganhando ritmo até a própria.
+         do cérebro e vai ganhando ritmo até `RITMO_APOS`.
 
          Sem isto ele assume voando. Medido: rolando, este campo avança
          ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
@@ -375,10 +382,11 @@ export function PoeiraFundo() {
       const entrada = progresso(mergulho.v, REVELA_EM, 1)
       const taxaPropria = DERIVA_Z + Math.abs(velocidade) * 0.55
       const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo * FRACAO_ENTRADA
+      const taxaDepois = taxaPropria * RITMO_APOS
       const ganhoEntrada =
         mergulho.v <= 0
           ? 1
-          : (taxaDoNucleo + (taxaPropria - taxaDoNucleo) * suave(entrada)) / taxaPropria
+          : (taxaDoNucleo + (taxaDepois - taxaDoNucleo) * suave(entrada)) / taxaPropria
 
       if (modo === 'radial') {
         const avanco = (DERIVA_R + velocidade * 0.9) * dt
