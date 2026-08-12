@@ -6,6 +6,7 @@ import {
   cintilacao,
   CONTAGEM_GRAOS,
   corComVies,
+  fadeNascimento,
   fadeProximo,
   FAIXA_Z,
   ganhoAlfa,
@@ -473,14 +474,29 @@ export function HeroEstrelas() {
         const p = rampa
         const sx = discoX + (modeloX - discoX) * p
         const sy = discoY + (modeloY - discoY) * p
-        /* Saiu da tela voando: volta ao fundo em vez de ficar orbitando
-           invisível. Sem isto o campo iria esvaziando, porque grão que
-           escorreu para fora só reciclaria ao cruzar a câmera lá longe —
-           mesma razão pela qual o campo do site recicla aqui. */
-        if (sx < -MARGEM || sx > L + MARGEM || sy < -MARGEM || sy > A + MARGEM) {
-          if (rampa > 0) semearModelo(g, FAIXA_Z[1])
+
+        /* Reciclagem julga a posição do MODELO, não a misturada.
+           O disco de repouso é maior que a janela de propósito (ver
+           `alvoAlcance`), então grão fora da tela por causa DELE não voou
+           para lugar nenhum: reciclá-lo o devolve ao fundo, ele não se
+           mexe porque a rampa ainda é baixa, e recicla de novo no quadro
+           seguinte. Medido em ~15% do campo por quadro num trecho da
+           descida — invisível, porque grão em thrash é justamente o que
+           não se desenha, e caro à toa.
+           Contra `spanY` e não `A`: quem define para onde o modelo sorteia
+           é o span, e o canvas pode ser bem mais alto que a janela abaixo
+           de 980px. */
+        if (
+          rampa > 0 &&
+          (modeloX < -MARGEM ||
+            modeloX > L + MARGEM ||
+            modeloY < -MARGEM ||
+            modeloY > spanY + MARGEM)
+        ) {
+          semearModelo(g, FAIXA_Z[1])
           continue
         }
+        if (sx < -MARGEM || sx > L + MARGEM || sy < -MARGEM || sy > A + MARGEM) continue
 
         /* `fadeProximo` não é herança cega do campo de fundo. Lá ele
            existe porque o grão é reciclado e piscaria ao sair; aqui nada
@@ -488,7 +504,15 @@ export function HeroEstrelas() {
            isto os grãos sorteados no fundo dela ficariam parados no
            tamanho máximo por três telas. O campo do site nunca mostra
            isso: um grão desse tamanho lá está de passagem. */
-        let alfa = alfaDoGrao(z, g.brilho) * presenca * fadeProximo(z)
+        /* Os dois fades do campo do site: um apaga o grão rente à câmera,
+           o outro o traz do nada no fundo. O de nascimento entra pela
+           rampa, não direto — em `z = 1` ele vale zero, e aplicado cru
+           apagaria os grãos que descansam no fundo da faixa, que são parte
+           do campo aprovado. Sem ele, grão reciclado aparecia do nada a
+           quase 0,92 de alfa, e um pisco desses é uma descontinuidade
+           própria bem no meio da travessia. */
+        const nascendo = 1 - (1 - fadeNascimento(g.z)) * rampa
+        let alfa = alfaDoGrao(z, g.brilho) * presenca * fadeProximo(z) * nascendo
         alfa *= cintilacao(t / 1000, g.fase, g.cintila)
 
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a

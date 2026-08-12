@@ -6,6 +6,7 @@ import {
   cintilacao,
   corComVies,
   corDoToken,
+  fadeNascimento,
   fadeProximo,
   FAIXA_Z,
   ganhoAlfa,
@@ -159,3 +160,10 @@ test('fadeProximo apaga o grao rente a camera', () => {
    seria comparar a constante com uma cópia dela, que é a tautologia que este
    arquivo já pagou uma vez. O que importa — os dois campos lerem a MESMA
    fonte — é verificável lendo os dois consumidores, não daqui. */
+
+test('fadeNascimento traz o grao do fundo', () => {
+  perto(fadeNascimento(1), 0)
+  perto(fadeNascimento(0.82), 1)
+  perto(fadeNascimento(FAIXA_Z[0]), 1)
+  perto(fadeNascimento(0.91), 0.5)
+})

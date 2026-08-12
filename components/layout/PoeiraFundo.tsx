@@ -6,6 +6,7 @@ import {
   cintilacao,
   CONTAGEM_GRAOS,
   corDoToken,
+  fadeNascimento,
   fadeProximo,
   FAIXA_Z,
   paletaEmissao,
@@ -386,7 +387,7 @@ export function PoeiraFundo() {
              porque o núcleo herda esta faixa de profundidade e precisa do
              mesmo apagamento — sem ele os grãos dele ficariam parados no
              tamanho máximo, que é coisa que este campo nunca mostra. */
-          const entrada = Math.min(1, (1 - p.z) / 0.18)
+          const entrada = fadeNascimento(p.z)
           const saida = fadeProximo(p.z)
           const base =
             alfaDoGrao(p.z, p.brilho) * (1 + forca * 0.1) * entrada * saida

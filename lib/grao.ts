@@ -196,3 +196,18 @@ export const CONTAGEM_GRAOS = { grande: 260, toque: 110 }
 export function fadeProximo(z: number): number {
   return Math.min(1, (z - FAIXA_Z[0]) / 0.06)
 }
+
+/**
+ * Some ao nascer no fundo.
+ *
+ * Par do `fadeProximo`: um apaga o grão ao passar pela câmera, o outro o
+ * traz do nada no fundo. Sem os dois, o grão pisca ao entrar e ao sair.
+ *
+ * Cuidado ao aplicar num campo que também fica parado: em `z = 1` isto
+ * vale ZERO, então usar direto apagaria todo grão em repouso no fundo da
+ * faixa. Quem tem repouso precisa misturar pela mesma rampa do voo — ver
+ * HeroEstrelas.
+ */
+export function fadeNascimento(z: number): number {
+  return Math.min(1, (1 - z) / 0.18)
+}
