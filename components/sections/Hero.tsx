@@ -65,20 +65,20 @@ export function Hero() {
              revela o fundo preto com a poeira cósmica de verdade atrás
              dele, mesmo mecanismo que as estações usam
              (`el.style.opacity`, lido por PoeiraFundo.tsx para apagar
-             junto o retângulo claro que o canvas pinta). Do fim dela até o
-             fim do pin ele fica parado, já transparente.
+             junto o retângulo claro que o canvas pinta).
 
              Ela mora em `REVELA_EM`/`REVELA_FIM_EM` (lib/mergulho.ts), não
-             aqui: em telas medidas do topo são 3,5→3,8 de 4,0, e o núcleo
+             aqui: em telas medidas do topo são 3,5→4,0 de 4,0, e o núcleo
              estrelado precisa exatamente dos mesmos dois pontos. Havia
              constantes locais com esses números, e eram armadilha — quem
-             editasse o 3,8 aqui, ao lado desta explicação, não mudaria
+             editasse um deles aqui, ao lado desta explicação, não mudaria
              nada, porque a timeline lê as frações importadas.
 
-             Era 0,1 tela (3,6→3,7) e foi para 0,3 para dar espaço ao que o
-             núcleo faz aqui dentro. A folga saiu do fim do pin, que já era
-             só espera: `TOTAL` não mudou e as seções seguintes não sentem
-             nada. */
+             Era 0,1 tela (3,6→3,7), foi para 0,3 e agora ocupa a folga
+             inteira até o fim do pin. Não sobra mais trecho com o cérebro
+             transparente parado esperando: ele apaga exatamente quando o
+             pin acaba, e a escala termina junto. `TOTAL` nunca mudou, então
+             as seções seguintes não sentem nada. */
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
@@ -108,6 +108,34 @@ export function Hero() {
                  demais, com o cérebro ainda na tela. Prioridade mais alta
                  garante que este pin esteja com o tamanho certo primeiro. */
               refreshPriority: 1,
+              /* A opacidade da seção é a ÚNICA coisa aqui que não passa
+                 pelo `scrub`, e não é inconsistência: é o que conserta a
+                 quebra no fim do mergulho.
+
+                 O `scrub` persegue a posição ao longo de ~1,1s. A soltura
+                 do pin, não — ela acontece na rolagem crua, no instante
+                 exato em que se chega ao fim. Com a opacidade suavizada, a
+                 rolagem chega ao fim, o ScrollTrigger trava o progresso em
+                 1, o pin solta, e a seção AINDA está terminando de apagar
+                 enquanto já sobe: via-se o cérebro semitransparente
+                 deslizando junto com a seção seguinte.
+
+                 E nenhuma folga resolvia. O atraso do `scrub` não é uma
+                 distância fixa que dê para reservar; rolando rápido, a
+                 cauda é consumida na mesma velocidade. Só tirando a
+                 opacidade do valor perseguido e prendendo-a ao progresso
+                 cru é que ela passa a terminar exatamente onde o pin
+                 termina, sempre.
+
+                 A escala e a posição continuam suavizadas — o deslize de
+                 câmera é o motivo de o `scrub` existir, e nenhuma das duas
+                 precisa estar sincronizada com a soltura do pin. */
+              onUpdate: (self) => {
+                const apagando = (self.progress - REVELA_EM) / (REVELA_FIM_EM - REVELA_EM)
+                const t = apagando < 0 ? 0 : apagando > 1 ? 1 : apagando
+                // Mesma curva do `power1.in` que a timeline usava aqui.
+                section.style.opacity = String(1 - t * t)
+              },
             },
             onUpdate: () => {
               const v = passo.v <= 0.002 ? 0 : passo.v
@@ -153,26 +181,19 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              /* 90×, e agora ele chega lá de verdade. Antes o alvo era 80
+                 mas a seção terminava de apagar em `v = 0,95`, onde a
+                 escala vale ~67× — os últimos 13× rodavam com o cérebro já
+                 invisível, puro custo sem nada na tela. Com a dissolução
+                 indo até o fim do pin, o alvo passou a ser o que se vê. */
+              { scale: grande ? 90 : 60, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
-            .to(
-              section,
-              {
-                opacity: 0,
-                ease: 'power1.in',
-                /* Os DOIS extremos importados, não só o início. A duração
-                   era `(REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL`
-                   — mesmo número hoje, mas calculado aqui. Mudar
-                   REVELA_POEIRA_FIM faria a cortina terminar num ponto e a
-                   fotometria do núcleo em outro, sem nada falhar. É a
-                   dessincronia que lib/mergulho.ts existe para evitar, e
-                   ela estava justamente na linha ao lado do comentário que
-                   dizia evitá-la. */
-                duration: REVELA_FIM_EM - REVELA_EM,
-              },
-              REVELA_EM,
-            )
+          /* A opacidade da seção NÃO está nesta timeline de propósito —
+             ela é escrita direto no `onUpdate` do ScrollTrigger, a partir
+             do progresso cru. Ver a nota lá em cima: aqui dentro ela
+             herdaria o `scrub` e terminaria de apagar depois de o pin já
+             ter soltado, com a seção subindo à vista. */
 
           return () => {
             section.style.opacity = ''

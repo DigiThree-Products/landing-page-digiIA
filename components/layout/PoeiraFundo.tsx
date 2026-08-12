@@ -6,14 +6,18 @@ import {
   cintilacao,
   CONTAGEM_GRAOS,
   corDoToken,
+  fadeNascimento,
   fadeProximo,
   FAIXA_Z,
   paletaEmissao,
+  progresso,
   raioDoGrao,
   sortearIdentidade,
+  suave,
   TETO_ALFA,
   type RGB,
 } from '@/lib/grao'
+import { mergulho, REVELA_EM } from '@/lib/mergulho'
 import { MODO_POEIRA } from '@/lib/poeira'
 
 type Particula = {
@@ -90,6 +94,25 @@ export function PoeiraFundo() {
     /** Avanço em profundidade: é o que faz atravessar em vez de deslizar. */
     const DERIVA_Z = 0.05
     const MARGEM = 90
+    /* Profundidade representativa, para converter a taxa proporcional que
+       o núcleo publica (`dz/dt = -z · taxa`) na taxa absoluta que este
+       campo usa. É a mediana medida da distribuição de profundidade dos
+       dois campos na travessia — o grão típico, não o mais perto nem o
+       mais longe. */
+    const Z_REPRESENTATIVA = 0.71
+    /* Fração da taxa do núcleo com que este campo entra. Era 1 — entrada
+       na velocidade exata do campo de dentro do cérebro. Abaixo disso ele
+       entra mais devagar do que se vinha viajando e vai ganhando ritmo,
+       o que lê como acelerar para dentro do site em vez de ser jogado
+       nele. Voltar a 1 refaz a igualdade exata. */
+    const FRACAO_ENTRADA = 0.55
+    /* Ritmo do campo DEPOIS da travessia, em fração da velocidade própria.
+       Vale para toda a página abaixo da hero, não só para a costura: uma
+       vez passado o pin, `mergulho.v` fica em 1 e este é o ganho que
+       permanece. Era 1 — a velocidade original do campo, de antes de tudo
+       isto. Desceu porque, mesmo com a entrada casada, o campo seguia
+       rápido demais para a leitura de estar viajando por dentro. */
+    const RITMO_APOS = 0.6
 
     const raiz = getComputedStyle(document.documentElement)
     const ler = (nome: string) => raiz.getPropertyValue(nome)
@@ -330,6 +353,41 @@ export function PoeiraFundo() {
       const cy = A / 2 + my * 24
       const forca = Math.min(Math.abs(velocidade), 3)
 
+      /* Entrada: este campo chega ABAIXO da velocidade do campo de dentro
+         do cérebro e vai ganhando ritmo até `RITMO_APOS`.
+
+         Sem isto ele assume voando. Medido: rolando, este campo avança
+         ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
+         vezes mais rápido. O salto de velocidade no instante da troca
+         quebra a continuidade mesmo com tamanho, cor, alfa, densidade e
+         direção todos casados, porque velocidade também é um eixo.
+
+         O alvo não é uma fração calibrada, é a taxa que o núcleo publica
+         (`mergulho.taxaVoo`). Os dois medem velocidade em unidades
+         diferentes — aqui delta de rolagem em pixels, lá progresso de um
+         pin de 4 telas —, então nenhuma constante casaria os dois; só a
+         taxa resolvida casa. E assim o casamento sobrevive a mudanças de
+         calibragem de qualquer um dos lados.
+
+         A taxa de lá é proporcional à profundidade (`dz/dt = -z · taxa`),
+         então entra multiplicada por uma profundidade representativa para
+         virar uma taxa absoluta como a daqui.
+
+         `mergulho.v` vale 1 depois que o pin termina, então da hero para
+         baixo o campo roda no ritmo pleno de sempre. Antes dela ele está
+         escondido atrás do cérebro. E se a hero não existir na página, `v`
+         fica em 0 e o ganho não se aplica — sem ela não há travessia para
+         costurar, e o campo não deve ficar preso a uma taxa que ninguém
+         está publicando. */
+      const entrada = progresso(mergulho.v, REVELA_EM, 1)
+      const taxaPropria = DERIVA_Z + Math.abs(velocidade) * 0.55
+      const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo * FRACAO_ENTRADA
+      const taxaDepois = taxaPropria * RITMO_APOS
+      const ganhoEntrada =
+        mergulho.v <= 0
+          ? 1
+          : (taxaDoNucleo + (taxaDepois - taxaDoNucleo) * suave(entrada)) / taxaPropria
+
       if (modo === 'radial') {
         const avanco = (DERIVA_R + velocidade * 0.9) * dt
         for (const p of pts) {
@@ -350,11 +408,11 @@ export function PoeiraFundo() {
           pinta(p, sx, sy, r, cor, a, forca)
         }
       } else {
-        camY += ((DERIVA_V + velocidade * 0.35) * A * dt) / escala
+        camY += ((DERIVA_V + velocidade * 0.35) * A * dt * ganhoEntrada) / escala
         /* Avanço sempre para a frente, com o scroll acelerando a viagem
            em vez de invertê-la: rolar para cima ou para baixo muda para
            onde a câmera aponta, não o sentido do voo. */
-        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt
+        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt * ganhoEntrada
         for (const p of pts) {
           p.z -= avancoZ
           if (p.z < Z_MIN_V) {
@@ -386,7 +444,7 @@ export function PoeiraFundo() {
              porque o núcleo herda esta faixa de profundidade e precisa do
              mesmo apagamento — sem ele os grãos dele ficariam parados no
              tamanho máximo, que é coisa que este campo nunca mostra. */
-          const entrada = Math.min(1, (1 - p.z) / 0.18)
+          const entrada = fadeNascimento(p.z)
           const saida = fadeProximo(p.z)
           const base =
             alfaDoGrao(p.z, p.brilho) * (1 + forca * 0.1) * entrada * saida

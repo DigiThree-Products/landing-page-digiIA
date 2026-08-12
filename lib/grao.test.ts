@@ -6,6 +6,7 @@ import {
   cintilacao,
   corComVies,
   corDoToken,
+  fadeNascimento,
   fadeProximo,
   FAIXA_Z,
   ganhoAlfa,
@@ -14,6 +15,7 @@ import {
   limita,
   paletaEmissao,
   progresso,
+  RAIO_FINAL,
   raioDoGrao,
   sortearIdentidade,
   suave,
@@ -98,10 +100,14 @@ test('progresso normaliza e limita a janela', () => {
   perto(progresso(0.5055, 0.136, 0.875), 0.5)
 })
 
-test('ganhoRaio sai do repouso e chega em 1', () => {
+test('ganhoRaio sai do repouso aprovado e chega no tamanho final', () => {
+  /* O valor de repouso é literal de propósito: ele reproduz o campo que
+     foi aprovado no olho, e um teste que o lesse da própria constante não
+     protegeria nada. O do fim é ajustável, então vem da constante. */
   perto(ganhoRaio(0), 0.397)
-  perto(ganhoRaio(1), 1)
-  perto(ganhoRaio(0.5), 0.6985)
+  perto(ganhoRaio(1), RAIO_FINAL)
+  assert.ok(ganhoRaio(1) > ganhoRaio(0), 'o grao cresce ao longo do mergulho')
+  perto(ganhoRaio(0.5), (0.397 + RAIO_FINAL) / 2)
 })
 
 test('ganhoAlfa decai de 4 para 1', () => {
@@ -137,7 +143,7 @@ test('as duas agendas se encontram em REVELA_EM sem vao', () => {
      afirmaria a própria cópia em vez do que o código usa. */
   perto(progresso(REVELA_EM, ESCALA_EM, REVELA_EM), 1)
   perto(progresso(REVELA_EM, REVELA_EM, REVELA_FIM_EM), 0)
-  perto(ganhoRaio(progresso(REVELA_EM, ESCALA_EM, REVELA_EM)), 1)
+  perto(ganhoRaio(progresso(REVELA_EM, ESCALA_EM, REVELA_EM)), RAIO_FINAL)
   perto(viesBranco(progresso(REVELA_EM, ESCALA_EM, REVELA_EM)), 0)
   perto(ganhoHalo(progresso(REVELA_FIM_EM, REVELA_EM, REVELA_FIM_EM)), 0)
   perto(ganhoAlfa(progresso(REVELA_FIM_EM, REVELA_EM, REVELA_FIM_EM)), 1)
@@ -159,3 +165,10 @@ test('fadeProximo apaga o grao rente a camera', () => {
    seria comparar a constante com uma cópia dela, que é a tautologia que este
    arquivo já pagou uma vez. O que importa — os dois campos lerem a MESMA
    fonte — é verificável lendo os dois consumidores, não daqui. */
+
+test('fadeNascimento traz o grao do fundo', () => {
+  perto(fadeNascimento(1), 0)
+  perto(fadeNascimento(0.82), 1)
+  perto(fadeNascimento(FAIXA_Z[0]), 1)
+  perto(fadeNascimento(0.91), 0.5)
+})

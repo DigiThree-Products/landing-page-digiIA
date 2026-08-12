@@ -21,6 +21,23 @@
 export const mergulho = {
   /** 0 = cérebro ao longe, 1 = dentro dele. */
   v: 0,
+  /**
+   * Taxa de avanço em profundidade do campo dentro do cérebro, por
+   * segundo e proporcional à própria profundidade (`dz/dt = -z · taxa`).
+   * Publicada por `HeroEstrelas` a cada quadro; lida por `PoeiraFundo`.
+   *
+   * Existe porque velocidade também é um eixo da travessia, e era o
+   * último desencontrado: o campo do site chegava cerca de cinco vezes
+   * mais rápido que o do cérebro, e o salto quebrava a continuidade
+   * mesmo com tamanho, cor, alfa, densidade e direção casados.
+   *
+   * É uma taxa publicada, e não uma constante copiada, porque os dois
+   * campos medem velocidade em unidades diferentes — aqui é progresso de
+   * um pin de 4 telas, lá é delta de rolagem em pixels. Igualar
+   * constantes não igualaria nada; só a taxa resolvida casa. E assim o
+   * casamento sobrevive a mudanças de calibragem de qualquer um dos dois.
+   */
+  taxaVoo: 0,
 }
 
 /**
@@ -49,11 +66,17 @@ export const ESCALA_EM = 0.136
 export const REVELA_EM = 0.875
 
 /**
- * Fração em que a seção terminou de apagar (`3,8 / 4,0`).
+ * Fração em que a seção terminou de apagar (`4,0 / 4,0` — o fim do pin).
  *
- * A janela era 0,1 tela (3,6→3,7) e foi para 0,3 (3,5→3,8), usando folga
- * que já existia no fim do pin — `TOTAL` não mudou, então nada muda para
- * as seções seguintes.
+ * A janela era 0,1 tela (3,6→3,7), foi para 0,3 (3,5→3,8) e agora ocupa a
+ * folga inteira até o fim do pin (3,5→4,0). `TOTAL` nunca mudou, então
+ * nada disso muda as seções seguintes.
+ *
+ * Terminar exatamente no fim do pin tem uma consequência boa além da
+ * duração: o tween de escala do cérebro também termina ali. Antes a seção
+ * ficava transparente em 0,95, onde a escala vale ~67× de 80 — os últimos
+ * 13× rodavam com o cérebro já invisível. Agora o alvo de escala é o
+ * tamanho que se vê de verdade.
  *
  * É dentro desta janela que a FOTOMETRIA do núcleo converge, e ela não
  * pode convergir junto com a geometria: enquanto o cérebro cobre a tela o
@@ -62,4 +85,4 @@ export const REVELA_EM = 0.875
  * mundo escurece — não se vê o alfa mudando, vê-se o mundo apagando com o
  * grão constante em cima.
  */
-export const REVELA_FIM_EM = 0.95
+export const REVELA_FIM_EM = 1
