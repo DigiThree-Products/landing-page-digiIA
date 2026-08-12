@@ -23,6 +23,9 @@ desktop.ini
 # Ferramentas locais
 .claude/
 node_modules/
+# Rascunho de execução de planos (ledger, briefs, pacotes de review).
+# O registro que importa é o histórico do git; isto é descartável.
+.superpowers/
 
 # Build do Next.js — gerado, nunca versionado
 .next/

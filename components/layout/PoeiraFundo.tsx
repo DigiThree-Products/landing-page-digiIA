@@ -1,6 +1,19 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import {
+  alfaDoGrao,
+  cintilacao,
+  CONTAGEM_GRAOS,
+  corDoToken,
+  fadeProximo,
+  FAIXA_Z,
+  paletaEmissao,
+  raioDoGrao,
+  sortearIdentidade,
+  TETO_ALFA,
+  type RGB,
+} from '@/lib/grao'
 import { MODO_POEIRA } from '@/lib/poeira'
 
 type Particula = {
@@ -64,12 +77,13 @@ export function PoeiraFundo() {
 
     const modo = MODO_POEIRA
     const toque = window.matchMedia('(pointer: coarse)').matches
-    const N = toque ? 110 : 260
+    const N = toque ? CONTAGEM_GRAOS.toque : CONTAGEM_GRAOS.grande
     const Z_MIN_R = 0.09
     /* Fundo de profundidade mais raso que antes: o grão chega bem mais
        perto antes de ser reciclado, e é essa passagem rente à câmera que
-       dá a escala do espaço. */
-    const Z_MIN_V = 0.05
+       dá a escala do espaço. O núcleo da hero converge para esta mesma
+       faixa, então ela vem de lib/grao.ts. */
+    const Z_MIN_V = FAIXA_Z[0]
     const DERIVA_R = 0.014
     /** Deriva vertical da câmera — o eixo que segue o scroll. */
     const DERIVA_V = 0.04
@@ -77,22 +91,22 @@ export function PoeiraFundo() {
     const DERIVA_Z = 0.05
     const MARGEM = 90
 
-    const hexParaRgb = (hex: string): [number, number, number] => {
-      const h = hex.trim().replace('#', '')
-      return [
-        parseInt(h.slice(0, 2), 16),
-        parseInt(h.slice(2, 4), 16),
-        parseInt(h.slice(4, 6), 16),
-      ]
-    }
     const raiz = getComputedStyle(document.documentElement)
-    const token = (v: string) => hexParaRgb(raiz.getPropertyValue(v))
+    const ler = (nome: string) => raiz.getPropertyValue(nome)
 
     /* Emissão: o grão brilha contra o vazio. Extinção: o mesmo grão em
        silhueta contra a luz. Os índices se correspondem — cada partícula
-       guarda um `tom` e caminha entre a sua cor de um lado e a do outro. */
-    const EMISSAO = [token('--lilac'), token('--mid'), token('--paper')]
-    const EXTINCAO = [token('--violet'), token('--abyss'), token('--abyss')]
+       guarda um `tom` e caminha entre a sua cor de um lado e a do outro.
+
+       A emissão vem de lib/grao.ts porque o núcleo da hero converge para
+       ela e os dois precisam concordar; a extinção fica aqui, porque é
+       sobre o fundo claro que só este campo atravessa. */
+    const EMISSAO = paletaEmissao(ler)
+    const EXTINCAO: RGB[] = [
+      corDoToken(ler('--violet'), [69, 0, 249]),
+      corDoToken(ler('--abyss'), [1, 3, 122]),
+      corDoToken(ler('--abyss'), [1, 3, 122]),
+    ]
 
     /* Uma seção é clara quando o texto dela é escuro — indicador mais
        confiável que ler o fundo, já que as seções com passagem para a
@@ -168,7 +182,7 @@ export function PoeiraFundo() {
        da página — grão escuro sobre fundo escuro. Pintando o painel aqui, a
        silhueta ganha branco de verdade atrás, e ele apaga junto com a
        estação que se afasta. */
-    const [pr, pg, pb] = token('--paper')
+    const [pr, pg, pb] = corDoToken(ler('--paper'), [248, 240, 255])
     const temRoundRect = typeof ctx.roundRect === 'function'
     function pintaEstacoes() {
       for (const z of zonas) {
@@ -212,10 +226,7 @@ export function PoeiraFundo() {
     }))
 
     function sortearGrao(p: Particula) {
-      p.tom = (Math.random() * EMISSAO.length) | 0
-      p.brilho = 0.5 + Math.random() * 0.5
-      p.fase = Math.random() * Math.PI * 2
-      p.cintila = 0.6 + Math.random() * 1.5
+      Object.assign(p, sortearIdentidade())
     }
     function nascerRadial(p: Particula, z: number) {
       const ang = Math.random() * Math.PI * 2
@@ -265,10 +276,12 @@ export function PoeiraFundo() {
       const r = Math.round(emite[0] + (some[0] - emite[0]) * claro)
       const g = Math.round(emite[1] + (some[1] - emite[1]) * claro)
       const b = Math.round(emite[2] + (some[2] - emite[2]) * claro)
-      // Estrela só cintila enquanto brilha: na silhueta o pulso se apaga.
-      const pulso = 1 + Math.sin(tempo * p.cintila + p.fase) * 0.3 * (1 - claro)
+      /* Estrela só cintila enquanto brilha: na silhueta o pulso se apaga.
+         A amortização por `(1 - claro)` fica aqui, não no módulo: ela é
+         sobre o fundo que só este campo atravessa. */
+      const pulso = 1 + (cintilacao(tempo, p.fase, p.cintila) - 1) * (1 - claro)
       // Grão escuro sobre claro precisa de mais corpo para se ler.
-      const a = Math.min(0.92, base * pulso * (1 + claro * 0.5))
+      const a = Math.min(TETO_ALFA, base * pulso * (1 + claro * 0.5))
       return { cor: `${r},${g},${b}`, a }
     }
 
@@ -325,6 +338,12 @@ export function PoeiraFundo() {
           else if (p.z > 1) nascerRadial(p, Z_MIN_R + 0.02)
           const sx = cx + (p.x / p.z) * escala
           const sy = cy + (p.y / p.z) * escala
+          /* NÃO trocar por `raioDoGrao`/`alfaDoGrao`. Estas constantes
+             (1,7 · 0,28 · 0,55 · 0,12) são diferentes das do ramo vertical
+             de propósito, e este ramo está morto — `MODO_POEIRA` é
+             'vertical'. Unificá-las seria mudança de comportamento
+             disfarçada de refatoração, e destruiria a prova de que a
+             extração para lib/grao.ts não mexeu no campo que está no ar. */
           const r = Math.min(5, Math.max(0.5, (1.7 / p.z) * 0.42))
           const base = (0.28 + 0.55 * (1 - p.z)) * p.brilho * (1 + forca * 0.12)
           const { cor, a } = regime(p, sx, sy, segundos, base)
@@ -356,16 +375,21 @@ export function PoeiraFundo() {
             nascerVertical(p, null, 1)
             continue
           }
-          /* Teto no raio: sem ele o grão mais próximo chegava a dezenas
-             de px e virava bolha. A variação continua ampla o bastante
-             para ler profundidade. */
-          const r = Math.min(5, Math.max(0.5, (1.6 / p.z) * 0.42))
+          /* Teto no raio (dentro de `raioDoGrao`): sem ele o grão mais
+             próximo chegava a dezenas de px e virava bolha. A variação
+             continua ampla o bastante para ler profundidade. */
+          const r = raioDoGrao(p.z)
           /* Some ao nascer no fundo e ao passar rente à câmera — sem as
-             duas bordas o grão pisca ao entrar e ao sair. */
+             duas bordas o grão pisca ao entrar e ao sair.
+             `entrada` fica aqui: só faz sentido onde há reciclagem, e o
+             núcleo da hero não recicla nada. `saida` foi para o módulo
+             porque o núcleo herda esta faixa de profundidade e precisa do
+             mesmo apagamento — sem ele os grãos dele ficariam parados no
+             tamanho máximo, que é coisa que este campo nunca mostra. */
           const entrada = Math.min(1, (1 - p.z) / 0.18)
-          const saida = Math.min(1, (p.z - Z_MIN_V) / 0.06)
+          const saida = fadeProximo(p.z)
           const base =
-            (0.26 + 0.52 * (1 - p.z)) * p.brilho * (1 + forca * 0.1) * entrada * saida
+            alfaDoGrao(p.z, p.brilho) * (1 + forca * 0.1) * entrada * saida
           const { cor, a } = regime(p, sx, sy, segundos, base)
           pinta(p, sx, sy, r, cor, a, forca)
         }
