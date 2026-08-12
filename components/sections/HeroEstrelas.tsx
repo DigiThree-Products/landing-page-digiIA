@@ -24,11 +24,14 @@ const Z_LONGE = 1
 const NUCLEO = 0.38
 const SILHUETA = 1.35
 /* Em que ponto do mergulho a abertura termina de abrir. A seção inteira
-   começa a apagar em 3,6/4,0 = 0,9 do trajeto (ver REVELA_POEIRA_INICIO
-   em Hero.tsx) — o núcleo termina de abrir um pouco antes disso, para não
-   estar visivelmente ainda se espalhando no instante em que tudo começa
-   a escurecer. */
-const ABRE_ATE = 0.88
+   começa a apagar em 3,5/4,0 = 0,875 do trajeto (`REVELA_EM`, ver
+   REVELA_POEIRA_INICIO em Hero.tsx) — o núcleo termina de abrir um pouco
+   antes disso, para não estar visivelmente ainda se espalhando no
+   instante em que tudo começa a escurecer.
+   Era 0,88, calibrado contra a janela antiga que abria em 0,9. Com a
+   janela nova esse valor passou a terminar DEPOIS do início da
+   dissolução, invertendo a intenção original. */
+const ABRE_ATE = 0.85
 
 /**
  * Crescimento do GRÃO, separado da abertura do núcleo (que é sobre

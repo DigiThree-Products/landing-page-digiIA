@@ -61,9 +61,16 @@ export function Hero() {
              cósmica de verdade atrás dele — mesmo mecanismo que as
              estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
              para apagar junto o retângulo claro que o canvas pinta). Do
-             fim até o fim do pin ele fica parado, já transparente. */
-          const REVELA_POEIRA_INICIO = 3.6
-          const REVELA_POEIRA_FIM = 3.7
+             fim até o fim do pin ele fica parado, já transparente.
+
+             A janela era 0,1 tela (3,6→3,7). Foi para 0,3 porque é dentro
+             dela que a fotometria do núcleo estrelado converge para a do
+             campo do site (ver REVELA_FIM_EM em lib/mergulho.ts), e 0,1
+             tela era pouco espaço para isso acontecer sem ninguém ver.
+             A folga saiu do fim do pin, que já era só espera: `TOTAL`
+             não mudou e as seções seguintes não sentem nada. */
+          const REVELA_POEIRA_INICIO = 3.5
+          const REVELA_POEIRA_FIM = 3.8
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
