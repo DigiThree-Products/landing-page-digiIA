@@ -59,6 +59,9 @@ const SILHUETA = 1.35
    dissolução, invertendo a intenção original. */
 const ABRE_ATE = 0.85
 
+/** Folga fora da janela antes de considerar o grão perdido. */
+const MARGEM = 90
+
 /**
  * Um grão, aqui, é a identidade compartilhada com o campo do site mais
  * duas profundidades e duas posições.
@@ -194,16 +197,26 @@ export function HeroEstrelas() {
     /**
      * Posição no modelo do site, para uma dada profundidade.
      *
-     * `mx` proporcional a `z` é o que cancela a divisão da perspectiva:
-     * `mx / z` cai uniforme na janela venha o grão de onde vier. Separado
-     * de `sortear` porque a reciclagem do voo precisa disto sozinho — um
+     * `mx` sai proporcional a `z`, e é isso que cancela a divisão da
+     * perspectiva: no instante do sorteio `mx / z` é uniforme em [-1, 1],
+     * então o grão nasce espalhado por igual na largura. Depois, conforme
+     * `z` desce e `mx` fica parado, `mx / z` cresce — e é exatamente esse
+     * crescimento que faz o grão ESCORRER para fora ao se aproximar, em
+     * vez de só ficar maior.
+     *
+     * Nada aqui depende de `L` nem de `spanY`. Não é economia: os grãos
+     * são semeados antes de `medir()` rodar, então ler o tamanho da tela
+     * daqui pegaria zero, e o campo inteiro seria projetado para fora da
+     * janela assim que o voo entrasse. A escala entra só na projeção, no
+     * laço, onde as medidas já valem.
+     *
+     * Separado de `sortear` porque a reciclagem precisa disto sozinho — um
      * grão que volta para o fundo troca de lugar, não de identidade.
      */
     function semearModelo(g: Grao, z: number) {
-      const escala = Math.min(L, spanY) * 0.62 || 1
       g.z = z
-      g.mx = (Math.random() * 2 - 1) * (((L / 2 + 90) * z) / escala)
-      g.my = (Math.random() * 2 - 1) * (((spanY / 2 + 90) * z) / escala)
+      g.mx = (Math.random() * 2 - 1) * z
+      g.my = (Math.random() * 2 - 1) * z
     }
 
     function sortear(g: Grao) {
@@ -344,7 +357,6 @@ export function HeroEstrelas() {
          é o que faz rolar mais rápido parecer entrar mais rápido. */
       const rampa = suave(tGeo)
       const avanco = (0.05 + dv * 0.55) * dt * rampa
-      const escalaModelo = Math.min(L, spanY) * 0.62 || 1
       /* Fotometria converge DENTRO da janela de dissolução, não com a
          geometria. Enquanto o cérebro cobre a tela o fundo do grão é uma
          imagem CLARA e MUITO carregada — a textura já tem os próprios
@@ -400,12 +412,19 @@ export function HeroEstrelas() {
            parado do repouso e o modelo do site em movimento. Em `v = 0` só
            existe o disco — o campo aprovado, intocado. Convergido, só
            existe o do site, escorrendo. */
-        const modeloX = cx + (g.mx / z) * escalaModelo
-        const modeloY = cy + (g.my / z) * escalaModelo
+        const modeloX = cx + (g.mx / z) * (L / 2 + MARGEM)
+        const modeloY = cy + (g.my / z) * (spanY / 2 + MARGEM)
         const p = rampa
         const sx = discoX + (modeloX - discoX) * p
         const sy = discoY + (modeloY - discoY) * p
-        if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
+        /* Saiu da tela voando: volta ao fundo em vez de ficar orbitando
+           invisível. Sem isto o campo iria esvaziando, porque grão que
+           escorreu para fora só reciclaria ao cruzar a câmera lá longe —
+           mesma razão pela qual o campo do site recicla aqui. */
+        if (sx < -MARGEM || sx > L + MARGEM || sy < -MARGEM || sy > A + MARGEM) {
+          if (rampa > 0) semearModelo(g, FAIXA_Z[1])
+          continue
+        }
 
         /* `fadeProximo` não é herança cega do campo de fundo. Lá ele
            existe porque o grão é reciclado e piscaria ao sair; aqui nada
