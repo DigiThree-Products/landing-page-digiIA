@@ -23,7 +23,7 @@ import {
   TETO_ALFA,
   viesBranco,
 } from '@/lib/grao'
-import { ESCALA_EM, mergulho, REVELA_EM, REVELA_FIM_EM } from '@/lib/mergulho'
+import { ESCALA_EM, mergulho, REVELA_EM } from '@/lib/mergulho'
 
 const TEXTURA = '/assets/hero/cerebro.webp'
 
@@ -416,24 +416,24 @@ export function HeroEstrelas() {
          diferentes lado a lado, e é isso que denuncia a troca mesmo com
          tamanho e cor casados. */
       deriva += (0.065 + dvAssinado * 0.57) * dt * rampa
-      /* Fotometria converge DENTRO da janela de dissolução, não com a
-         geometria. Enquanto o cérebro cobre a tela o fundo do grão é uma
-         imagem CLARA e MUITO carregada — a textura já tem os próprios
-         pontos de brilho desenhados — e baixar o alfa ali não daria
-         "discreto", daria invisível de verdade.
+      /* Fotometria na MESMA agenda da geometria, terminando em
+         `REVELA_EM`. Ela já esteve presa à janela de dissolução, com o
+         argumento de que baixar o alfa antes apagaria o grão contra a
+         textura clara do cérebro. O argumento tinha uma premissa falsa.
 
-         Presa à dissolução, a opacidade cai junto com o cérebro que ela
-         precisava vencer — contra ELE o contraste percebido fica estável.
+         Medido no navegador: o cérebro é claro em REPOUSO, quando é a
+         imagem inteira num box pequeno. Em 50× você está DENTRO dele, e a
+         região que cobre a tela é violeta escura. A justificativa para o
+         ganho de 4× e para o halo evapora justamente onde eles ainda
+         estavam ligados.
 
-         Contra o campo do site não fica, e quem for calibrar precisa
-         saber: o site está noutra camada de opacidade, então o peso do
-         grão do núcleo em relação a um grão de lá é `ganhoAlfa × opacidade
-         da seção`, que decai bem mais rápido que qualquer uma das duas
-         sozinha. O risco no meio da dissolução é o núcleo ceder DEMAIS, e
-         não o adensamento que o spec previa. */
-      const tFoto = progresso(v, REVELA_EM, REVELA_FIM_EM)
-      const presenca = ganhoAlfa(tFoto)
-      const halo = ganhoHalo(tFoto)
+         E o preço era medível: no início da dissolução o núcleo cobria
+         1,41% da tela contra 0,07% do campo do site — dezenove vezes mais
+         denso — e só casava no fim dela. Atravessando, o campo afinava 7×.
+         Convergindo com a geometria, ele chega à travessia já com a
+         densidade do destino, e a dissolução não tem mais nada a igualar. */
+      const presenca = ganhoAlfa(tGeo)
+      const halo = ganhoHalo(tGeo)
       /* Três cores por quadro, não uma por grão: o viés é o mesmo para
          todos e só o tom muda. Com 260 grãos isso eram 260 arrays por
          quadro para três resultados distintos. */
