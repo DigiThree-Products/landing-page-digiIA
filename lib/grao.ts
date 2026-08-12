@@ -132,8 +132,23 @@ export function progresso(v: number, de: number, ate: number): number {
  * ganhar VARIAÇÃO em vez de só ficar maior.
  */
 const RAIO_REPOUSO = 0.397
+
+/**
+ * Tamanho do grão no fim do mergulho, em múltiplos do grão do campo do
+ * site à mesma profundidade.
+ *
+ * Era 1 — o valor que iguala os dois campos e faz o tamanho sumir como
+ * eixo da travessia. Subiu por decisão de quem olhou rodando: o núcleo
+ * pedia mais presença lá dentro.
+ *
+ * O custo é declarado: acima de 1, o grão ENCOLHE ao atravessar, e o
+ * tamanho volta a ser uma diferença perceptível na costura. Voltar a 1
+ * refaz o casamento exato.
+ */
+export const RAIO_FINAL = 1.4
+
 export function ganhoRaio(t: number): number {
-  return RAIO_REPOUSO + (1 - RAIO_REPOUSO) * suave(t)
+  return RAIO_REPOUSO + (RAIO_FINAL - RAIO_REPOUSO) * suave(t)
 }
 
 /**

@@ -100,6 +100,12 @@ export function PoeiraFundo() {
        dois campos na travessia — o grão típico, não o mais perto nem o
        mais longe. */
     const Z_REPRESENTATIVA = 0.71
+    /* Fração da taxa do núcleo com que este campo entra. Era 1 — entrada
+       na velocidade exata do campo de dentro do cérebro. Abaixo disso ele
+       entra mais devagar do que se vinha viajando e vai ganhando ritmo,
+       o que lê como acelerar para dentro do site em vez de ser jogado
+       nele. Voltar a 1 refaz a igualdade exata. */
+    const FRACAO_ENTRADA = 0.55
 
     const raiz = getComputedStyle(document.documentElement)
     const ler = (nome: string) => raiz.getPropertyValue(nome)
@@ -340,8 +346,8 @@ export function PoeiraFundo() {
       const cy = A / 2 + my * 24
       const forca = Math.min(Math.abs(velocidade), 3)
 
-      /* Entrada: este campo chega na velocidade EXATA do campo de dentro
-         do cérebro e só depois acelera para a própria.
+      /* Entrada: este campo chega ABAIXO da velocidade do campo de dentro
+         do cérebro e vai ganhando ritmo até a própria.
 
          Sem isto ele assume voando. Medido: rolando, este campo avança
          ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
@@ -368,7 +374,7 @@ export function PoeiraFundo() {
          está publicando. */
       const entrada = progresso(mergulho.v, REVELA_EM, 1)
       const taxaPropria = DERIVA_Z + Math.abs(velocidade) * 0.55
-      const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo
+      const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo * FRACAO_ENTRADA
       const ganhoEntrada =
         mergulho.v <= 0
           ? 1
