@@ -283,13 +283,14 @@ export function HeroEstrelas() {
         /* Tamanho final — o grão só atinge de verdade em `REVELA_EM`. Antes
            disso ele nasce `crescimento` vezes menor (ver `FATOR_MINIMO`) e
            cresce com o scroll. Não é mais o mesmo tamanho de
-           PoeiraFundo.tsx (0,42 de multiplicador) — subiu para 0,7 e depois
-           para 0,85, pedido do usuário pra ficar mais visível. Piso e teto
-           (1–3,5px) são só rede de segurança agora: sem voo, `g.z` fica
-           sempre entre `Z_PERTO` e `Z_LONGE`, e nesse intervalo a fórmula
-           nua já rende ~1,36–2,19px sozinha, nunca tocando nenhum dos dois
-           limites. */
-        const raioFinal = Math.min(3.5, Math.max(1, (1.6 / g.z) * 0.85))
+           PoeiraFundo.tsx (0,42 de multiplicador) — subiu para 0,7, depois
+           0,85 e agora para 1,0 (a escala "nua" de `1,6/g.z`, sem encolher
+           nem ampliar), pedido do usuário pra ficar mais visível. Piso e
+           teto (1–3,5px) são só rede de segurança agora: sem voo, `g.z`
+           fica sempre entre `Z_PERTO` e `Z_LONGE`, e nesse intervalo a
+           fórmula nua já rende ~1,60–2,58px sozinha, nunca tocando nenhum
+           dos dois limites. */
+        const raioFinal = Math.min(3.5, Math.max(1, 1.6 / g.z))
         const raio = raioFinal * crescimento
         const [r, gg, b] = PALETA[g.tom]
         const alfaCore = Math.min(1, alfa)
