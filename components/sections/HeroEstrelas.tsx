@@ -473,6 +473,25 @@ export function HeroEstrelas() {
         const discoX = cx + g.x * espalha
         const discoY = cy + g.y * espalha
 
+        /* Enquanto NÃO voa, o modelo acompanha o disco em vez de guardar
+           um lugar próprio.
+
+           Sem isto, os dois lugares eram sorteados sem relação um com o
+           outro, e a mistura ARRASTAVA cada grão da posição do disco até
+           um ponto qualquer. Esse arrasto tem direção arbitrária: parte
+           do campo ia para dentro, parte de lado — contra o leque que o
+           voo desenha. Movimento que não pertence a nenhum dos dois
+           modelos, só à interpolação entre eles.
+
+           Ancorado assim, no instante em que o voo começa as duas
+           projeções coincidem, a mistura não move nada por conta própria,
+           e todo deslocamento que se vê a partir dali é o do voo. */
+        if (rampa <= 0) {
+          g.z = g.zRepouso
+          g.mx = ((discoX - cx) / (L / 2 + MARGEM)) * g.z
+          g.my = ((discoY - cy) / (spanY / 2 + MARGEM)) * g.z + deriva
+        }
+
         /* Duas projeções do mesmo grão, misturadas pela rampa: o disco
            parado do repouso e o modelo do site em movimento. Em `v = 0` só
            existe o disco — o campo aprovado, intocado. Convergido, só
