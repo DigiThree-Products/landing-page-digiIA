@@ -186,6 +186,8 @@ export function HeroEstrelas() {
     /** Estado do voo: o quadro anterior, para tirar dt e a velocidade do mergulho. */
     let tAnterior = 0
     let vAnterior = 0
+    /** Deriva vertical acumulada, em unidades normalizadas — o `camY` daqui. */
+    let deriva = 0
 
     const textura = new Image()
     let prontaTextura = false
@@ -216,7 +218,11 @@ export function HeroEstrelas() {
     function semearModelo(g: Grao, z: number) {
       g.z = z
       g.mx = (Math.random() * 2 - 1) * z
-      g.my = (Math.random() * 2 - 1) * z
+      /* Somar a deriva atual é o que faz o grão nascer onde deveria estar
+         AGORA, e não onde estaria se a câmera nunca tivesse andado. Sem
+         isso cada grão reciclado entraria deslocado por todo o caminho já
+         percorrido — e o deslocamento cresce sem parar. */
+      g.my = (Math.random() * 2 - 1) * z + deriva
     }
 
     function sortear(g: Grao) {
@@ -297,7 +303,12 @@ export function HeroEstrelas() {
          número podendo divergir do primeiro. */
       const dt = Math.min((t - tAnterior) / 1000, 0.05)
       tAnterior = t
-      const dv = dt > 0 ? Math.abs(v - vAnterior) / dt : 0
+      /* Duas leituras da mesma velocidade, como no campo do site: o avanço
+         em profundidade usa o MÓDULO, porque rolar para cima muda para
+         onde a câmera aponta e não o sentido do voo; a deriva vertical usa
+         o valor COM SINAL, e é ela que inverte — a ida e vinda. */
+      const dvAssinado = dt > 0 ? (v - vAnterior) / dt : 0
+      const dv = Math.abs(dvAssinado)
       vAnterior = v
 
       /* LEITURAS primeiro, escritas depois. Os dois rects custam um
@@ -356,7 +367,24 @@ export function HeroEstrelas() {
          `DERIVA_Z` é a mesma base do campo do site; o termo da velocidade
          é o que faz rolar mais rápido parecer entrar mais rápido. */
       const rampa = suave(tGeo)
-      const avanco = (0.05 + dv * 0.55) * dt * rampa
+      /* Avanço PROPORCIONAL à profundidade, não constante.
+         Com `z -= taxa·dt` o grão andava sempre o mesmo tanto de
+         profundidade por segundo, e com a taxa que dá a sensação certa de
+         velocidade um grão nascido em 0,8 chegava a ~0,5 no fim da
+         descida: nunca alcançava a faixa próxima. O campo chegava à
+         travessia sem os grãos grandes e perto que o do site tem, e a
+         diferença de tamanho denunciava a troca.
+         Com `z -= z·taxa·dt` a queda é geométrica: atravessa a faixa
+         inteira no tempo que existe, e continua com mais parallaxe perto
+         que longe — a velocidade NA TELA vai como 1/z de qualquer jeito,
+         que é o que dá a leitura de profundidade. */
+      const avanco = 0.45 + dv * 3.2
+      /* Deriva vertical, com sinal — a componente que faltava. O campo do
+         site não só irradia: ele também flui, e inverte quando você rola
+         para cima. Sem isto os dois campos escorrem em direções
+         diferentes lado a lado, e é isso que denuncia a troca mesmo com
+         tamanho e cor casados. */
+      deriva += (0.065 + dvAssinado * 0.57) * dt * rampa
       /* Fotometria converge DENTRO da janela de dissolução, não com a
          geometria. Enquanto o cérebro cobre a tela o fundo do grão é uma
          imagem CLARA e MUITO carregada — a textura já tem os próprios
@@ -396,7 +424,7 @@ export function HeroEstrelas() {
            motivo; e a distribuição na tela vira a do site de graça, porque
            `mx / z` cai uniforme na janela. Não há mais nada interpolando
            entre dois modelos — só um modelo, ganhando velocidade. */
-        g.z -= avanco
+        g.z -= g.z * avanco * dt * rampa
         if (g.z < FAIXA_Z[0]) semearModelo(g, FAIXA_Z[1])
         const z = g.z
 
@@ -413,7 +441,7 @@ export function HeroEstrelas() {
            existe o disco — o campo aprovado, intocado. Convergido, só
            existe o do site, escorrendo. */
         const modeloX = cx + (g.mx / z) * (L / 2 + MARGEM)
-        const modeloY = cy + (g.my / z) * (spanY / 2 + MARGEM)
+        const modeloY = cy + ((g.my - deriva) / z) * (spanY / 2 + MARGEM)
         const p = rampa
         const sx = discoX + (modeloX - discoX) * p
         const sy = discoY + (modeloY - discoY) * p
