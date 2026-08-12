@@ -1,6 +1,7 @@
 {
   "name": "landing-digi-ia",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Landing de lista de espera da Digi.IA — lançamento em 14/09/2026",
   "scripts": {
