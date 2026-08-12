@@ -276,7 +276,12 @@ export function HeroEstrelas() {
          um fator só quando seu alcance teórico passa do alvo. Perspectiva
          no pior caso usa `Z_PERTO`, o grão mais próximo que a faixa de
          repouso permite — sem voo não há grão mais perto que isso. */
-      const alvoAlcance = Math.hypot(L, A) * 0.62
+      /* `spanY`, não `A`: o comentário acima fala em não deixar o campo
+         fugir da JANELA, e abaixo de 980px a hero é mais alta que ela (ver
+         `medir()`). Com `A` o alcance afrouxaria na mesma proporção e os
+         grãos cairiam abaixo da dobra — o descarte logo adiante também
+         mede contra a caixa, então nem seriam pulados. */
+      const alvoAlcance = Math.hypot(L, spanY) * 0.62
       const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_PERTO)
       const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
       /* Geometria converge cedo e devagar: de `ESCALA_EM` até o instante

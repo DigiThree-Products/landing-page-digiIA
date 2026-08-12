@@ -61,20 +61,24 @@ export function Hero() {
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
 
-          /* Entre estas duas telas (medidas do topo, não do início do
-             pin), o cérebro some e revela o fundo preto com a poeira
-             cósmica de verdade atrás dele — mesmo mecanismo que as
-             estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
-             para apagar junto o retângulo claro que o canvas pinta). Do
-             fim até o fim do pin ele fica parado, já transparente.
+          /* A janela de revelação — o trecho em que o cérebro some e
+             revela o fundo preto com a poeira cósmica de verdade atrás
+             dele, mesmo mecanismo que as estações usam
+             (`el.style.opacity`, lido por PoeiraFundo.tsx para apagar
+             junto o retângulo claro que o canvas pinta). Do fim dela até o
+             fim do pin ele fica parado, já transparente.
 
-             A janela era 0,1 tela (3,6→3,7). Foi para 0,3 para dar espaço
-             ao que o núcleo estrelado precisa fazer aqui dentro — ver
-             REVELA_FIM_EM em lib/mergulho.ts, que documenta o porquê.
-             A folga saiu do fim do pin, que já era só espera: `TOTAL`
-             não mudou e as seções seguintes não sentem nada. */
-          const REVELA_POEIRA_INICIO = 3.5
-          const REVELA_POEIRA_FIM = 3.8
+             Ela mora em `REVELA_EM`/`REVELA_FIM_EM` (lib/mergulho.ts), não
+             aqui: em telas medidas do topo são 3,5→3,8 de 4,0, e o núcleo
+             estrelado precisa exatamente dos mesmos dois pontos. Havia
+             constantes locais com esses números, e eram armadilha — quem
+             editasse o 3,8 aqui, ao lado desta explicação, não mudaria
+             nada, porque a timeline lê as frações importadas.
+
+             Era 0,1 tela (3,6→3,7) e foi para 0,3 para dar espaço ao que o
+             núcleo faz aqui dentro. A folga saiu do fim do pin, que já era
+             só espera: `TOTAL` não mudou e as seções seguintes não sentem
+             nada. */
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe

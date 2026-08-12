@@ -4,7 +4,10 @@ import { useEffect, useRef } from 'react'
 import {
   alfaDoGrao,
   cintilacao,
+  CONTAGEM_GRAOS,
   corDoToken,
+  fadeProximo,
+  FAIXA_Z,
   paletaEmissao,
   raioDoGrao,
   sortearIdentidade,
@@ -74,12 +77,13 @@ export function PoeiraFundo() {
 
     const modo = MODO_POEIRA
     const toque = window.matchMedia('(pointer: coarse)').matches
-    const N = toque ? 110 : 260
+    const N = toque ? CONTAGEM_GRAOS.toque : CONTAGEM_GRAOS.grande
     const Z_MIN_R = 0.09
     /* Fundo de profundidade mais raso que antes: o grão chega bem mais
        perto antes de ser reciclado, e é essa passagem rente à câmera que
-       dá a escala do espaço. */
-    const Z_MIN_V = 0.05
+       dá a escala do espaço. O núcleo da hero converge para esta mesma
+       faixa, então ela vem de lib/grao.ts. */
+    const Z_MIN_V = FAIXA_Z[0]
     const DERIVA_R = 0.014
     /** Deriva vertical da câmera — o eixo que segue o scroll. */
     const DERIVA_V = 0.04
@@ -376,11 +380,14 @@ export function PoeiraFundo() {
              continua ampla o bastante para ler profundidade. */
           const r = raioDoGrao(p.z)
           /* Some ao nascer no fundo e ao passar rente à câmera — sem as
-             duas bordas o grão pisca ao entrar e ao sair. Estes dois
-             fatores existem por causa da reciclagem do voo, que só este
-             campo tem, então ficam fora do módulo. */
+             duas bordas o grão pisca ao entrar e ao sair.
+             `entrada` fica aqui: só faz sentido onde há reciclagem, e o
+             núcleo da hero não recicla nada. `saida` foi para o módulo
+             porque o núcleo herda esta faixa de profundidade e precisa do
+             mesmo apagamento — sem ele os grãos dele ficariam parados no
+             tamanho máximo, que é coisa que este campo nunca mostra. */
           const entrada = Math.min(1, (1 - p.z) / 0.18)
-          const saida = Math.min(1, (p.z - Z_MIN_V) / 0.06)
+          const saida = fadeProximo(p.z)
           const base =
             alfaDoGrao(p.z, p.brilho) * (1 + forca * 0.1) * entrada * saida
           const { cor, a } = regime(p, sx, sy, segundos, base)

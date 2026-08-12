@@ -4,10 +4,9 @@ import { ESCALA_EM, REVELA_EM, REVELA_FIM_EM } from './mergulho.ts'
 import {
   alfaDoGrao,
   cintilacao,
-  CONTAGEM_GRAOS,
   corComVies,
-  fadeProximo,
   corDoToken,
+  fadeProximo,
   FAIXA_Z,
   ganhoAlfa,
   ganhoHalo,
@@ -163,7 +162,7 @@ test('fadeProximo apaga o grao rente a camera', () => {
   perto(fadeProximo(FAIXA_Z[0] + 0.03), 0.5)
 })
 
-test('contagem dos dois campos e a mesma fonte', () => {
-  assert.equal(CONTAGEM_GRAOS.grande, 260)
-  assert.equal(CONTAGEM_GRAOS.toque, 110)
-})
+/* Não existe teste da contagem aqui: afirmar `CONTAGEM_GRAOS.grande === 260`
+   seria comparar a constante com uma cópia dela, que é a tautologia que este
+   arquivo já pagou uma vez. O que importa — os dois campos lerem a MESMA
+   fonte — é verificável lendo os dois consumidores, não daqui. */
