@@ -7,6 +7,7 @@ import {
   corComVies,
   FAIXA_Z,
   ganhoAlfa,
+  ganhoHalo,
   ganhoRaio,
   type Identidade,
   limita,
@@ -20,7 +21,7 @@ import {
   viesBranco,
   zConvergente,
 } from '@/lib/grao'
-import { ESCALA_EM, mergulho, REVELA_EM } from '@/lib/mergulho'
+import { ESCALA_EM, mergulho, REVELA_EM, REVELA_FIM_EM } from '@/lib/mergulho'
 
 const TEXTURA = '/assets/hero/cerebro.webp'
 
@@ -273,14 +274,18 @@ export function HeroEstrelas() {
       const tGeo = progresso(v, ESCALA_EM, REVELA_EM)
       const ganho = ganhoRaio(tGeo)
       const vies = viesBranco(tGeo)
-      /* Presença ainda constante nesta etapa — o valor de repouso da
-         curva, não um número solto. A fotometria entra depois e troca
-         isto por `ganhoAlfa(tFoto)`, preso à dissolução. O piso é alto
-         porque o fundo destas estrelas é o próprio cérebro, uma imagem
-         CLARA e MUITO carregada (a textura já tem os próprios pontos de
-         brilho desenhados) — presença baixa aqui não daria "discreto",
-         daria invisível de verdade. */
-      const presenca = ganhoAlfa(0)
+      /* Fotometria converge DENTRO da janela de dissolução, não com a
+         geometria. Enquanto o cérebro cobre a tela o fundo do grão é uma
+         imagem CLARA e MUITO carregada — a textura já tem os próprios
+         pontos de brilho desenhados — e baixar o alfa ali não daria
+         "discreto", daria invisível de verdade.
+
+         Presa à dissolução, a opacidade cai na mesma medida em que o
+         mundo escurece: o contraste percebido não muda. Não se vê o alfa
+         mudando, vê-se o mundo apagando com o grão constante em cima. */
+      const tFoto = progresso(v, REVELA_EM, REVELA_FIM_EM)
+      const presenca = ganhoAlfa(tFoto)
+      const halo = ganhoHalo(tFoto)
       const bordaViva = abertura < 1.05
 
       ctx!.clearRect(0, 0, L, A)
@@ -343,11 +348,19 @@ export function HeroEstrelas() {
            um adesivo colado — um círculo de borda dura, sem relação com a
            luz que o cérebro já emite ao redor. O halo (2,8× o raio, ~22%
            do alfa) devolve a leitura de brilho sem depender de o composto
-           aditivo vencer o fundo. */
-        ctx!.beginPath()
-        ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${r},${gg},${b},${(alfaCore * 0.22).toFixed(3)})`
-        ctx!.fill()
+           aditivo vencer o fundo.
+
+           Ele existe para vencer um fundo CLARO. Contra o vazio, o campo
+           do site não tem halo nenhum — então este sai junto com a
+           dissolução. Abaixo de meio milésimo de alfa não há o que
+           rasterizar, e a chamada é desperdício. */
+        const alfaHalo = alfaCore * 0.22 * halo
+        if (alfaHalo > 0.004) {
+          ctx!.beginPath()
+          ctx!.arc(sx, sy, raio * 2.8, 0, Math.PI * 2)
+          ctx!.fillStyle = `rgba(${r},${gg},${b},${alfaHalo.toFixed(3)})`
+          ctx!.fill()
+        }
 
         ctx!.beginPath()
         ctx!.arc(sx, sy, raio, 0, Math.PI * 2)
