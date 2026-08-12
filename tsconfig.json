@@ -15,6 +15,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    /* O harness de testes (node --test) executa .ts sem transpilação e exige
+       a extensão explícita nos imports. sem essa flag, tsc rejeita o import. */
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
