@@ -366,7 +366,21 @@ export function HeroEstrelas() {
          mede contra a caixa, então nem seriam pulados. */
       const alvoAlcance = Math.hypot(L, spanY) * 0.62
       const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_PERTO)
-      const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
+      /* Saturação suave, não um `if`.
+         Era `alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1`.
+         O valor era contínuo, mas a DERIVADA não: o disco crescia junto
+         com o cérebro e, num quadro, parava de crescer. Como `R` escala
+         80×, isso disparava por volta de 45% da descida — quando o disco
+         ainda carrega mais da metade do peso da posição — e o
+         deslocamento mudava de caráter ali, num ponto só.
+         A potência alta é o que faz esta curva ser praticamente a
+         identidade até perto do alvo: em repouso o alcance é ~13% do
+         limite, e a diferença para o `if` antigo fica na quinta casa. O
+         disco aprovado não muda; o que muda é ele parar de crescer
+         gradualmente em vez de bater numa parede. */
+      const SUAVIDADE = 4
+      const razao = alcanceBruto / alvoAlcance
+      const ajuste = 1 / Math.pow(1 + Math.pow(razao, SUAVIDADE), 1 / SUAVIDADE)
       /* Geometria converge cedo e devagar: de `ESCALA_EM` até o instante
          em que a dissolução começa. São ~3 telas de rolagem — lento
          demais para ser percebido como mudança, e terminado antes de a
