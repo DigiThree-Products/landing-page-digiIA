@@ -13,6 +13,7 @@
 ## Global Constraints
 
 - Branch de trabalho: `worktree-feat+hero-branca-nucleo-estrelado`. NÃO mesclar na `main`.
+- **Nunca reescrever histórico.** Proibido `git commit --amend`, `git reset`, `git rebase`, `git push --force` ou qualquer coisa que altere commits existentes. Só adicionar commits novos — inclusive ao corrigir achados de revisão. A branch é compartilhada entre quem implementa e quem coordena, e um `amend` seguido de `reset` já destruiu um commit de outra pessoa aqui. Se algo precisa ser desfeito, `git revert` cria um commit novo e é o caminho certo.
 - Nenhuma dependência nova em `package.json`. O projeto é deliberadamente sem dependências de teste (ver o cabeçalho de `verificar.mjs`).
 - **O portão de verificação é `npm run typecheck && npm run test && npm run build`**, e ele precisa passar antes de qualquer commit que toque em código.
 
