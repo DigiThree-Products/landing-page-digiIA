@@ -604,6 +604,18 @@ export function HeroEstrelas() {
 
     medir()
     window.addEventListener('resize', aoRedimensionar)
+    /* O `resize` da janela não basta, e a falha era visível em todo
+       carregamento: `medir()` lê `cv.clientWidth`, e na primeira execução o
+       layout ainda não assentou — medido em produção, 914px de buffer para
+       1425px de CSS. O canvas ficava esticado 1,56× na horizontal e em 64%
+       da resolução até alguém redimensionar a janela, o que ninguém faz. E
+       esticar horizontalmente distorce a DIREÇÃO de cada grão: o leque
+       radial vira elíptico.
+       Quem observa o elemento resolve o caso geral — layout assentando,
+       fontes carregando, barra de rolagem aparecendo — sem depender de um
+       evento de janela que pode nunca vir. */
+    const observadorTamanho = new ResizeObserver(() => medir())
+    observadorTamanho.observe(cv)
     document.addEventListener('visibilitychange', aoTrocarVisibilidade)
 
     /* A hero é a primeira seção e fica presa por 4 telas; passado isso
@@ -622,6 +634,7 @@ export function HeroEstrelas() {
       cancelAnimationFrame(raf)
       observador.disconnect()
       window.removeEventListener('resize', aoRedimensionar)
+      observadorTamanho.disconnect()
       document.removeEventListener('visibilitychange', aoTrocarVisibilidade)
       textura.onload = null
     }
