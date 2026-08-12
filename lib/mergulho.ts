@@ -40,12 +40,11 @@ export const ESCALA_EM = 0.136
  * Fração do mergulho em que a seção inteira começa a apagar, revelando a
  * poeira cósmica de verdade atrás do cérebro (mesmo ponto — ver a nota
  * sobre `REVELA_POEIRA_INICIO`/`TOTAL` em Hero.tsx: `3,5 / 4,0`).
- * Exportada daqui pelo mesmo motivo que `ESCALA_EM`: `HeroEstrelas.tsx`
- * precisa saber quando a GEOMETRIA dele termina de convergir — tamanho,
- * profundidade e posição do grão têm que já parecer os do campo do site
- * ANTES de a seção começar a sumir, não durante. Se ainda estivessem
- * mudando na hora da dissolução, seriam mais um eixo saltando junto com
- * o resto, e a travessia voltaria a ler como corte.
+ * Exportada daqui pelo mesmo motivo que `ESCALA_EM`: é o prazo que
+ * `HeroEstrelas.tsx` tem. O que ele fizer com o grão ao longo do
+ * mergulho precisa estar TERMINADO quando esta fração chega — o que
+ * ainda estivesse mudando aqui viraria mais um eixo saltando junto com a
+ * dissolução, e a travessia voltaria a ler como corte.
  */
 export const REVELA_EM = 0.875
 

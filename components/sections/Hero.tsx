@@ -63,10 +63,9 @@ export function Hero() {
              para apagar junto o retângulo claro que o canvas pinta). Do
              fim até o fim do pin ele fica parado, já transparente.
 
-             A janela era 0,1 tela (3,6→3,7). Foi para 0,3 porque é dentro
-             dela que a fotometria do núcleo estrelado converge para a do
-             campo do site (ver REVELA_FIM_EM em lib/mergulho.ts), e 0,1
-             tela era pouco espaço para isso acontecer sem ninguém ver.
+             A janela era 0,1 tela (3,6→3,7). Foi para 0,3 para dar espaço
+             ao que o núcleo estrelado precisa fazer aqui dentro — ver
+             REVELA_FIM_EM em lib/mergulho.ts, que documenta o porquê.
              A folga saiu do fim do pin, que já era só espera: `TOTAL`
              não mudou e as seções seguintes não sentem nada. */
           const REVELA_POEIRA_INICIO = 3.5
