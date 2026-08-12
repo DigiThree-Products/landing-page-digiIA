@@ -89,14 +89,6 @@ type Grao = Identidade & {
    * espalha sozinha por `FAIXA_Z` — sem ninguém interpolar nada.
    */
   z: number
-  /**
-   * Coordenadas no modelo do campo do site, sorteadas proporcionais a `z`.
-   * É esse truque que faz `x / z` cair uniforme na janela qualquer que
-   * seja a profundidade — e é por isso que o grão escorre para FORA
-   * conforme se aproxima, em vez de só ficar maior.
-   */
-  mx: number
-  my: number
 }
 
 /**
@@ -221,12 +213,15 @@ export function HeroEstrelas() {
      */
     function semearModelo(g: Grao, z: number) {
       g.z = z
-      g.mx = (Math.random() * 2 - 1) * z
+      const ang = Math.random() * Math.PI * 2
+      // sqrt para o disco encher por igual; sem ele o centro fica denso demais
+      const rho = Math.sqrt(Math.random())
+      g.x = Math.cos(ang) * rho
       /* Somar a deriva atual é o que faz o grão nascer onde deveria estar
          AGORA, e não onde estaria se a câmera nunca tivesse andado. Sem
          isso cada grão reciclado entraria deslocado por todo o caminho já
-         percorrido — e o deslocamento cresce sem parar. */
-      g.my = (Math.random() * 2 - 1) * z + deriva
+         percorrido — e esse deslocamento cresce sem parar. */
+      g.y = Math.sin(ang) * rho + deriva
     }
 
     function sortear(g: Grao) {
@@ -262,8 +257,6 @@ export function HeroEstrelas() {
         y: 0,
         zRepouso: 1,
         z: 1,
-        mx: 0,
-        my: 0,
         tom: 0,
         brilho: 1,
         fase: 0,
@@ -479,60 +472,47 @@ export function HeroEstrelas() {
            campo já voou. Em `rampa = 1` vale a viva, inteira. */
         const z = g.zRepouso + (g.z - g.zRepouso) * rampa
 
-        /* A projeção do DISCO usa a profundidade de repouso, fixa: é ela
-           que mantém `perspectiva` e `ajuste` válidos, porque a viva desce
-           até 0,05 e ali a perspectiva valeria 8,6. */
-        const perspectiva = 0.6 + 0.4 / g.zRepouso
+        /* UMA projeção só, e é isso que garante que o campo nunca inverte.
+
+           Ela era duas — o disco parado e o modelo do site — misturadas
+           pela rampa. Medido: aquilo produzia uma inversão de 180° entre
+           v≈0,42 e v≈0,72, com o campo inteiro voltando para DENTRO por
+           quase um terço da descida. E não era calibrável: o disco cresce
+           com o cérebro, que escala 80× de forma explosiva, e o modelo
+           escorre devagar — assim que o disco ultrapassa o modelo,
+           misturar em direção a ele passa a puxar o grão de volta. Varridas
+           todas as larguras de janela de mistura, todas invertiam; só
+           mudava ONDE. Misturar duas magnitudes radiais que crescem em
+           ritmos diferentes sempre inverte no cruzamento — é do formato,
+           não do ajuste.
+
+           Aqui a posição é `centro + direção · magnitude`, com a direção
+           fixa por grão e a magnitude sendo um produto de fatores que só
+           crescem: o cérebro escalando, a abertura do núcleo e a
+           perspectiva da profundidade VIVA. Produto de não-decrescentes é
+           não-decrescente: o grão não tem como voltar. */
+        if (rampa <= 0) g.z = g.zRepouso
+        const perspectiva = 0.6 + 0.4 / g.z
         const espalha = R * abertura * perspectiva * ajuste
-        const discoX = cx + g.x * espalha
-        const discoY = cy + g.y * espalha
+        const sx = cx + g.x * espalha
+        /* A deriva entra dividida junto com o resto, não como translação:
+           assim ela ganha perspectiva — grão perto flui mais rápido que
+           grão longe, como no campo do site. */
+        const sy = cy + (g.y - deriva) * espalha
 
-        /* Enquanto NÃO voa, o modelo acompanha o disco em vez de guardar
-           um lugar próprio.
-
-           Sem isto, os dois lugares eram sorteados sem relação um com o
-           outro, e a mistura ARRASTAVA cada grão da posição do disco até
-           um ponto qualquer. Esse arrasto tem direção arbitrária: parte
-           do campo ia para dentro, parte de lado — contra o leque que o
-           voo desenha. Movimento que não pertence a nenhum dos dois
-           modelos, só à interpolação entre eles.
-
-           Ancorado assim, no instante em que o voo começa as duas
-           projeções coincidem, a mistura não move nada por conta própria,
-           e todo deslocamento que se vê a partir dali é o do voo. */
-        if (rampa <= 0) {
-          g.z = g.zRepouso
-          g.mx = ((discoX - cx) / (L / 2 + MARGEM)) * g.z
-          g.my = ((discoY - cy) / (spanY / 2 + MARGEM)) * g.z + deriva
-        }
-
-        /* Duas projeções do mesmo grão, misturadas pela rampa: o disco
-           parado do repouso e o modelo do site em movimento. Em `v = 0` só
-           existe o disco — o campo aprovado, intocado. Convergido, só
-           existe o do site, escorrendo. */
-        const modeloX = cx + (g.mx / g.z) * (L / 2 + MARGEM)
-        const modeloY = cy + ((g.my - deriva) / g.z) * (spanY / 2 + MARGEM)
-        const p = rampa
-        const sx = discoX + (modeloX - discoX) * p
-        const sy = discoY + (modeloY - discoY) * p
-
-        /* Reciclagem julga a posição do MODELO, não a misturada.
-           O disco de repouso é maior que a janela de propósito (ver
-           `alvoAlcance`), então grão fora da tela por causa DELE não voou
-           para lugar nenhum: reciclá-lo o devolve ao fundo, ele não se
-           mexe porque a rampa ainda é baixa, e recicla de novo no quadro
-           seguinte. Medido em ~15% do campo por quadro num trecho da
-           descida — invisível, porque grão em thrash é justamente o que
-           não se desenha, e caro à toa.
-           Contra `spanY` e não `A`: quem define para onde o modelo sorteia
-           é o span, e o canvas pode ser bem mais alto que a janela abaixo
-           de 980px. */
+        /* Saiu da tela voando: volta ao fundo. Só enquanto voa — o disco
+           de repouso é maior que a janela de propósito (ver
+           `alvoAlcance`), e sem essa guarda o grão que está fora por causa
+           DELE seria devolvido ao fundo, não se moveria porque a rampa
+           ainda é baixa, e seria devolvido de novo no quadro seguinte.
+           Medido em ~15% do campo por quadro num trecho da descida:
+           invisível, porque grão nesse estado é justamente o que não se
+           desenha, e caro à toa.
+           Contra `spanY` e não `A`: quem manda é a janela, e abaixo de
+           980px o canvas pode ser bem mais alto que ela. */
         if (
           rampa > 0 &&
-          (modeloX < -MARGEM ||
-            modeloX > L + MARGEM ||
-            modeloY < -MARGEM ||
-            modeloY > spanY + MARGEM)
+          (sx < -MARGEM || sx > L + MARGEM || sy < -MARGEM || sy > spanY + MARGEM)
         ) {
           semearModelo(g, FAIXA_Z[1])
           continue
@@ -561,16 +541,14 @@ export function HeroEstrelas() {
            recortado em vez de um brilho. Depois de abrir, quem corta é a
            máscara do cérebro e este fade sai de cena.
 
-           `rho` é a distância no DISCO, não na tela, e a posição do grão
-           deixa de ser a do disco conforme converge para o alvo uniforme.
-           Por isso a máscara perde força junto com `p`: a borda macia
-           pertence ao disco, e o disco vai deixando de existir. Sem esse
-           fator, o grão já espalhado continuaria sendo escurecido por uma
-           distância de onde ele não está mais — escurecimento sem relação
-           com o que se vê na tela. */
-        if (p < 1) {
-          const rho = Math.hypot(g.x, g.y)
-          alfa *= 1 - suave(limita((rho - 0.72) / 0.28)) * (1 - p)
+           `rho` é a distância no disco unitário, e ela continua sendo a
+           distância real do grão ao eixo — a projeção é uma só, então não
+           há mais divergência entre "onde o disco diz" e "onde ele está".
+           A máscara ainda perde força com a rampa: a borda macia pertence
+           ao núcleo fechado, e o núcleo vai abrindo. */
+        if (rampa < 1) {
+          const rho = Math.hypot(g.x, g.y - deriva)
+          alfa *= 1 - suave(limita((rho - 0.72) / 0.28)) * (1 - rampa)
         }
         if (alfa <= 0.004) continue
 
