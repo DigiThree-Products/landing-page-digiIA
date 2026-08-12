@@ -1,19 +1,45 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import {
+  alfaDoGrao,
+  cintilacao,
+  corComVies,
+  FAIXA_Z,
+  ganhoAlfa,
+  ganhoRaio,
+  type Identidade,
+  limita,
+  paletaEmissao,
+  progresso,
+  raioDoGrao,
+  type RGB,
+  sortearIdentidade,
+  suave,
+  TETO_ALFA,
+  viesBranco,
+  zConvergente,
+} from '@/lib/grao'
 import { ESCALA_EM, mergulho, REVELA_EM } from '@/lib/mergulho'
 
 const TEXTURA = '/assets/hero/cerebro.webp'
 
-/** Fora do vidro o mundo é claro; o universo mora dentro. */
-const N_GRANDE = 150
-const N_TOQUE = 70
+/* Mesma contagem do campo do site (PoeiraFundo). Durante a dissolução os
+   dois coexistem, e densidades diferentes seriam mais um eixo mudando
+   junto com o resto — justamente o que esta convergência existe para
+   evitar. */
+const N_GRANDE = 260
+const N_TOQUE = 110
 
 /**
- * Faixa de profundidade dos grãos — fixa por toda a vida do grão, sem voo
- * (ver a nota grande abaixo sobre por que o campo ficou parado). Perto o
- * bastante (`Z_PERTO`) pra dar alguma variação de tamanho e perspectiva
- * entre os grãos; longe o bastante (`Z_LONGE`) pra nunca esticar demais.
+ * Faixa de profundidade de REPOUSO — a que governa a projeção do disco.
+ *
+ * Fica fixa, e é ela que mantém `perspectiva` e o ajuste de alcance
+ * válidos: a profundidade que CONVERGE (ver `zConvergente` no laço) desce
+ * até 0,05, onde a perspectiva valeria 8,6 e jogaria o grão para fora da
+ * tela. Por isso as duas são coisas separadas — esta projeta, aquela só
+ * governa raio e alfa.
+ *
  * `Z_PERTO` também é o pior caso usado no ajuste de alcance, mais abaixo —
  * uma constante só, não dois números que podem dessincronizar.
  */
@@ -34,52 +60,20 @@ const SILHUETA = 1.35
 const ABRE_ATE = 0.85
 
 /**
- * Crescimento do GRÃO, separado da abertura do núcleo (que é sobre
- * posição, não tamanho). O grão nasce menor que o tamanho final, no
- * mesmo instante em que o cérebro começa a crescer (`ESCALA_EM`), e chega
- * ao tamanho final no mesmo instante em que a seção começa a apagar
- * (`REVELA_EM`) — acompanha o scroll junto com o cérebro, na mesma janela.
- * `power2.in` do GSAP é cúbico (`t³`), não quadrático — usar a mesma curva
- * aqui é o que faz o grão "crescer junto", não só terminar no mesmo lugar.
+ * Um grão, aqui, é a identidade compartilhada com o campo do site mais
+ * duas profundidades e uma posição no disco.
  *
- * Era 1/80. Com o voo removido (ver a nota grande abaixo) o tamanho final
- * também encolheu — sem grão passando perto da câmera, o pior caso de
- * `raioFinal` não passa de ~1,7px — e 1/80 disso é bem menos que meio
- * pixel: nada que um canvas rasterize de verdade, o núcleo nascia
- * literalmente zerado (medido). Sem a proporção de 80× sobreviver a essa
- * conta, o piso subiu para algo que ainda rasteriza como um ponto fraco,
- * não invisível. */
-const FATOR_MINIMO = 1 / 6
-
-type Grao = {
+ * `zRepouso` projeta (a perspectiva do disco depende dela e só dela);
+ * `zFundo` é o alvo em `FAIXA_Z` para onde a profundidade caminha, e só
+ * governa raio e alfa. Separar as duas é o que permite o campo ganhar a
+ * profundidade do site sem os grãos voarem para fora da tela.
+ */
+type Grao = Identidade & {
   /** Posição no disco unitário; o raio já sai com distribuição uniforme em área. */
   x: number
   y: number
-  z: number
-  tom: number
-  brilho: number
-  fase: number
-  cintila: number
-}
-
-const limita = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
-const suave = (t: number) => t * t * (3 - 2 * t)
-
-/**
- * Leitura de token com piso.
- *
- * O `parseInt` cego em hexadecimal é o jeito curto, mas devolve NaN sem
- * reclamar se o token virar `oklch()` ou `rgb()` — e cor NaN no canvas é
- * ignorada em silêncio, deixando o grão com a última cor do contexto.
- * Um alternativo declarado transforma isso em degradação visível em vez
- * de falha invisível.
- */
-function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [number, number, number]) {
-  const bruto = raiz.getPropertyValue(nome).trim()
-  const hex = /^#?([0-9a-f]{6})$/i.exec(bruto)
-  if (!hex) return alternativo
-  const n = parseInt(hex[1], 16)
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as [number, number, number]
+  zRepouso: number
+  zFundo: number
 }
 
 /**
@@ -87,15 +81,24 @@ function corDoToken(raiz: CSSStyleDeclaration, nome: string, alternativo: [numbe
  *
  * Um núcleo estrelado no miolo do cérebro — pequeno e quase invisível em
  * repouso, abre e cresce conforme o mergulho avança (posição via
- * `abertura`, tamanho via `crescimento`), mas fica PARADO: sem voo, sem
- * deslize, só ali. A sensação de viagem não é dele — é da revelação de
- * verdade, quando a seção inteira apaga (`REVELA_EM`, ver Hero.tsx) e
- * descobre a poeira cósmica real do site atrás do cérebro (mesmo
- * mecanismo de PoeiraFundo.tsx, que já tem o próprio túnel). Fingir um
- * voo próprio aqui dentro, numa silhueta pequena e recortada, competiria
- * com essa revelação em vez de prepará-la — testado (voo em profundidade,
- * rastro e um segundo eixo tipo túnel) e revertido por decisão: o campo
- * pequeno lia como poluído, não como viagem.
+ * `abertura`, tamanho via `ganhoRaio` junto com `zConvergente`), mas fica
+ * PARADO: sem voo, sem deslize, só ali. A sensação de viagem não é dele —
+ * é da revelação de verdade, quando a seção inteira apaga (`REVELA_EM`,
+ * ver Hero.tsx) e descobre a poeira cósmica real do site atrás do cérebro
+ * (mesmo mecanismo de PoeiraFundo.tsx, que já tem o próprio túnel).
+ * Fingir um voo próprio aqui dentro, numa silhueta pequena e recortada,
+ * competiria com essa revelação em vez de prepará-la — testado (voo em
+ * profundidade, rastro e um segundo eixo tipo túnel) e revertido por
+ * decisão: o campo pequeno lia como poluído, não como viagem.
+ *
+ * **Este campo converge para o do site.** O look próprio dele — grão
+ * maior, mais opaco, com halo, mais branco — não é um conjunto de
+ * constantes: é um desvio do campo de fundo que decai a zero ao longo do
+ * mergulho (as curvas moram em `lib/grao.ts`). Quando a dissolução
+ * termina, não sobra nada para revelar, e a única coisa que muda ao
+ * atravessar é o campo estar em movimento. Antes disso os dois eram
+ * desenhados isoladamente e sete variáveis saltavam no mesmo quadro — a
+ * travessia lia como corte, não como limiar.
  *
  * Quatro decisões que não são livres:
  *
@@ -143,11 +146,9 @@ export function HeroEstrelas() {
     if (!cerebro) return
 
     const raiz = getComputedStyle(document.documentElement)
-    const PALETA: [number, number, number][] = [
-      corDoToken(raiz, '--lilac', [205, 130, 255]),
-      corDoToken(raiz, '--mid', [142, 71, 251]),
-      corDoToken(raiz, '--paper', [248, 240, 255]),
-    ]
+    const PALETA: RGB[] = paletaEmissao((nome) => raiz.getPropertyValue(nome))
+    /* O branco para onde o viés puxa é o próprio `--paper` da paleta. */
+    const BRANCO = PALETA[2]
 
     const toque = window.matchMedia('(pointer: coarse)').matches
     const N = toque ? N_TOQUE : N_GRANDE
@@ -172,20 +173,35 @@ export function HeroEstrelas() {
       const rho = Math.sqrt(Math.random())
       g.x = Math.cos(ang) * rho
       g.y = Math.sin(ang) * rho
-      g.z = Z_PERTO + Math.random() * (Z_LONGE - Z_PERTO)
-      /* Mais branco que roxo, de propósito: lilás e violeta (--mid) são
-         próximos demais da própria paleta do cérebro pra se destacarem —
-         testei visualmente e um grão lilás sobre um filamento lilás não
-         lê como grão nenhum. O branco (--paper) estoura de verdade contra
-         qualquer coisa embaixo. */
-      g.tom = Math.random() < 0.55 ? 2 : (Math.random() * 2) | 0
-      g.brilho = 0.7 + Math.random() * 0.3
-      g.fase = Math.random() * Math.PI * 2
-      g.cintila = 0.7 + Math.random() * 1.7
+      g.zRepouso = Z_PERTO + Math.random() * (Z_LONGE - Z_PERTO)
+      g.zFundo = FAIXA_Z[0] + Math.random() * (FAIXA_Z[1] - FAIXA_Z[0])
+      /* Identidade sorteada nas faixas do campo do site, não em faixas
+         próprias. `brilho` é sorteado uma vez, no nascimento — faixas
+         divergentes seriam uma diferença que nenhum multiplicador faz
+         convergir depois. O brilho menor em repouso é compensado por
+         `ganhoAlfa`.
+
+         O viés para o branco também deixou de ser sorteio aqui. Ele
+         existia porque lilás e violeta são próximos demais da paleta do
+         cérebro pra se destacarem — um grão lilás sobre um filamento
+         lilás não lê como grão nenhum. Mas um tom sorteado não converge:
+         não dá para um grão "ficar menos branco" se o branco dele foi
+         decidido no nascimento. Virou mistura contínua, ver `corComVies`
+         no laço. */
+      Object.assign(g, sortearIdentidade())
     }
 
     const graos: Grao[] = Array.from({ length: N }, () => {
-      const g: Grao = { x: 0, y: 0, z: 1, tom: 0, brilho: 1, fase: 0, cintila: 1 }
+      const g: Grao = {
+        x: 0,
+        y: 0,
+        zRepouso: 1,
+        zFundo: 1,
+        tom: 0,
+        brilho: 1,
+        fase: 0,
+        cintila: 1,
+      }
       sortear(g)
       return g
     })
@@ -242,36 +258,45 @@ export function HeroEstrelas() {
       const alvoAlcance = Math.hypot(L, A) * 0.62
       const alcanceBruto = R * abertura * (0.6 + 0.4 / Z_PERTO)
       const ajuste = alcanceBruto > alvoAlcance ? alvoAlcance / alcanceBruto : 1
-      /* O piso é alto porque o fundo destas estrelas é o próprio cérebro,
-         que é uma imagem CLARA e MUITO carregada (a textura já tem os
-         próprios pontos de brilho desenhados) — presença baixa aqui não
-         daria "discreto", daria invisível de verdade. */
-      const presenca = 1.3 + v * 0.5
-      /* De `FATOR_MINIMO` em `ESCALA_EM` até 1 (tamanho final)
-         em `REVELA_EM` — ver a nota em `FATOR_MINIMO`. `t³`, não a
-         `suave()` de sempre: é a mesma curva do `power2.in` que anima
-         `.palco`, para o grão crescer no mesmo ritmo do cérebro, não só
-         terminar no mesmo tamanho na mesma hora. */
-      const tCresce = limita((v - ESCALA_EM) / (REVELA_EM - ESCALA_EM))
-      const crescimento = FATOR_MINIMO + (1 - FATOR_MINIMO) * tCresce * tCresce * tCresce
+      /* Geometria converge cedo e devagar: de `ESCALA_EM` até o instante
+         em que a dissolução começa. São ~3 telas de rolagem — lento
+         demais para ser percebido como mudança, e terminado antes de a
+         seção começar a apagar. */
+      const tGeo = progresso(v, ESCALA_EM, REVELA_EM)
+      const ganho = ganhoRaio(tGeo)
+      const vies = viesBranco(tGeo)
+      /* Presença ainda constante nesta etapa — o valor de repouso da
+         curva, não um número solto. A fotometria entra depois e troca
+         isto por `ganhoAlfa(tFoto)`, preso à dissolução. O piso é alto
+         porque o fundo destas estrelas é o próprio cérebro, uma imagem
+         CLARA e MUITO carregada (a textura já tem os próprios pontos de
+         brilho desenhados) — presença baixa aqui não daria "discreto",
+         daria invisível de verdade. */
+      const presenca = ganhoAlfa(0)
       const bordaViva = abertura < 1.05
 
       ctx!.clearRect(0, 0, L, A)
       ctx!.globalCompositeOperation = 'source-over'
 
       for (const g of graos) {
-        /* Perspectiva contida: com `g.z` fixo entre `Z_PERTO` e `Z_LONGE`,
-           a variação de tamanho/posição entre grãos é só a distinção de
-           profundidade de sempre — não há voo, então não há grão cruzando
-           essa faixa. */
-        const perspectiva = 0.6 + 0.4 / g.z
+        /* A projeção usa a profundidade de REPOUSO, fixa. É o que mantém
+           `perspectiva` e `ajuste` válidos: com a profundidade que
+           converge (que desce até 0,05) isto valeria 8,6 e jogaria o grão
+           para fora da tela. Sem voo, nenhum grão cruza esta faixa. */
+        const perspectiva = 0.6 + 0.4 / g.zRepouso
         const espalha = R * abertura * perspectiva * ajuste
         const sx = cx + g.x * espalha
         const sy = cy + g.y * espalha
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
 
-        let alfa = (0.65 + 0.5 * (1 - g.z)) * g.brilho * presenca
-        alfa *= 1 + Math.sin(t / 1000 * g.cintila + g.fase) * 0.28
+        /* A profundidade que converge governa só raio e alfa. É ela que
+           faz o campo GANHAR variação: em repouso todo grão é médio; no
+           fim há muitos finos e alguns grandes, que é o desenho do campo
+           do site. */
+        const z = zConvergente(g.zRepouso, g.zFundo, tGeo)
+
+        let alfa = alfaDoGrao(z, g.brilho) * presenca
+        alfa *= cintilacao(t / 1000, g.fase, g.cintila)
 
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a
            borda — e ela precisa ser macia, senão o campo lê como um disco
@@ -283,20 +308,15 @@ export function HeroEstrelas() {
         }
         if (alfa <= 0.004) continue
 
-        /* Tamanho final — o grão só atinge de verdade em `REVELA_EM`. Antes
-           disso ele nasce `crescimento` vezes menor (ver `FATOR_MINIMO`) e
-           cresce com o scroll. Não é mais o mesmo tamanho de
-           PoeiraFundo.tsx (0,42 de multiplicador) — subiu para 0,7, depois
-           0,85 e agora para 1,0 (a escala "nua" de `1,6/g.z`, sem encolher
-           nem ampliar), pedido do usuário pra ficar mais visível. Piso e
-           teto (1–3,5px) são só rede de segurança agora: sem voo, `g.z`
-           fica sempre entre `Z_PERTO` e `Z_LONGE`, e nesse intervalo a
-           fórmula nua já rende ~1,60–2,58px sozinha, nunca tocando nenhum
-           dos dois limites. */
-        const raioFinal = Math.min(3.5, Math.max(1, 1.6 / g.z))
-        const raio = raioFinal * crescimento
-        const [r, gg, b] = PALETA[g.tom]
-        const alfaCore = Math.min(1, alfa)
+        /* O tamanho agora é o do campo do site multiplicado por um ganho
+           que decai a 1 em `REVELA_EM`. O grão típico termina MENOR que
+           antes, mas os maiores terminam maiores — porque `z` também
+           abriu — e é essa troca de "todos médios" por "muitos finos e
+           alguns grandes" que faz o campo parecer o do site em vez de um
+           lençol uniforme. */
+        const raio = raioDoGrao(z) * ganho
+        const [r, gg, b] = corComVies(PALETA[g.tom], BRANCO, vies)
+        const alfaCore = Math.min(TETO_ALFA, alfa)
 
         /* Halo largo e fraco por trás do núcleo opaco. Com
            `mix-blend-mode: normal` (ver hero.css) o grão sozinho lia como
