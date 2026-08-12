@@ -94,12 +94,12 @@ export function PoeiraFundo() {
     /** Avanço em profundidade: é o que faz atravessar em vez de deslizar. */
     const DERIVA_Z = 0.05
     const MARGEM = 90
-    /* Fração da velocidade própria com que este campo ENTRA, para chegar no
-       ritmo do núcleo da hero em vez de assumir voando. Vem da razão medida
-       entre os dois avanços em profundidade durante a rolagem: ~3,1 contra
-       ~0,62 por segundo. Calibragem no olho a partir daí — subir aproxima
-       do comportamento antigo, descer faz a entrada mais lenta. */
-    const ENTRADA_LENTA = 0.2
+    /* Profundidade representativa, para converter a taxa proporcional que
+       o núcleo publica (`dz/dt = -z · taxa`) na taxa absoluta que este
+       campo usa. É a mediana medida da distribuição de profundidade dos
+       dois campos na travessia — o grão típico, não o mais perto nem o
+       mais longe. */
+    const Z_REPRESENTATIVA = 0.71
 
     const raiz = getComputedStyle(document.documentElement)
     const ler = (nome: string) => raiz.getPropertyValue(nome)
@@ -340,8 +340,8 @@ export function PoeiraFundo() {
       const cy = A / 2 + my * 24
       const forca = Math.min(Math.abs(velocidade), 3)
 
-      /* Entrada: este campo chega no ritmo do núcleo da hero e só depois
-         acelera para o próprio.
+      /* Entrada: este campo chega na velocidade EXATA do campo de dentro
+         do cérebro e só depois acelera para a própria.
 
          Sem isto ele assume voando. Medido: rolando, este campo avança
          ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
@@ -349,17 +349,30 @@ export function PoeiraFundo() {
          quebra a continuidade mesmo com tamanho, cor, alfa, densidade e
          direção todos casados, porque velocidade também é um eixo.
 
-         A diferença não é calibragem errada: os dois leem "velocidade" em
-         unidades diferentes. Aqui é delta de rolagem em pixels; lá é
-         progresso de um pin de 4 telas. Igualar as constantes não
-         igualaria nada — por isso a correção é um ganho de entrada, não um
-         número novo.
+         O alvo não é uma fração calibrada, é a taxa que o núcleo publica
+         (`mergulho.taxaVoo`). Os dois medem velocidade em unidades
+         diferentes — aqui delta de rolagem em pixels, lá progresso de um
+         pin de 4 telas —, então nenhuma constante casaria os dois; só a
+         taxa resolvida casa. E assim o casamento sobrevive a mudanças de
+         calibragem de qualquer um dos lados.
+
+         A taxa de lá é proporcional à profundidade (`dz/dt = -z · taxa`),
+         então entra multiplicada por uma profundidade representativa para
+         virar uma taxa absoluta como a daqui.
 
          `mergulho.v` vale 1 depois que o pin termina, então da hero para
          baixo o campo roda no ritmo pleno de sempre. Antes dela ele está
-         escondido atrás do cérebro, então o ganho baixo não aparece. */
+         escondido atrás do cérebro. E se a hero não existir na página, `v`
+         fica em 0 e o ganho não se aplica — sem ela não há travessia para
+         costurar, e o campo não deve ficar preso a uma taxa que ninguém
+         está publicando. */
       const entrada = progresso(mergulho.v, REVELA_EM, 1)
-      const ganhoEntrada = ENTRADA_LENTA + (1 - ENTRADA_LENTA) * suave(entrada)
+      const taxaPropria = DERIVA_Z + Math.abs(velocidade) * 0.55
+      const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo
+      const ganhoEntrada =
+        mergulho.v <= 0
+          ? 1
+          : (taxaDoNucleo + (taxaPropria - taxaDoNucleo) * suave(entrada)) / taxaPropria
 
       if (modo === 'radial') {
         const avanco = (DERIVA_R + velocidade * 0.9) * dt

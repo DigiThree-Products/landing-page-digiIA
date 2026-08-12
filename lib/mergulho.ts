@@ -21,6 +21,23 @@
 export const mergulho = {
   /** 0 = cérebro ao longe, 1 = dentro dele. */
   v: 0,
+  /**
+   * Taxa de avanço em profundidade do campo dentro do cérebro, por
+   * segundo e proporcional à própria profundidade (`dz/dt = -z · taxa`).
+   * Publicada por `HeroEstrelas` a cada quadro; lida por `PoeiraFundo`.
+   *
+   * Existe porque velocidade também é um eixo da travessia, e era o
+   * último desencontrado: o campo do site chegava cerca de cinco vezes
+   * mais rápido que o do cérebro, e o salto quebrava a continuidade
+   * mesmo com tamanho, cor, alfa, densidade e direção casados.
+   *
+   * É uma taxa publicada, e não uma constante copiada, porque os dois
+   * campos medem velocidade em unidades diferentes — aqui é progresso de
+   * um pin de 4 telas, lá é delta de rolagem em pixels. Igualar
+   * constantes não igualaria nada; só a taxa resolvida casa. E assim o
+   * casamento sobrevive a mudanças de calibragem de qualquer um dos dois.
+   */
+  taxaVoo: 0,
 }
 
 /**

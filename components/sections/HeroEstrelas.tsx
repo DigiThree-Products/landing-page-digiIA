@@ -410,6 +410,10 @@ export function HeroEstrelas() {
          mesmo histograma, e por isso mexer nesta taxa muda a sensação de
          velocidade sem mexer no tamanho dos grãos. */
       const avanco = 0.45 + dv * 3.2
+      /* Publica a taxa já com a rampa embutida: é a velocidade REAL com
+         que este campo avança agora, que é o que o campo do site precisa
+         para entrar no mesmo ritmo (ver `taxaVoo` em lib/mergulho.ts). */
+      mergulho.taxaVoo = avanco * rampa
       /* Deriva vertical, com sinal — a componente que faltava. O campo do
          site não só irradia: ele também flui, e inverte quando você rola
          para cima. Sem isto os dois campos escorrem em direções
