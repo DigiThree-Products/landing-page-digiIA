@@ -14,7 +14,10 @@
 
 - Branch de trabalho: `worktree-feat+hero-branca-nucleo-estrelado`. NÃO mesclar na `main`.
 - Nenhuma dependência nova em `package.json`. O projeto é deliberadamente sem dependências de teste (ver o cabeçalho de `verificar.mjs`).
-- `npm run check` precisa passar antes de qualquer commit que toque em código.
+- **O portão de verificação é `npm run typecheck && npm run test && npm run build`**, e ele precisa passar antes de qualquer commit que toque em código.
+
+  **Não use `npm run check`.** Ele encadeia `npm run verificar`, que reprova nesta branch por marcadores legais não preenchidos (`[RAZÃO SOCIAL]`, `[CNPJ]`, `[E-MAIL DE CONTATO]`, `[CIDADE/UF]` em `privacidade.html` e `termos.html`). Isso é deliberado — o `verificar` é um portão de publicação, e o README diz que ele "reprova de propósito" enquanto os dados legais forem marcadores. É condição pré-existente, fora do escopo deste plano, e não é falha sua.
+- `tsconfig.json` precisa de `"allowImportingTsExtensions": true`. Os arquivos de teste importam com extensão explícita (`./grao.ts`) porque o runner do Node exige isso; sem a flag, `tsc` rejeita. É compatível com o `noEmit: true` que o projeto já tem.
 - Comentários e nomes em português, seguindo o estilo do arquivo em que se mexe: explicar **por quê**, não o quê.
 - O campo do site (`PoeiraFundo`) mantém profundidade, voo, rastro e ida e vinda inalterados. A única mudança permitida ali é passar a consumir `lib/grao.ts`.
 - O ramo `radial` do `PoeiraFundo` (linhas 320-332) usa constantes próprias (`1.7 / p.z`, `0.28 + 0.55 * (1 - p.z)`, `forca * 0.12`) diferentes do ramo `vertical`. Ele está morto (`MODO_POEIRA = 'vertical'`). **NÃO tocar nele** — trocar suas constantes pelas compartilhadas seria mudança de comportamento disfarçada de refatoração.
@@ -259,8 +262,8 @@ Expected: PASS, 8 testes.
 
 - [ ] **Step 5: Rodar a verificação completa**
 
-Run: `npm run check`
-Expected: typecheck, testes, build e `verificar` passam.
+Run: `npm run typecheck && npm run test && npm run build`
+Expected: os tres passam.
 
 - [ ] **Step 6: Commit**
 
@@ -383,7 +386,7 @@ Ler o diff inteiro e confirmar, linha a linha, que nenhum número mudou:
 
 - [ ] **Step 6: Rodar a verificação e olhar rodando**
 
-Run: `npm run check`
+Run: `npm run typecheck && npm run test && npm run build`
 Expected: tudo passa.
 
 Run: `npm run dev` e olhar a página. O campo de fundo tem que estar **idêntico** — mesma densidade, mesmo tamanho de grão, mesma silhueta sobre as estações claras.
@@ -471,7 +474,7 @@ const ABRE_ATE = 0.85
 
 - [ ] **Step 4: Verificar**
 
-Run: `npm run check`
+Run: `npm run typecheck && npm run test && npm run build`
 Expected: passa.
 
 Run: `npm run dev`. Rolar o mergulho até o fim e voltar. A dissolução agora ocupa um trecho de rolagem visível em vez de um instante. Nada mais mudou ainda — o salto entre os campos continua lá, só que mais lento.
@@ -866,7 +869,7 @@ Remover as funções locais `limita` e `suave` (`:62-63`) e importá-las de `lib
 
 - [ ] **Step 4: Verificar**
 
-Run: `npm run check`
+Run: `npm run typecheck && npm run test && npm run build`
 Expected: passa. Se o typecheck reclamar de `Grao` sem `zRepouso`/`zFundo` no literal do Step 2, é porque o objeto inicial não bate com o tipo — conferir que os dois campos estão no literal.
 
 - [ ] **Step 5: Olhar rodando**
@@ -957,7 +960,7 @@ Substituir as quatro linhas de projeção no laço (de `const perspectiva` até 
 
 - [ ] **Step 3: Verificar**
 
-Run: `npm run check`
+Run: `npm run typecheck && npm run test && npm run build`
 Expected: passa.
 
 - [ ] **Step 4: Olhar rodando**
@@ -1035,7 +1038,7 @@ Substituir o desenho do halo no laço por:
 
 - [ ] **Step 4: Verificar**
 
-Run: `npm run check`
+Run: `npm run typecheck && npm run test && npm run build`
 Expected: passa.
 
 - [ ] **Step 5: Calibrar rodando — este é o passo que decide o resultado**
@@ -1071,7 +1074,7 @@ sentida' queria dizer."
 
 Depois da Task 7, antes de considerar pronto:
 
-- [ ] `npm run check` passa (typecheck, 15 testes, build, `verificar`).
+- [ ] `npm run typecheck && npm run test && npm run build` passa (15 testes). O `npm run verificar` segue reprovando por marcadores legais — pre-existente, fora de escopo.
 - [ ] `git log --oneline` mostra 7 commits (um por task), com a extração pura isolada no segundo.
 - [ ] O campo de fundo do site, nas seções abaixo da hero, está idêntico ao de antes — inclusive a silhueta escura sobre as estações claras.
 - [ ] O mergulho reverte limpo ao rolar para cima, sem grão pulando de tamanho ou de lugar.
