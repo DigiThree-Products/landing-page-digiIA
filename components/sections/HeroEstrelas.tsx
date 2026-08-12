@@ -62,6 +62,9 @@ const ABRE_ATE = 0.85
 /** Folga fora da janela antes de considerar o grão perdido. */
 const MARGEM = 90
 
+/** Teto do salto de `v` num quadro — ver a nota em `quadro()`. */
+const SALTO_MAX = 0.05
+
 /**
  * Um grão, aqui, é a identidade compartilhada com o campo do site mais
  * duas profundidades e duas posições.
@@ -290,26 +293,38 @@ export function HeroEstrelas() {
 
     function quadro(t: number) {
       raf = requestAnimationFrame(quadro)
-      if (!visivel || !naTela) return
-      if (!L || !A) return
-
-      const v = limita(mergulho.v)
 
       /* O motor do voo é a velocidade do PRÓPRIO mergulho, não uma leitura
          de scroll paralela. `mergulho.v` já vem amortecido pelo `scrub` do
          GSAP, então herda de graça o deslize de câmera em vez do solavanco
          da roda — e significa literalmente "quão rápido você está
          entrando". Uma segunda leitura de scroll aqui seria um segundo
-         número podendo divergir do primeiro. */
+         número podendo divergir do primeiro.
+
+         O relógio é lido ANTES de qualquer saída antecipada: um quadro que
+         sai sem atualizar o anterior faz o seguinte enxergar um Δt e um Δv
+         somados de toda a ausência — voltar de outra aba viraria um salto. */
+      const v = limita(mergulho.v)
       const dt = Math.min((t - tAnterior) / 1000, 0.05)
+      /* Δv limitado, e não é preciosismo: `dt` se cancela no termo de
+         velocidade (`Δv/dt · dt`), então limitar só o `dt` não limita nada.
+         Um reload com a rolagem restaurada no meio da hero faz o `scrub`
+         reproduzir `v` de 0 até o alvo, e um refresh do ScrollTrigger
+         (`invalidateOnRefresh`, inclusive quando a barra de URL do celular
+         se recolhe) pode saltar `v` inteiro num quadro só. Sem o limite,
+         isso viraria meia faixa de profundidade percorrida de uma vez. */
+      const deltaV = Math.max(-SALTO_MAX, Math.min(SALTO_MAX, v - vAnterior))
       tAnterior = t
+      vAnterior = v
+      if (!visivel || !naTela) return
+      if (!L || !A) return
+
       /* Duas leituras da mesma velocidade, como no campo do site: o avanço
          em profundidade usa o MÓDULO, porque rolar para cima muda para
          onde a câmera aponta e não o sentido do voo; a deriva vertical usa
          o valor COM SINAL, e é ela que inverte — a ida e vinda. */
-      const dvAssinado = dt > 0 ? (v - vAnterior) / dt : 0
+      const dvAssinado = dt > 0 ? deltaV / dt : 0
       const dv = Math.abs(dvAssinado)
-      vAnterior = v
 
       /* LEITURAS primeiro, escritas depois. Os dois rects custam um
          recálculo de layout por quadro — o GSAP escreveu o transform do
@@ -426,7 +441,20 @@ export function HeroEstrelas() {
            entre dois modelos — só um modelo, ganhando velocidade. */
         g.z -= g.z * avanco * dt * rampa
         if (g.z < FAIXA_Z[0]) semearModelo(g, FAIXA_Z[1])
-        const z = g.z
+
+        /* A profundidade viva projeta a posição, mas NÃO governa sozinha
+           tamanho e alfa. Ela é uma catraca: só desce, e nada a devolve —
+           com a rampa em zero ela congela onde parou. Lida direto, isso
+           fazia o repouso mudar a cada visita: descer e subir duas vezes
+           deixava o núcleo parado cheio de grãos grandes e quase opacos,
+           que é exatamente a poluição que o commit 28b1802 reverteu. O
+           argumento de "amplitude zero no repouso" só cobria a PRIMEIRA
+           visita.
+
+           Misturada de volta para `zRepouso` pela mesma rampa, a
+           aparência em repouso é sempre a aprovada, não importa quanto o
+           campo já voou. Em `rampa = 1` vale a viva, inteira. */
+        const z = g.zRepouso + (g.z - g.zRepouso) * rampa
 
         /* A projeção do DISCO usa a profundidade de repouso, fixa: é ela
            que mantém `perspectiva` e `ajuste` válidos, porque a viva desce
@@ -440,8 +468,8 @@ export function HeroEstrelas() {
            parado do repouso e o modelo do site em movimento. Em `v = 0` só
            existe o disco — o campo aprovado, intocado. Convergido, só
            existe o do site, escorrendo. */
-        const modeloX = cx + (g.mx / z) * (L / 2 + MARGEM)
-        const modeloY = cy + ((g.my - deriva) / z) * (spanY / 2 + MARGEM)
+        const modeloX = cx + (g.mx / g.z) * (L / 2 + MARGEM)
+        const modeloY = cy + ((g.my - deriva) / g.z) * (spanY / 2 + MARGEM)
         const p = rampa
         const sx = discoX + (modeloX - discoX) * p
         const sy = discoY + (modeloY - discoY) * p
