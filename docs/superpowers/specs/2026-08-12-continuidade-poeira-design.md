@@ -49,10 +49,22 @@ A hero **não tem fundo branco**. A `body` é preta (`--ink`, `base.css`) e a
 `.hero` não declara fundo nenhum. O que cobre a tela no fim do mergulho é a
 própria textura do cérebro em 80×, e ela apaga junto com a seção.
 
-Como o canvas do núcleo é filho de `.hero`, ele já apaga na mesma taxa. A
-convergência de alfa **não precisa compensar o fundo** — o `opacity` da seção
-faz isso. O que a fotometria precisa garantir é que, no instante em que a
-dissolução começa, o grão do núcleo já pareça um grão do site.
+Como o canvas do núcleo é filho de `.hero`, ele já apaga na mesma taxa que o
+cérebro. A convergência de alfa **não precisa compensar o fundo** — o
+`opacity` da seção faz isso.
+
+O que a fotometria precisa garantir é que o grão do núcleo tenha virado um
+grão do site **quando a dissolução terminar**, não quando ela começa. Se
+convergisse antes, o grão estaria fraco enquanto o cérebro ainda cobre a
+tela, que é exatamente o fundo claro contra o qual ele precisa se ler. É por
+isso que a Agenda 2, abaixo, roda *dentro* da janela e não antes dela.
+
+Um alerta para quem for calibrar: essa estabilidade de contraste vale contra
+o **cérebro**, que está na mesma camada de opacidade. Contra o campo do site,
+que está em outra, o peso do grão do núcleo é `ganhoAlfa × opacidade da
+seção` — decai bem mais rápido que qualquer uma das duas curvas sozinha. O
+risco no meio da travessia é o núcleo ceder demais, não o adensamento
+previsto mais abaixo em "Riscos conhecidos".
 
 ## Arquitetura
 

@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react'
 import {
   alfaDoGrao,
   cintilacao,
+  CONTAGEM_GRAOS,
   corComVies,
+  fadeProximo,
   FAIXA_Z,
   ganhoAlfa,
   ganhoHalo,
@@ -25,12 +27,11 @@ import { ESCALA_EM, mergulho, REVELA_EM, REVELA_FIM_EM } from '@/lib/mergulho'
 
 const TEXTURA = '/assets/hero/cerebro.webp'
 
-/* Mesma contagem do campo do site (PoeiraFundo). Durante a dissolução os
-   dois coexistem, e densidades diferentes seriam mais um eixo mudando
-   junto com o resto — justamente o que esta convergência existe para
-   evitar. */
-const N_GRANDE = 260
-const N_TOQUE = 110
+/* A contagem vem de lib/grao.ts, não escrita aqui: os dois campos
+   coexistem durante a dissolução, e densidades diferentes seriam mais um
+   eixo mudando junto com o resto. Dois números iguais em dois arquivos é
+   um número que vai divergir. */
+const { grande: N_GRANDE, toque: N_TOQUE } = CONTAGEM_GRAOS
 
 /**
  * Faixa de profundidade de REPOUSO — a que governa a projeção do disco.
@@ -159,6 +160,8 @@ export function HeroEstrelas() {
     const N = toque ? N_TOQUE : N_GRANDE
 
     let L = 0
+    /** Altura em que os grãos se distribuem — ver `medir()`. */
+    let spanY = 0
     let A = 0
     let dpr = 1
     let raf = 0
@@ -220,6 +223,15 @@ export function HeroEstrelas() {
       L = cv!.clientWidth
       A = cv!.clientHeight
       if (!L || !A) return
+      /* A altura em que os grãos se distribuem NÃO é a do canvas.
+         Até 980px a hero perde o `min-height: 100svh` (hero.css) e passa a
+         ter a altura do conteúdo — plausivelmente o dobro da janela. Como
+         a posição converge para `alvoY * span`, usar `A` ali espalharia os
+         110 grãos por uma caixa da qual só metade está na tela, enquanto o
+         campo do site põe os mesmos 110 dentro da janela. A densidade que
+         a contagem igual existe para casar se desfaria justamente no
+         breakpoint em que ela foi calibrada. */
+      spanY = Math.min(A, window.innerHeight)
       cv!.width = Math.round(L * dpr)
       cv!.height = Math.round(A * dpr)
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -280,13 +292,22 @@ export function HeroEstrelas() {
          pontos de brilho desenhados — e baixar o alfa ali não daria
          "discreto", daria invisível de verdade.
 
-         Presa à dissolução, a opacidade cai na mesma medida em que o
-         mundo escurece: o contraste percebido não muda. Não se vê o alfa
-         mudando, vê-se o mundo apagando com o grão constante em cima. */
+         Presa à dissolução, a opacidade cai junto com o cérebro que ela
+         precisava vencer — contra ELE o contraste percebido fica estável.
+
+         Contra o campo do site não fica, e quem for calibrar precisa
+         saber: o site está noutra camada de opacidade, então o peso do
+         grão do núcleo em relação a um grão de lá é `ganhoAlfa × opacidade
+         da seção`, que decai bem mais rápido que qualquer uma das duas
+         sozinha. O risco no meio da dissolução é o núcleo ceder DEMAIS, e
+         não o adensamento que o spec previa. */
       const tFoto = progresso(v, REVELA_EM, REVELA_FIM_EM)
       const presenca = ganhoAlfa(tFoto)
       const halo = ganhoHalo(tFoto)
-      const bordaViva = abertura < 1.05
+      /* Três cores por quadro, não uma por grão: o viés é o mesmo para
+         todos e só o tom muda. Com 260 grãos isso eram 260 arrays por
+         quadro para três resultados distintos. */
+      const CORES = PALETA.map((c) => corComVies(c, BRANCO, vies))
 
       ctx!.clearRect(0, 0, L, A)
       ctx!.globalCompositeOperation = 'source-over'
@@ -311,7 +332,7 @@ export function HeroEstrelas() {
            onde o do site a tem espalhada. */
         const p = suave(tGeo)
         const sx = discoX + (g.alvoX * L - discoX) * p
-        const sy = discoY + (g.alvoY * A - discoY) * p
+        const sy = discoY + (g.alvoY * spanY - discoY) * p
         if (sx < -8 || sx > L + 8 || sy < -8 || sy > A + 8) continue
 
         /* A profundidade que converge governa só raio e alfa. É ela que
@@ -320,7 +341,13 @@ export function HeroEstrelas() {
            do site. */
         const z = zConvergente(g.zRepouso, g.zFundo, tGeo)
 
-        let alfa = alfaDoGrao(z, g.brilho) * presenca
+        /* `fadeProximo` não é herança cega do campo de fundo. Lá ele
+           existe porque o grão é reciclado e piscaria ao sair; aqui nada
+           recicla — mas a profundidade converge para a MESMA faixa, e sem
+           isto os grãos sorteados no fundo dela ficariam parados no
+           tamanho máximo por três telas. O campo do site nunca mostra
+           isso: um grão desse tamanho lá está de passagem. */
+        let alfa = alfaDoGrao(z, g.brilho) * presenca * fadeProximo(z)
         alfa *= cintilacao(t / 1000, g.fase, g.cintila)
 
         /* Enquanto o núcleo é menor que a silhueta, é ele quem define a
@@ -335,7 +362,7 @@ export function HeroEstrelas() {
            fator, o grão já espalhado continuaria sendo escurecido por uma
            distância de onde ele não está mais — escurecimento sem relação
            com o que se vê na tela. */
-        if (bordaViva && p < 1) {
+        if (p < 1) {
           const rho = Math.hypot(g.x, g.y)
           alfa *= 1 - suave(limita((rho - 0.72) / 0.28)) * (1 - p)
         }
@@ -348,7 +375,7 @@ export function HeroEstrelas() {
            alguns grandes" que faz o campo parecer o do site em vez de um
            lençol uniforme. */
         const raio = raioDoGrao(z) * ganho
-        const [r, gg, b] = corComVies(PALETA[g.tom], BRANCO, vies)
+        const [r, gg, b] = CORES[g.tom]
         const alfaCore = Math.min(TETO_ALFA, alfa)
 
         /* Halo largo e fraco por trás do núcleo opaco. Com

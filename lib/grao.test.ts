@@ -1,9 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { ESCALA_EM, REVELA_EM, REVELA_FIM_EM } from './mergulho.ts'
 import {
   alfaDoGrao,
   cintilacao,
+  CONTAGEM_GRAOS,
   corComVies,
+  fadeProximo,
   corDoToken,
   FAIXA_Z,
   ganhoAlfa,
@@ -137,12 +140,30 @@ test('zConvergente vai do repouso ao alvo', () => {
    começa: a geometria termina em REVELA_EM e a fotometria parte de lá.
    Um vão entre elas seria um instante com o grão em estado indefinido. */
 test('as duas agendas se encontram em REVELA_EM sem vao', () => {
-  const ESCALA = 0.136
-  const REVELA = 0.875
-  const FIM = 0.95
-  perto(progresso(REVELA, ESCALA, REVELA), 1)
-  perto(progresso(REVELA, REVELA, FIM), 0)
-  perto(ganhoRaio(progresso(REVELA, ESCALA, REVELA)), 1)
-  perto(ganhoAlfa(progresso(REVELA, REVELA, FIM)), 4)
-  perto(ganhoHalo(progresso(FIM, REVELA, FIM)), 0)
+  /* Importados, não copiados. Escrever 0,875 aqui faria o teste passar
+     para sempre, inclusive depois de alguém mudar a janela — ele
+     afirmaria a própria cópia em vez do que o código usa. */
+  perto(progresso(REVELA_EM, ESCALA_EM, REVELA_EM), 1)
+  perto(progresso(REVELA_EM, REVELA_EM, REVELA_FIM_EM), 0)
+  perto(ganhoRaio(progresso(REVELA_EM, ESCALA_EM, REVELA_EM)), 1)
+  perto(viesBranco(progresso(REVELA_EM, ESCALA_EM, REVELA_EM)), 0)
+  perto(ganhoHalo(progresso(REVELA_FIM_EM, REVELA_EM, REVELA_FIM_EM)), 0)
+  perto(ganhoAlfa(progresso(REVELA_FIM_EM, REVELA_EM, REVELA_FIM_EM)), 1)
+})
+
+test('a janela de dissolucao vem depois da geometria e nao se sobrepoe', () => {
+  assert.ok(ESCALA_EM < REVELA_EM, 'geometria comeca antes de terminar')
+  assert.ok(REVELA_EM < REVELA_FIM_EM, 'a dissolucao tem duracao')
+})
+
+test('fadeProximo apaga o grao rente a camera', () => {
+  perto(fadeProximo(FAIXA_Z[0]), 0)
+  perto(fadeProximo(FAIXA_Z[0] + 0.06), 1)
+  perto(fadeProximo(1), 1)
+  perto(fadeProximo(FAIXA_Z[0] + 0.03), 0.5)
+})
+
+test('contagem dos dois campos e a mesma fonte', () => {
+  assert.equal(CONTAGEM_GRAOS.grande, 260)
+  assert.equal(CONTAGEM_GRAOS.toque, 110)
 })

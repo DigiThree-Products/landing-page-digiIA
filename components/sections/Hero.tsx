@@ -7,7 +7,12 @@ import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
 import { LANDING } from '@/content/landing'
 /* `mergulho` já é o nome da timeline aqui embaixo; o estado compartilhado
    com o canvas das estrelas entra com nome próprio para não sombrear. */
-import { ESCALA_EM, mergulho as estadoMergulho, REVELA_EM } from '@/lib/mergulho'
+import {
+  ESCALA_EM,
+  mergulho as estadoMergulho,
+  REVELA_EM,
+  REVELA_FIM_EM,
+} from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
@@ -152,12 +157,16 @@ export function Hero() {
               {
                 opacity: 0,
                 ease: 'power1.in',
-                duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
+                /* Os DOIS extremos importados, não só o início. A duração
+                   era `(REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL`
+                   — mesmo número hoje, mas calculado aqui. Mudar
+                   REVELA_POEIRA_FIM faria a cortina terminar num ponto e a
+                   fotometria do núcleo em outro, sem nada falhar. É a
+                   dessincronia que lib/mergulho.ts existe para evitar, e
+                   ela estava justamente na linha ao lado do comentário que
+                   dizia evitá-la. */
+                duration: REVELA_FIM_EM - REVELA_EM,
               },
-              // Mesmo valor de REVELA_POEIRA_INICIO/TOTAL, mas importado de
-              // lib/mergulho.ts: HeroEstrelas.tsx também precisa saber este
-              // ponto, e uma fração calculada duas vezes é a mesma
-              // dessincronia que ESCALA_EM já existe para evitar.
               REVELA_EM,
             )
 

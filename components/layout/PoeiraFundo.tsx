@@ -334,6 +334,12 @@ export function PoeiraFundo() {
           else if (p.z > 1) nascerRadial(p, Z_MIN_R + 0.02)
           const sx = cx + (p.x / p.z) * escala
           const sy = cy + (p.y / p.z) * escala
+          /* NÃO trocar por `raioDoGrao`/`alfaDoGrao`. Estas constantes
+             (1,7 · 0,28 · 0,55 · 0,12) são diferentes das do ramo vertical
+             de propósito, e este ramo está morto — `MODO_POEIRA` é
+             'vertical'. Unificá-las seria mudança de comportamento
+             disfarçada de refatoração, e destruiria a prova de que a
+             extração para lib/grao.ts não mexeu no campo que está no ar. */
           const r = Math.min(5, Math.max(0.5, (1.7 / p.z) * 0.42))
           const base = (0.28 + 0.55 * (1 - p.z)) * p.brilho * (1 + forca * 0.12)
           const { cor, a } = regime(p, sx, sy, segundos, base)

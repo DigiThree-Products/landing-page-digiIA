@@ -184,3 +184,26 @@ export function corComVies(cor: RGB, branco: RGB, vies: number): RGB {
 export function zConvergente(zRepouso: number, zFundo: number, t: number): number {
   return zRepouso + (zFundo - zRepouso) * suave(t)
 }
+
+/**
+ * Quantos grãos o campo tem. Os dois campos usam a MESMA contagem: durante
+ * a dissolução eles coexistem, e densidades diferentes seriam mais um eixo
+ * mudando junto com o resto. Fica aqui porque um número igual escrito em
+ * dois arquivos é um número que vai divergir.
+ */
+export const CONTAGEM_GRAOS = { grande: 260, toque: 110 }
+
+/**
+ * Some ao passar rente à câmera.
+ *
+ * No campo de fundo isto existe porque o grão é reciclado ali e piscaria
+ * ao sair. O núcleo da hero não recicla nada — mas herda a mesma faixa de
+ * profundidade, e sem este fator os grãos sorteados no fundo dela ficariam
+ * PARADOS no tamanho máximo por três telas de rolagem. O campo do site
+ * nunca mostra isso: lá um grão nesse tamanho está de passagem, some em
+ * uma fração de segundo. Estático, ele vira um objeto que o campo de
+ * destino não tem.
+ */
+export function fadeProximo(z: number): number {
+  return Math.min(1, (z - FAIXA_Z[0]) / 0.06)
+}
