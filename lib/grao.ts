@@ -186,12 +186,12 @@ export const CONTAGEM_GRAOS = { grande: 260, toque: 110 }
  * Some ao passar rente à câmera.
  *
  * No campo de fundo isto existe porque o grão é reciclado ali e piscaria
- * ao sair. O núcleo da hero não recicla nada — mas herda a mesma faixa de
- * profundidade, e sem este fator os grãos sorteados no fundo dela ficariam
- * PARADOS no tamanho máximo por três telas de rolagem. O campo do site
- * nunca mostra isso: lá um grão nesse tamanho está de passagem, some em
- * uma fração de segundo. Estático, ele vira um objeto que o campo de
- * destino não tem.
+ * ao sair. O núcleo da hero também recicla (voa desde que o mergulho
+ * começa), mas por outro caminho: lá o grão quase sempre sai pelos lados
+ * antes de chegar rente à câmera, então este fator raramente é acionado.
+ * Vale para os dois assim mesmo — sem ele, qualquer grão que ALCANCE a
+ * faixa próxima apareceria parado no tamanho máximo, e é coisa que
+ * nenhum dos dois campos deve mostrar.
  */
 export function fadeProximo(z: number): number {
   return Math.min(1, (z - FAIXA_Z[0]) / 0.06)

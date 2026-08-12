@@ -390,10 +390,18 @@ export function HeroEstrelas() {
          descida: nunca alcançava a faixa próxima. O campo chegava à
          travessia sem os grãos grandes e perto que o do site tem, e a
          diferença de tamanho denunciava a troca.
-         Com `z -= z·taxa·dt` a queda é geométrica: atravessa a faixa
-         inteira no tempo que existe, e continua com mais parallaxe perto
-         que longe — a velocidade NA TELA vai como 1/z de qualquer jeito,
-         que é o que dá a leitura de profundidade. */
+         Com `z -= z·taxa·dt` a queda é geométrica, e a parallaxe continua
+         certa: a velocidade NA TELA vai como 1/z de qualquer jeito.
+
+         Não é que agora ele atravesse a faixa inteira — medido, o grão
+         percorre cerca de um terço dela e o reciclo por profundidade
+         (`z < FAIXA_Z[0]`) nunca chega a disparar. O grão sai é pelos
+         LADOS, porque nasce em `|mx/z| ≤ 1` e é descartado quando passa
+         de 1. Quem define a distribuição, então, não é a lei de queda: é
+         a caixa de nascimento e a projeção — e essas os dois campos têm
+         idênticas. É por isso que um campo geométrico e um linear caem no
+         mesmo histograma, e por isso mexer nesta taxa muda a sensação de
+         velocidade sem mexer no tamanho dos grãos. */
       const avanco = 0.45 + dv * 3.2
       /* Deriva vertical, com sinal — a componente que faltava. O campo do
          site não só irradia: ele também flui, e inverte quando você rola
@@ -498,12 +506,12 @@ export function HeroEstrelas() {
         }
         if (sx < -MARGEM || sx > L + MARGEM || sy < -MARGEM || sy > A + MARGEM) continue
 
-        /* `fadeProximo` não é herança cega do campo de fundo. Lá ele
-           existe porque o grão é reciclado e piscaria ao sair; aqui nada
-           recicla — mas a profundidade converge para a MESMA faixa, e sem
-           isto os grãos sorteados no fundo dela ficariam parados no
-           tamanho máximo por três telas. O campo do site nunca mostra
-           isso: um grão desse tamanho lá está de passagem. */
+        /* `fadeProximo` fecha a borda de perto, como no campo do site. Na
+           prática ele quase não é acionado: medido, o grão sai pelos lados
+           bem antes de chegar rente à câmera. Fica porque a alternativa é
+           depender disso continuar verdade — e se um dia a taxa subir ou a
+           caixa de saída afrouxar, sem ele o grão apareceria parado no
+           tamanho máximo, que é coisa que o campo de destino nunca mostra. */
         /* Os dois fades do campo do site: um apaga o grão rente à câmera,
            o outro o traz do nada no fundo. O de nascimento entra pela
            rampa, não direto — em `z = 1` ele vale zero, e aplicado cru
