@@ -10,11 +10,14 @@ import {
   fadeProximo,
   FAIXA_Z,
   paletaEmissao,
+  progresso,
   raioDoGrao,
   sortearIdentidade,
+  suave,
   TETO_ALFA,
   type RGB,
 } from '@/lib/grao'
+import { mergulho, REVELA_EM } from '@/lib/mergulho'
 import { MODO_POEIRA } from '@/lib/poeira'
 
 type Particula = {
@@ -91,6 +94,12 @@ export function PoeiraFundo() {
     /** Avanço em profundidade: é o que faz atravessar em vez de deslizar. */
     const DERIVA_Z = 0.05
     const MARGEM = 90
+    /* Fração da velocidade própria com que este campo ENTRA, para chegar no
+       ritmo do núcleo da hero em vez de assumir voando. Vem da razão medida
+       entre os dois avanços em profundidade durante a rolagem: ~3,1 contra
+       ~0,62 por segundo. Calibragem no olho a partir daí — subir aproxima
+       do comportamento antigo, descer faz a entrada mais lenta. */
+    const ENTRADA_LENTA = 0.2
 
     const raiz = getComputedStyle(document.documentElement)
     const ler = (nome: string) => raiz.getPropertyValue(nome)
@@ -331,6 +340,27 @@ export function PoeiraFundo() {
       const cy = A / 2 + my * 24
       const forca = Math.min(Math.abs(velocidade), 3)
 
+      /* Entrada: este campo chega no ritmo do núcleo da hero e só depois
+         acelera para o próprio.
+
+         Sem isto ele assume voando. Medido: rolando, este campo avança
+         ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
+         vezes mais rápido. O salto de velocidade no instante da troca
+         quebra a continuidade mesmo com tamanho, cor, alfa, densidade e
+         direção todos casados, porque velocidade também é um eixo.
+
+         A diferença não é calibragem errada: os dois leem "velocidade" em
+         unidades diferentes. Aqui é delta de rolagem em pixels; lá é
+         progresso de um pin de 4 telas. Igualar as constantes não
+         igualaria nada — por isso a correção é um ganho de entrada, não um
+         número novo.
+
+         `mergulho.v` vale 1 depois que o pin termina, então da hero para
+         baixo o campo roda no ritmo pleno de sempre. Antes dela ele está
+         escondido atrás do cérebro, então o ganho baixo não aparece. */
+      const entrada = progresso(mergulho.v, REVELA_EM, 1)
+      const ganhoEntrada = ENTRADA_LENTA + (1 - ENTRADA_LENTA) * suave(entrada)
+
       if (modo === 'radial') {
         const avanco = (DERIVA_R + velocidade * 0.9) * dt
         for (const p of pts) {
@@ -351,11 +381,11 @@ export function PoeiraFundo() {
           pinta(p, sx, sy, r, cor, a, forca)
         }
       } else {
-        camY += ((DERIVA_V + velocidade * 0.35) * A * dt) / escala
+        camY += ((DERIVA_V + velocidade * 0.35) * A * dt * ganhoEntrada) / escala
         /* Avanço sempre para a frente, com o scroll acelerando a viagem
            em vez de invertê-la: rolar para cima ou para baixo muda para
            onde a câmera aponta, não o sentido do voo. */
-        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt
+        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt * ganhoEntrada
         for (const p of pts) {
           p.z -= avancoZ
           if (p.z < Z_MIN_V) {
