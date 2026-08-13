@@ -1,87 +1,27 @@
-'use client'
-
-import { useRef } from 'react'
 import { LANDING } from '@/content/landing'
-import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
+/**
+ * "Veja funcionando".
+ *
+ * Sem animação de entrada própria: quem revela esta seção é a chegada
+ * dela. Ela é uma estação, e components/layout/Estacoes.tsx a traz de
+ * longe subindo e crescendo — no mesmo sentido em que os grãos da poeira
+ * atravessam a tela.
+ *
+ * O que havia aqui — stagger do texto em `top 70%`, mídia subindo em
+ * `top 78%` — era medido pelo topo da seção contra a viewport, e esse
+ * topo cruza os dois marcos cerca de 0,7 tela ANTES de o pin da estação
+ * engatar. As animações rodavam inteiras enquanto o painel ainda era um
+ * ponto a 24% de tamanho e 10% de opacidade: terminavam sem que ninguém
+ * as visse, e o conteúdo chegava à janela de leitura já parado.
+ *
+ * Somar uma segunda revelação por cima da chegada também briga com ela
+ * por natureza — são dois relógios para o mesmo conteúdo. A viagem é uma
+ * só, e é ela que revela.
+ */
 export function ApproachSection() {
-  const root = useRef<HTMLElement>(null)
-
-  useGSAP(
-    () => {
-      const section = root.current
-      if (!section || prefersReducedMotion()) return
-
-      const media = gsap.matchMedia()
-
-      media.add('(min-width: 1024px)', () => {
-        gsap.from('.approach-kicker, .approach-title, .approach-description', {
-          autoAlpha: 0,
-          y: 28,
-          filter: 'blur(8px)',
-          stagger: 0.1,
-          duration: 0.9,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: section, start: 'top 70%' },
-        })
-
-        /* Sem pin: a seção agora é uma estação que se aproxima e passa
-           (components/layout/Estacoes.tsx), e prender ela na tela
-           brigaria com esse movimento. O desenho da mídia continua,
-           disparado na entrada em vez de amarrado ao scroll. */
-        const timeline = gsap.timeline({
-          scrollTrigger: { trigger: section, start: 'top 78%' },
-        })
-
-        timeline
-          /* Sobe de baixo crescendo, como se estivesse se aproximando —
-             mesmo sentido vertical da poeira, sem clip-path: quem chega
-             mais perto fica maior, não "revelado" por um véu. */
-          .fromTo(
-            '.approach-media',
-            { autoAlpha: 0, y: 130, scale: 0.7 },
-            { autoAlpha: 1, y: 0, scale: 1, ease: 'power3.out', duration: 0.95 },
-            0,
-          )
-          .fromTo(
-            '.approach-media__chrome',
-            { autoAlpha: 0 },
-            { autoAlpha: 1, ease: 'power2.out', duration: 0.24 },
-            0.6,
-          )
-      })
-
-      media.add('(max-width: 1023px)', () => {
-        gsap.fromTo(
-          '.approach-media',
-          { autoAlpha: 0, y: 90, scale: 0.76 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.85,
-            ease: 'power3.out',
-            scrollTrigger: { trigger: '.approach-media', start: 'top 84%' },
-          },
-        )
-
-        gsap.from('.approach-kicker, .approach-title, .approach-description', {
-          autoAlpha: 0,
-          y: 22,
-          stagger: 0.1,
-          duration: 0.72,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: section, start: 'top 78%' },
-        })
-      })
-
-      return () => media.revert()
-    },
-    { scope: root },
-  )
-
   return (
-    <section ref={root} id="video" className="approach" aria-labelledby="approach-title">
+    <section id="video" className="approach" aria-labelledby="approach-title">
       <div className="approach-stage">
         <div className="approach-layout">
           <div className="approach-media" role="img" aria-label="Espaço reservado para o vídeo de demonstração da Digi.IA">
