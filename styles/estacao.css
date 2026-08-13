@@ -1,0 +1,153 @@
+/* ============================================================
+   CHEGADA DA ESTAÇÃO — a coreografia dentro do painel.
+
+   `--chegada` é publicada quadro a quadro no `.approach-stage` por
+   components/layout/Estacoes.tsx: 0 quando a estação ainda é um ponto
+   no fundo, 1 quando ela encosta em 1:1 e a leitura começa.
+
+   Ela é o progresso da VIAGEM, não o tamanho aparente. Os dois são
+   coisas diferentes: o tamanho segue 1/distância e por isso quase todo
+   ele acontece no último quarto do trajeto. Uma cascata pendurada no
+   tamanho amontoaria os quatro blocos nesse último quarto — que é
+   justamente onde não sobra caminho para eles se sucederem.
+
+   O `@property` existe pelo valor de repouso. Com `initial-value: 1`,
+   quem chega aqui sem o script — movimento reduzido, JS ainda não
+   montado, `prefersReducedMotion` — vê o conteúdo pronto. Com um custom
+   property comum o fallback teria que ser repetido em cada `var()`, e
+   esquecer um único deixaria o bloco invisível para sempre.
+   ============================================================ */
+@property --chegada {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/* Um bloco de cada vez, na ordem da leitura: onde estamos, o que é, o
+   que faz, e por último a demonstração.
+
+   Os três blocos de TEXTO têm folga entre si: 1,50 tela de rolagem em
+   que nada se move, entre o kicker e o título e entre o título e o
+   texto. O VÍDEO não — ele parte encostado, no quadro em que o texto
+   assenta, porque é o fecho e afastá-lo soltaria o último bloco da
+   composição.
+
+   A folga vale o DOBRO da chegada do título (1,50 contra 0,75): o
+   silêncio entre os blocos é agora o material principal da seção, e o
+   movimento é o acento. Se mesmo assim as chegadas não se lerem como
+   eventos separados, a distância não é o gargalo — é a amplitude
+   abaixo. Um deslocamento de 54px num palco ainda reduzido chega à
+   tela como ~15px, e 15px lê como "apareceu", não como "chegou".
+   Subir os 54px e os 0.12 de escala é o ajuste que separa os quatro
+   sem custar mais rolagem.
+
+   Chegou-se aqui por etapas: ~70% de avanço entre um bloco e o outro,
+   depois ~85%, depois encostado, e agora com folga no texto. Os `--de`
+   não são escolhidos: saem da conversão das posições em rolagem, e é
+   por isso que têm quatro casas.
+
+   ATENÇÃO: `--dur` NÃO é a duração do bloco.
+
+   `--chegada` é um smoothstep (`suave(p / CHEGOU)` em Estacoes.tsx),
+   então o mesmo `--dur` rende durações de rolagem diferentes conforme
+   ONDE na faixa ele cai: no meio a viagem corre, nas pontas ela freia.
+   Com os quatro em 0,24 — que era o desenho anterior, escolhido
+   justamente para os ritmos casarem — o vídeo durava 1,65 tela contra
+   0,84 do título, quase o dobro, porque ele cai no trecho final onde o
+   smoothstep desacelera para encaixar.
+
+   Os valores abaixo são calibrados um a um, invertendo o smoothstep
+   (`t = 0,5 − sin(asin(1 − 2v) / 3)`) para que cada bloco dure o que
+   foi pedido. Por isso eles parecem arbitrários: são o que sai da
+   conta, não números redondos.
+
+   Mexer em CHEGOU ou TRAVESSIA em Estacoes.tsx reescala tudo e invalida
+   esta calibragem — as durações continuam proporcionais entre si, mas
+   deixam de valer os segundos abaixo. */
+
+/* A cascata vive nos últimos 85% do trajeto: nada começa antes de 0,15.
+   O trecho anterior é a viagem crua — só a poeira e o painel se
+   aproximando vazio —, e é de propósito: os quatro blocos se sucedem já
+   a caminho da posição final, e não durante a partida.
+
+   O custo é declarado: como o painel não pinta fundo nenhum, painel
+   vazio é tela vazia. Esse trecho mudo vale ~1,26 tela de rolagem — e
+   não os ~0,78 que já estiveram escritos aqui: 0,15 é posição em
+   `--chegada`, e convertê-la em rolagem exige a inversa do smoothstep,
+   não uma multiplicação direta pelo comprimento da chegada.
+   O `--de` do kicker é o dial — subir alonga o silêncio, baixar encurta.
+
+   Os pares abaixo, em telas de rolagem e nos segundos equivalentes a
+   ~1500 px/s numa viewport de 1000px. Rolagem não é relógio: os
+   segundos escalam com a velocidade de quem rola, mas a proporção entre
+   os quatro é fixa. */
+
+/* 1,26 → 2,16 tela · 0,90 tela · ~0,6s */
+.page .approach-kicker {
+  --de: 0.0581;
+  --dur: 0.0993;
+}
+/* folga de 1,50 tela */
+/* 3,66 → 4,41 tela · 0,75 tela · ~0,5s */
+.page .approach-title {
+  --de: 0.3889;
+  --dur: 0.1299;
+}
+/* folga de 1,50 tela */
+/* 5,91 → 6,95 tela · 1,04 tela · ~0,7s */
+.page .approach-description {
+  --de: 0.7673;
+  --dur: 0.1360;
+}
+/* 6,95 → 8,60 tela · 1,65 tela · ~1,1s — encostado no texto, e fecha
+   junto com a chegada */
+.page .approach-media {
+  --de: 0.9033;
+  --dur: 0.0967;
+}
+
+.page .approach-kicker,
+.page .approach-title,
+.page .approach-description,
+.page .approach-media {
+  /* Progresso local cru do bloco dentro da sua janela. O `clamp` é o que
+     mantém cada um parado antes da sua vez e assentado depois dela. */
+  --u: clamp(0, (var(--chegada) - var(--de)) / var(--dur), 1);
+  /* O mesmo freio que a estação usa na chegada, escrito em `calc`:
+     t²(3−2t), derivada zero nas duas pontas.
+
+     Sem ele cada bloco parte e para com um CANTO. A rampa é linear e o
+     `clamp` corta seco, então o bloco sai do repouso já na velocidade
+     máxima e trava de uma vez ao assentar — oito descontinuidades de
+     velocidade no total, quatro blocos com duas pontas cada, espalhadas
+     por toda a chegada. É o mesmo defeito que a `passagem` tinha em
+     Estacoes.tsx, e foi medido lá: 47× a aceleração de qualquer outro
+     ponto da seção. */
+  --t: calc(var(--u) * var(--u) * (3 - 2 * var(--u)));
+  opacity: var(--t);
+  /* Sobe crescendo: o mesmo par de gestos da estação inteira e dos
+     grãos da poeira, agora dentro do painel. O deslocamento é em px
+     porque ele vive no espaço local do palco, que já está sendo
+     escalado por fora — de longe estes 54px chegam à tela como 9, e é
+     essa compressão que faz o gesto parecer distante. */
+  transform: translate3d(0, calc((1 - var(--t)) * 32px), 0)
+    scale(calc(1 - (1 - var(--t)) * 0.08));
+}
+
+/* O vídeo é o corpo mais pesado da composição e o último a chegar: vem
+   de mais longe e cresce mais que o texto, para a chegada dele fechar a
+   viagem em vez de só completar a lista. */
+.page .approach-media {
+  transform: translate3d(0, calc((1 - var(--t)) * 64px), 0)
+    scale(calc(1 - (1 - var(--t)) * 0.16));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page .approach-kicker,
+  .page .approach-title,
+  .page .approach-description,
+  .page .approach-media {
+    opacity: 1;
+    transform: none;
+  }
+}
