@@ -1,4 +1,4 @@
-/* "Veja funcionando": composi��o tipogr�fica, sem player ou m�dia. */
+/* "Veja funcionando": composição tipográfica, sem player ou mídia. */
 .page .approach {
   position: relative;
   min-height: 100svh;
@@ -7,6 +7,16 @@
   margin-left: calc(50% - 50vw);
   overflow: hidden;
   isolation: isolate;
+  /* SEM borda.
+     A regra de 1px que estava aqui é sobra de quando esta seção era uma
+     faixa clara, com começo e fim visíveis. Hoje ela é uma estação que vem
+     de longe: quem escala é o painel interno, a seção em si fica presa e
+     imóvel — então a borda aparecia como uma linha de largura total,
+     estática e de canto vivo, anunciando o retângulo da seção enquanto o
+     conteúdo ainda era um ponto no fundo. Não é detalhe de acabamento: é
+     a única coisa em cena que revela que existe uma caixa, e isso desmonta
+     a imersão da chegada. A forma agora pertence ao painel, que tem o
+     próprio raio (e é dele que o canvas da poeira lê `borderTopLeftRadius`). */
   background:
     radial-gradient(60% 80% at 82% 28%, rgba(69, 0, 249, 0.19), transparent 72%),
     linear-gradient(180deg, rgba(1, 3, 122, 0.13), transparent 45%),

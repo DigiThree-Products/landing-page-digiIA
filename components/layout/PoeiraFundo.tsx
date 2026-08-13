@@ -1,6 +1,23 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import {
+  alfaDoGrao,
+  cintilacao,
+  CONTAGEM_GRAOS,
+  corDoToken,
+  fadeNascimento,
+  fadeProximo,
+  FAIXA_Z,
+  paletaEmissao,
+  progresso,
+  raioDoGrao,
+  sortearIdentidade,
+  suave,
+  TETO_ALFA,
+  type RGB,
+} from '@/lib/grao'
+import { mergulho, REVELA_EM } from '@/lib/mergulho'
 import { MODO_POEIRA } from '@/lib/poeira'
 
 type Particula = {
@@ -64,35 +81,55 @@ export function PoeiraFundo() {
 
     const modo = MODO_POEIRA
     const toque = window.matchMedia('(pointer: coarse)').matches
-    const N = toque ? 110 : 260
+    const N = toque ? CONTAGEM_GRAOS.toque : CONTAGEM_GRAOS.grande
     const Z_MIN_R = 0.09
     /* Fundo de profundidade mais raso que antes: o grão chega bem mais
        perto antes de ser reciclado, e é essa passagem rente à câmera que
-       dá a escala do espaço. */
-    const Z_MIN_V = 0.05
+       dá a escala do espaço. O núcleo da hero converge para esta mesma
+       faixa, então ela vem de lib/grao.ts. */
+    const Z_MIN_V = FAIXA_Z[0]
     const DERIVA_R = 0.014
     /** Deriva vertical da câmera — o eixo que segue o scroll. */
     const DERIVA_V = 0.04
     /** Avanço em profundidade: é o que faz atravessar em vez de deslizar. */
     const DERIVA_Z = 0.05
     const MARGEM = 90
+    /* Profundidade representativa, para converter a taxa proporcional que
+       o núcleo publica (`dz/dt = -z · taxa`) na taxa absoluta que este
+       campo usa. É a mediana medida da distribuição de profundidade dos
+       dois campos na travessia — o grão típico, não o mais perto nem o
+       mais longe. */
+    const Z_REPRESENTATIVA = 0.71
+    /* Fração da taxa do núcleo com que este campo entra. Era 1 — entrada
+       na velocidade exata do campo de dentro do cérebro. Abaixo disso ele
+       entra mais devagar do que se vinha viajando e vai ganhando ritmo,
+       o que lê como acelerar para dentro do site em vez de ser jogado
+       nele. Voltar a 1 refaz a igualdade exata. */
+    const FRACAO_ENTRADA = 0.55
+    /* Ritmo do campo DEPOIS da travessia, em fração da velocidade própria.
+       Vale para toda a página abaixo da hero, não só para a costura: uma
+       vez passado o pin, `mergulho.v` fica em 1 e este é o ganho que
+       permanece. Era 1 — a velocidade original do campo, de antes de tudo
+       isto. Desceu porque, mesmo com a entrada casada, o campo seguia
+       rápido demais para a leitura de estar viajando por dentro. */
+    const RITMO_APOS = 0.6
 
-    const hexParaRgb = (hex: string): [number, number, number] => {
-      const h = hex.trim().replace('#', '')
-      return [
-        parseInt(h.slice(0, 2), 16),
-        parseInt(h.slice(2, 4), 16),
-        parseInt(h.slice(4, 6), 16),
-      ]
-    }
     const raiz = getComputedStyle(document.documentElement)
-    const token = (v: string) => hexParaRgb(raiz.getPropertyValue(v))
+    const ler = (nome: string) => raiz.getPropertyValue(nome)
 
     /* Emissão: o grão brilha contra o vazio. Extinção: o mesmo grão em
        silhueta contra a luz. Os índices se correspondem — cada partícula
-       guarda um `tom` e caminha entre a sua cor de um lado e a do outro. */
-    const EMISSAO = [token('--lilac'), token('--mid'), token('--paper')]
-    const EXTINCAO = [token('--violet'), token('--abyss'), token('--abyss')]
+       guarda um `tom` e caminha entre a sua cor de um lado e a do outro.
+
+       A emissão vem de lib/grao.ts porque o núcleo da hero converge para
+       ela e os dois precisam concordar; a extinção fica aqui, porque é
+       sobre o fundo claro que só este campo atravessa. */
+    const EMISSAO = paletaEmissao(ler)
+    const EXTINCAO: RGB[] = [
+      corDoToken(ler('--violet'), [69, 0, 249]),
+      corDoToken(ler('--abyss'), [1, 3, 122]),
+      corDoToken(ler('--abyss'), [1, 3, 122]),
+    ]
 
     /* Uma seção é clara quando o texto dela é escuro — indicador mais
        confiável que ler o fundo, já que as seções com passagem para a
@@ -100,7 +137,15 @@ export function PoeiraFundo() {
        A cor do texto não muda em runtime, então isso é medido uma vez. */
     let secoes: { el: HTMLElement; claro: number; raioBase: number }[] = []
     function mapearSecoes() {
-      const alvos = document.querySelectorAll<HTMLElement>('.page .hero, .page section, .page .site-footer')
+      /* A hero está FORA daqui de propósito. Ela tem o próprio campo, o
+         núcleo estrelado recortado dentro do cérebro (HeroEstrelas), e
+         pinta o próprio branco em CSS.
+         Deixá-la no mapa não seria apenas redundante: como a hero clara tem
+         texto escuro, a heurística abaixo a marcaria como zona clara e os
+         grãos ali sairiam em silhueta. Quando o véu branco cede no fim do
+         mergulho, o fundo já é escuro — silhueta escura sobre escuro é grão
+         invisível, e a entrega do núcleo para este campo não aconteceria. */
+      const alvos = document.querySelectorAll<HTMLElement>('.page section, .page .site-footer')
       secoes = Array.from(alvos, (secao) => {
         const m = getComputedStyle(secao).color.match(/-?\d+(\.\d+)?/g)
         const lum = m && m.length >= 3
@@ -160,7 +205,7 @@ export function PoeiraFundo() {
        da página — grão escuro sobre fundo escuro. Pintando o painel aqui, a
        silhueta ganha branco de verdade atrás, e ele apaga junto com a
        estação que se afasta. */
-    const [pr, pg, pb] = token('--paper')
+    const [pr, pg, pb] = corDoToken(ler('--paper'), [248, 240, 255])
     const temRoundRect = typeof ctx.roundRect === 'function'
     function pintaEstacoes() {
       for (const z of zonas) {
@@ -204,10 +249,7 @@ export function PoeiraFundo() {
     }))
 
     function sortearGrao(p: Particula) {
-      p.tom = (Math.random() * EMISSAO.length) | 0
-      p.brilho = 0.5 + Math.random() * 0.5
-      p.fase = Math.random() * Math.PI * 2
-      p.cintila = 0.6 + Math.random() * 1.5
+      Object.assign(p, sortearIdentidade())
     }
     function nascerRadial(p: Particula, z: number) {
       const ang = Math.random() * Math.PI * 2
@@ -257,10 +299,12 @@ export function PoeiraFundo() {
       const r = Math.round(emite[0] + (some[0] - emite[0]) * claro)
       const g = Math.round(emite[1] + (some[1] - emite[1]) * claro)
       const b = Math.round(emite[2] + (some[2] - emite[2]) * claro)
-      // Estrela só cintila enquanto brilha: na silhueta o pulso se apaga.
-      const pulso = 1 + Math.sin(tempo * p.cintila + p.fase) * 0.3 * (1 - claro)
+      /* Estrela só cintila enquanto brilha: na silhueta o pulso se apaga.
+         A amortização por `(1 - claro)` fica aqui, não no módulo: ela é
+         sobre o fundo que só este campo atravessa. */
+      const pulso = 1 + (cintilacao(tempo, p.fase, p.cintila) - 1) * (1 - claro)
       // Grão escuro sobre claro precisa de mais corpo para se ler.
-      const a = Math.min(0.92, base * pulso * (1 + claro * 0.5))
+      const a = Math.min(TETO_ALFA, base * pulso * (1 + claro * 0.5))
       return { cor: `${r},${g},${b}`, a }
     }
 
@@ -309,6 +353,41 @@ export function PoeiraFundo() {
       const cy = A / 2 + my * 24
       const forca = Math.min(Math.abs(velocidade), 3)
 
+      /* Entrada: este campo chega ABAIXO da velocidade do campo de dentro
+         do cérebro e vai ganhando ritmo até `RITMO_APOS`.
+
+         Sem isto ele assume voando. Medido: rolando, este campo avança
+         ~3,1 de profundidade por segundo contra ~0,62 do núcleo — cinco
+         vezes mais rápido. O salto de velocidade no instante da troca
+         quebra a continuidade mesmo com tamanho, cor, alfa, densidade e
+         direção todos casados, porque velocidade também é um eixo.
+
+         O alvo não é uma fração calibrada, é a taxa que o núcleo publica
+         (`mergulho.taxaVoo`). Os dois medem velocidade em unidades
+         diferentes — aqui delta de rolagem em pixels, lá progresso de um
+         pin de 4 telas —, então nenhuma constante casaria os dois; só a
+         taxa resolvida casa. E assim o casamento sobrevive a mudanças de
+         calibragem de qualquer um dos lados.
+
+         A taxa de lá é proporcional à profundidade (`dz/dt = -z · taxa`),
+         então entra multiplicada por uma profundidade representativa para
+         virar uma taxa absoluta como a daqui.
+
+         `mergulho.v` vale 1 depois que o pin termina, então da hero para
+         baixo o campo roda no ritmo pleno de sempre. Antes dela ele está
+         escondido atrás do cérebro. E se a hero não existir na página, `v`
+         fica em 0 e o ganho não se aplica — sem ela não há travessia para
+         costurar, e o campo não deve ficar preso a uma taxa que ninguém
+         está publicando. */
+      const entrada = progresso(mergulho.v, REVELA_EM, 1)
+      const taxaPropria = DERIVA_Z + Math.abs(velocidade) * 0.55
+      const taxaDoNucleo = Z_REPRESENTATIVA * mergulho.taxaVoo * FRACAO_ENTRADA
+      const taxaDepois = taxaPropria * RITMO_APOS
+      const ganhoEntrada =
+        mergulho.v <= 0
+          ? 1
+          : (taxaDoNucleo + (taxaDepois - taxaDoNucleo) * suave(entrada)) / taxaPropria
+
       if (modo === 'radial') {
         const avanco = (DERIVA_R + velocidade * 0.9) * dt
         for (const p of pts) {
@@ -317,17 +396,23 @@ export function PoeiraFundo() {
           else if (p.z > 1) nascerRadial(p, Z_MIN_R + 0.02)
           const sx = cx + (p.x / p.z) * escala
           const sy = cy + (p.y / p.z) * escala
+          /* NÃO trocar por `raioDoGrao`/`alfaDoGrao`. Estas constantes
+             (1,7 · 0,28 · 0,55 · 0,12) são diferentes das do ramo vertical
+             de propósito, e este ramo está morto — `MODO_POEIRA` é
+             'vertical'. Unificá-las seria mudança de comportamento
+             disfarçada de refatoração, e destruiria a prova de que a
+             extração para lib/grao.ts não mexeu no campo que está no ar. */
           const r = Math.min(5, Math.max(0.5, (1.7 / p.z) * 0.42))
           const base = (0.28 + 0.55 * (1 - p.z)) * p.brilho * (1 + forca * 0.12)
           const { cor, a } = regime(p, sx, sy, segundos, base)
           pinta(p, sx, sy, r, cor, a, forca)
         }
       } else {
-        camY += ((DERIVA_V + velocidade * 0.35) * A * dt) / escala
+        camY += ((DERIVA_V + velocidade * 0.35) * A * dt * ganhoEntrada) / escala
         /* Avanço sempre para a frente, com o scroll acelerando a viagem
            em vez de invertê-la: rolar para cima ou para baixo muda para
            onde a câmera aponta, não o sentido do voo. */
-        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt
+        const avancoZ = (DERIVA_Z + Math.abs(velocidade) * 0.55) * dt * ganhoEntrada
         for (const p of pts) {
           p.z -= avancoZ
           if (p.z < Z_MIN_V) {
@@ -348,16 +433,21 @@ export function PoeiraFundo() {
             nascerVertical(p, null, 1)
             continue
           }
-          /* Teto no raio: sem ele o grão mais próximo chegava a dezenas
-             de px e virava bolha. A variação continua ampla o bastante
-             para ler profundidade. */
-          const r = Math.min(5, Math.max(0.5, (1.6 / p.z) * 0.42))
+          /* Teto no raio (dentro de `raioDoGrao`): sem ele o grão mais
+             próximo chegava a dezenas de px e virava bolha. A variação
+             continua ampla o bastante para ler profundidade. */
+          const r = raioDoGrao(p.z)
           /* Some ao nascer no fundo e ao passar rente à câmera — sem as
-             duas bordas o grão pisca ao entrar e ao sair. */
-          const entrada = Math.min(1, (1 - p.z) / 0.18)
-          const saida = Math.min(1, (p.z - Z_MIN_V) / 0.06)
+             duas bordas o grão pisca ao entrar e ao sair.
+             `entrada` fica aqui: só faz sentido onde há reciclagem, e o
+             núcleo da hero não recicla nada. `saida` foi para o módulo
+             porque o núcleo herda esta faixa de profundidade e precisa do
+             mesmo apagamento — sem ele os grãos dele ficariam parados no
+             tamanho máximo, que é coisa que este campo nunca mostra. */
+          const entrada = fadeNascimento(p.z)
+          const saida = fadeProximo(p.z)
           const base =
-            (0.26 + 0.52 * (1 - p.z)) * p.brilho * (1 + forca * 0.1) * entrada * saida
+            alfaDoGrao(p.z, p.brilho) * (1 + forca * 0.1) * entrada * saida
           const { cor, a } = regime(p, sx, sy, segundos, base)
           pinta(p, sx, sy, r, cor, a, forca)
         }

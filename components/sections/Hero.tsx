@@ -3,7 +3,16 @@
 import { useRef } from 'react'
 import { Countdown } from '@/components/waitlist/Countdown'
 import { HeroObject } from '@/components/sections/HeroObject'
+import { HeroEstrelas } from '@/components/sections/HeroEstrelas'
 import { LANDING } from '@/content/landing'
+/* `mergulho` já é o nome da timeline aqui embaixo; o estado compartilhado
+   com o canvas das estrelas entra com nome próprio para não sombrear. */
+import {
+  ESCALA_EM,
+  mergulho as estadoMergulho,
+  REVELA_EM,
+  REVELA_FIM_EM,
+} from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
 export function Hero() {
@@ -52,14 +61,24 @@ export function Hero() {
           const TOTAL = 1.6 + SEGURA
           const FATOR = 1.6 / TOTAL
 
-          /* Entre estas duas telas (medidas do topo, não do início do
-             pin), o cérebro some e revela o fundo preto com a poeira
-             cósmica de verdade atrás dele — mesmo mecanismo que as
-             estações usam (`el.style.opacity`, lido por PoeiraFundo.tsx
-             para apagar junto o retângulo claro que o canvas pinta). Do
-             fim até o fim do pin ele fica parado, já transparente. */
-          const REVELA_POEIRA_INICIO = 3.6
-          const REVELA_POEIRA_FIM = 3.7
+          /* A janela de revelação — o trecho em que o cérebro some e
+             revela o fundo preto com a poeira cósmica de verdade atrás
+             dele, mesmo mecanismo que as estações usam
+             (`el.style.opacity`, lido por PoeiraFundo.tsx para apagar
+             junto o retângulo claro que o canvas pinta).
+
+             Ela mora em `REVELA_EM`/`REVELA_FIM_EM` (lib/mergulho.ts), não
+             aqui: em telas medidas do topo são 3,5→4,0 de 4,0, e o núcleo
+             estrelado precisa exatamente dos mesmos dois pontos. Havia
+             constantes locais com esses números, e eram armadilha — quem
+             editasse um deles aqui, ao lado desta explicação, não mudaria
+             nada, porque a timeline lê as frações importadas.
+
+             Era 0,1 tela (3,6→3,7), foi para 0,3 e agora ocupa a folga
+             inteira até o fim do pin. Não sobra mais trecho com o cérebro
+             transparente parado esperando: ele apaga exatamente quando o
+             pin acaba, e a escala termina junto. `TOTAL` nunca mudou, então
+             as seções seguintes não sentem nada. */
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
@@ -89,15 +108,48 @@ export function Hero() {
                  demais, com o cérebro ainda na tela. Prioridade mais alta
                  garante que este pin esteja com o tamanho certo primeiro. */
               refreshPriority: 1,
+              /* A opacidade da seção é a ÚNICA coisa aqui que não passa
+                 pelo `scrub`, e não é inconsistência: é o que conserta a
+                 quebra no fim do mergulho.
+
+                 O `scrub` persegue a posição ao longo de ~1,1s. A soltura
+                 do pin, não — ela acontece na rolagem crua, no instante
+                 exato em que se chega ao fim. Com a opacidade suavizada, a
+                 rolagem chega ao fim, o ScrollTrigger trava o progresso em
+                 1, o pin solta, e a seção AINDA está terminando de apagar
+                 enquanto já sobe: via-se o cérebro semitransparente
+                 deslizando junto com a seção seguinte.
+
+                 E nenhuma folga resolvia. O atraso do `scrub` não é uma
+                 distância fixa que dê para reservar; rolando rápido, a
+                 cauda é consumida na mesma velocidade. Só tirando a
+                 opacidade do valor perseguido e prendendo-a ao progresso
+                 cru é que ela passa a terminar exatamente onde o pin
+                 termina, sempre.
+
+                 A escala e a posição continuam suavizadas — o deslize de
+                 câmera é o motivo de o `scrub` existir, e nenhuma das duas
+                 precisa estar sincronizada com a soltura do pin. */
+              onUpdate: (self) => {
+                const apagando = (self.progress - REVELA_EM) / (REVELA_FIM_EM - REVELA_EM)
+                const t = apagando < 0 ? 0 : apagando > 1 ? 1 : apagando
+                // Mesma curva do `power1.in` que a timeline usava aqui.
+                section.style.opacity = String(1 - t * t)
+              },
             },
             onUpdate: () => {
               const v = passo.v <= 0.002 ? 0 : passo.v
               mergulho.progress(v)
               // A flutuação da .flutua (hero.css) é local ao cérebro; dentro
-              // do .palco escalado (até 59x/40x) esses poucos pixels viram
+              // do .palco escalado (até 80x/54x) esses poucos pixels viram
               // um tremor enorme na tela. Suspende-a durante o mergulho,
-              // sem tocar no `transform` do HeroObject (paralaxe).
+              // sem tocar no `transform` do HeroObject (paralaxe/segurar).
               if (cerebro) cerebro.style.animation = v > 0 ? 'none' : ''
+              /* Publica no mesmo passo em que a timeline anda. O canvas das
+                 estrelas e a interatividade do objeto (HeroObject.tsx) leem
+                 isto para abrir/fechar o núcleo e ligar/desligar a mão —
+                 uma fonte só para os três, e sem round-trip pelo DOM. */
+              estadoMergulho.v = v
             },
           })
 
@@ -129,18 +181,19 @@ export function Hero() {
             // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
             .to(
               '.palco',
-              { scale: grande ? 80 : 54, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
+              /* 90×, e agora ele chega lá de verdade. Antes o alvo era 80
+                 mas a seção terminava de apagar em `v = 0,95`, onde a
+                 escala vale ~67× — os últimos 13× rodavam com o cérebro já
+                 invisível, puro custo sem nada na tela. Com a dissolução
+                 indo até o fim do pin, o alvo passou a ser o que se vê. */
+              { scale: grande ? 90 : 60, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
               0.34 * FATOR,
             )
-            .to(
-              section,
-              {
-                opacity: 0,
-                ease: 'power1.in',
-                duration: (REVELA_POEIRA_FIM - REVELA_POEIRA_INICIO) / TOTAL,
-              },
-              REVELA_POEIRA_INICIO / TOTAL,
-            )
+          /* A opacidade da seção NÃO está nesta timeline de propósito —
+             ela é escrita direto no `onUpdate` do ScrollTrigger, a partir
+             do progresso cru. Ver a nota lá em cima: aqui dentro ela
+             herdaria o `scrub` e terminaria de apagar depois de o pin já
+             ter soltado, com a seção subindo à vista. */
 
           return () => {
             section.style.opacity = ''
@@ -155,6 +208,13 @@ export function Hero() {
 
   return (
     <header ref={root} className="hero" id="cadastro">
+      {/* As estrelas moram dentro do cérebro (recorte pelo alfa da própria
+          textura, ver HeroEstrelas.tsx) — não dependem de a hero ter fundo
+          branco, então continuam existindo aqui mesmo sem um véu dedicado:
+          quem revela o que vem depois é a seção inteira (ver `mergulho`
+          acima), estrelas inclusas. */}
+      <HeroEstrelas />
+
       <div className="hero-grid">
         <div className="hero-col">
           <p className="tag hero-reveal">{LANDING.hero.eyebrow}</p>
