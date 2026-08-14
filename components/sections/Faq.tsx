@@ -24,8 +24,28 @@ export function Faq() {
       <div className="estacao-palco">
         <div className="sec-head"><p className="tag">{LANDING.faq.eyebrow}</p><h2>{LANDING.faq.title}</h2></div>
         <div className="faq">
-          {LANDING.faq.items.map(({ question, answer }) => (
-            <details key={question}><summary>{question}<PlusIcon /></summary><div className="faq-body"><div><p>{answer}</p></div></div></details>
+          {LANDING.faq.items.map(({ question, answer }, i) => (
+            /* `name` compartilhado = acordeão EXCLUSIVO, nativo e sem JS: abrir
+               uma fecha a anterior. Aqui isso não é preferência de estilo, é
+               requisito de layout. A estação é presa e `overflow: hidden`, e a
+               página não rola enquanto o pin segura — medido numa janela de
+               900px, a lista fechada termina em 731px e com UMA resposta aberta
+               em 768px, mas com todas abertas vai a 1103px e passa 203px da
+               dobra, levando as últimas perguntas para fora do alcance.
+               Exclusivo, a altura fica limitada por construção.
+               Em navegador sem suporte a `name`, degrada para o comportamento
+               independente de antes — pior, mas não quebrado. */
+            <details name="faq" key={question}>
+              <summary>
+                {/* Índice em mono, no mesmo idioma dos códigos das aulas do
+                    Repertório e do relógio da janela de vídeo: a página trata
+                    número pequeno como telemetria de bordo. */}
+                <em className="faq-indice" aria-hidden="true">{String(i + 1).padStart(2, '0')}</em>
+                <span>{question}</span>
+                <PlusIcon />
+              </summary>
+              <div className="faq-body"><div><p>{answer}</p></div></div>
+            </details>
           ))}
         </div>
       </div>
