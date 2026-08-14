@@ -35,21 +35,16 @@ body::after {
   isolation: isolate;
 }
 
-/* Marcadores editoriais usados nas secoes claras. "Veja funcionando"
-   saiu da lista: virou vazio escuro, e a malha de pontos violeta foi
-   desenhada para ler sobre papel. */
-.page #demo::after,
-.page .credibility-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.32;
-  background-image: radial-gradient(circle, rgba(69, 0, 249, 0.34) 1.1px, transparent 1.2px);
-  background-size: clamp(110px, 12.5vw, 180px) clamp(110px, 12.5vw, 180px);
-  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-}
+/* A malha de pontos violeta que marcava as seções claras foi REMOVIDA.
+   Ela era desenhada para ler sobre papel, e a lista de quem a usava foi
+   encolhendo até esvaziar: "Veja funcionando" saiu primeiro, quando virou
+   vazio escuro; agora saíram #demo e .credibility-section pelo mesmo
+   motivo. Sobre a poeira, um ponto de rgba(69,0,249,0.34) a 32% de
+   opacidade é invisível — manter a regra seria custo de pintura sem nada
+   na tela.
+
+   A única seção clara que restou é a hero, e ela nunca usou esta malha:
+   pinta o próprio branco em CSS e tem o campo estrelado dela por dentro. */
 
 /* Eyebrow do sistema de titulos da referencia. */
 .page .sec-head>.tag,
@@ -85,8 +80,12 @@ body::after {
 }
 
 /* Textos e controles da hero foram desenhados para o vazio escuro; aqui
-   ganham o inverso claro-sobre-branco, no mesmo padrão que #demo e
-   .credibility-section já usam para as próprias seções claras. */
+   ganham o inverso, escuro-sobre-branco.
+
+   A hero é agora a ÚNICA seção clara da página — #demo e
+   .credibility-section eram as outras duas e passaram para a poeira. Ou
+   seja, estas inversões não têm mais companhia: qualquer regra abaixo que
+   assuma fundo branco vale só aqui dentro. */
 .page .hero .tag {
   color: var(--violet);
 }
@@ -245,12 +244,22 @@ body::after {
   justify-content: center;
   gap: clamp(26px, 3.4vh, 42px);
   overflow: hidden;
-  color: var(--ink);
-  /* Mesmo raciocínio de .approach: a base branca vem do canvas. */
-  background: radial-gradient(55% 80% at 88% 50%, rgba(205, 130, 255, 0.2), transparent 72%);
+  /* CLARO sobre a poeira, não escuro sobre branco. E esta linha é o
+     interruptor da seção inteira, não só a cor do texto: PoeiraFundo.tsx
+     decide se pinta a faixa branca pela LUMINÂNCIA DO TEXTO da seção
+     (`claro: lum < 0.5`). Enquanto era `--ink`, o canvas pintava o papel
+     aqui e desenhava os grãos em silhueta; com `--paper`, ele para de
+     pintar e os grãos voltam a emitir. Trocar por qualquer cor escura
+     ressuscita a faixa branca sem que nada no CSS diga isso. */
+  color: var(--paper);
+  /* Sem fundo próprio — ver a nota em #recursos: o brilho lilás que ficava
+     atrás do retrato lavava a poeira em vez de compor com ela. */
 }
 
-.page #demo>.rv {
+/* Era `#demo>.rv`. O `Reveal` saiu quando a seção virou estação, e o
+   filho direto passou a ser o `.estacao-palco` — o seletor antigo deixaria
+   de casar em silêncio, tirando a largura máxima e a centralização. */
+.page #demo>.estacao-palco {
   position: relative;
   z-index: 2;
   width: 100%;
@@ -386,7 +395,9 @@ body::after {
   justify-content: flex-start;
   gap: 12px;
   font-weight: 600;
-  color: var(--violet);
+  /* Lilás, não violeta: #4500f9 foi escolhido contra papel e sobre o vazio
+     escuro fica quase preto. Mesma troca em todos os acentos desta seção. */
+  color: var(--lilac);
 }
 
 .page #demo .demo-head .tag::before {
@@ -413,19 +424,19 @@ body::after {
 }
 
 .page #demo .demo-head__accent {
-  color: var(--violet);
+  color: var(--lilac);
 }
 
 .page #demo .demo-head__sub {
   margin: 16px 0 0;
   max-width: 46ch;
-  color: rgba(0, 0, 0, 0.62);
+  color: var(--paper-56);
   font-size: clamp(15px, 1.35vw, 19px);
   line-height: 1.45;
 }
 
 .page #demo .tag {
-  color: var(--violet);
+  color: var(--lilac);
 }
 
 .page #demo .demo {
@@ -543,8 +554,11 @@ body::after {
   display: grid;
   place-items: center;
   overflow: hidden;
-  color: var(--ink);
-  /* Mesmo raciocínio de .approach/#demo: a base branca vem do canvas. */
+  /* Ver a nota em #demo: esta linha é o interruptor da faixa branca, não
+     só a cor do texto. Aqui ela era ainda mais decisiva — esta seção nunca
+     teve fundo próprio em CSS, então TODO o branco dela vinha do canvas.
+     Com `--paper`, ela passa a ser vazio com poeira, como as vizinhas. */
+  color: var(--paper);
 }
 
 /* ============================================================
@@ -598,7 +612,7 @@ body::after {
 }
 
 .page .credibility-section .stat b {
-  color: var(--violet);
+  color: var(--lilac);
   font-size: clamp(110px, 17vw, 250px);
   font-weight: 700;
   line-height: 0.78;
@@ -606,12 +620,12 @@ body::after {
 
 .page .credibility-section .stat i {
   margin-top: 28px;
-  color: rgba(0, 0, 0, 0.54);
+  color: var(--paper-56);
 }
 
 .page .credibility-section .cred p {
   max-width: 23ch;
-  color: var(--ink);
+  color: var(--paper);
   font-family: var(--font-display);
   font-size: clamp(32px, 4.2vw, 60px);
   font-weight: 600;
@@ -633,12 +647,12 @@ body::after {
   gap: clamp(54px, 9vw, 150px);
   overflow: hidden;
   color: var(--paper);
-  /* Sem a base sólida de --ink, igual a #recursos: passagem para a
-     poeira de fundo. */
-  background: radial-gradient(60% 70% at 12% 20%, rgba(69, 0, 249, 0.22), transparent 70%);
+  /* Sem fundo próprio, igual a #recursos e #demo: passagem inteira para a
+     poeira, sem o véu violeta que ficava no canto superior esquerdo. */
 }
 
-.page #faq>.rv {
+/* Mesma troca de #demo: o filho direto agora é o palco da estação. */
+.page #faq>.estacao-palco {
   position: relative;
   z-index: 2;
 }
@@ -854,7 +868,7 @@ body::after {
     position: static;
   }
 
-  .page #faq>.rv+.rv {
+  .page #faq .sec-head+.faq {
     margin-top: 48px;
   }
 
