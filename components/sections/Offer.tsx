@@ -1,4 +1,5 @@
 import { OfferCursorReveal } from '@/components/sections/OfferCursorReveal'
+import { OfferLupa } from '@/components/sections/OfferLupa'
 import { WaitlistModalTrigger } from '@/components/waitlist/WaitlistModal'
 import { Reveal } from '@/components/ui/Reveal'
 import { LANDING } from '@/content/landing'
@@ -10,6 +11,11 @@ function ArrowRight() {
 export function Offer() {
   return (
     <section id="oferta">
+      {/* Primeiro filho de propósito: é uma camada de fundo, e vir antes
+          mantém a ordem de pintura coerente com a de empilhamento. Não
+          ocupa espaço no fluxo — ver a nota em OfferLupa.tsx. */}
+      <OfferLupa />
+
       <div className="offer-ticker" aria-hidden="true">
         <div className="offer-ticker__track">
           {Array.from({ length: 4 }, (_, index) => <span key={index}>{LANDING.offer.ticker}</span>)}

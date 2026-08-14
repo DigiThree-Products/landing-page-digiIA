@@ -232,6 +232,66 @@ html.waitlist-modal-open body {
   height: 1px;
   background: currentColor;
 }
+/* ============================================================
+   A LUPA DA SEÇÃO INTEIRA
+
+   O disco de vidro segue o ponteiro por toda a seção, e não só pela caixa
+   do título como antes.
+
+   Houve aqui um campo de "garanta sua vaga" repetido no fundo, revelado
+   por este mesmo disco via `clip-path: circle()`. Foi retirado a pedido.
+   Restou o vidro, que sobre o título continua descobrindo o texto
+   alternativo — essa revelação é do `.offer-reveal` e não depende daqui.
+
+   Duas coordenadas convivem de propósito: `--offer-reveal-*` é relativa à
+   caixa do TÍTULO e governa a revelação dele; `--lupa-*` é relativa à
+   SEÇÃO e posiciona o vidro. Apontam para o mesmo lugar da tela, então o
+   que se vê é um disco só.
+
+   O raio é o mesmo dos dois lados — se um mudar sem o outro, o texto do
+   título passa a aparecer fora do vidro.
+   ============================================================ */
+.page #oferta {
+  --lupa-raio: clamp(140px, 14vw, 220px);
+}
+
+.offer-lupa {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Não recebe ponteiro: quem escuta é a seção, e um alvo aqui roubaria o
+     hover do botão e dos links por baixo. */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* O vidro. Mesmo desenho da lente do título, mas ancorado na seção. */
+.offer-lupa__vidro {
+  position: absolute;
+  top: var(--lupa-y, 50%);
+  left: var(--lupa-x, 50%);
+  width: calc(var(--lupa-raio) * 2);
+  aspect-ratio: 1;
+  border: 1px solid rgba(248, 240, 255, 0.28);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.86);
+  transition: opacity 0.2s var(--ease), transform 0.24s var(--ease);
+}
+
+.page #oferta[data-lupa='true'] .offer-lupa__vidro {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Sem ponteiro fino não há como mover a lupa, então o campo nunca seria
+   revelado — e um disco parado no meio da tela seria pior que nada. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .offer-lupa {
+    display: none;
+  }
+}
+
 .offer-reveal {
   --offer-reveal-x: 50%;
   --offer-reveal-y: 50%;
