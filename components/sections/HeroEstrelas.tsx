@@ -51,13 +51,19 @@ const Z_LONGE = 1
 const NUCLEO = 0.38
 const SILHUETA = 1.35
 /* Em que ponto do mergulho a abertura termina de abrir. A seção inteira
-   começa a apagar em 3,5/4,0 = 0,875 do trajeto (`REVELA_EM`, ver
-   REVELA_POEIRA_INICIO em Hero.tsx) — o núcleo termina de abrir um pouco
-   antes disso, para não estar visivelmente ainda se espalhando no
-   instante em que tudo começa a escurecer.
+   começa a apagar em 0,875 do trajeto (`REVELA_EM`, em lib/mergulho.ts) —
+   o núcleo termina de abrir um pouco antes disso, para não estar
+   visivelmente ainda se espalhando no instante em que tudo começa a
+   escurecer.
    Era 0,88, calibrado contra a janela antiga que abria em 0,9. Com a
    janela nova esse valor passou a terminar DEPOIS do início da
-   dissolução, invertendo a intenção original. */
+   dissolução, invertendo a intenção original.
+
+   A folga é de apenas 0,025, e isso amarra `REVELA_EM`: baixá-lo até 0,85
+   voltaria a empatar os dois e a repetir a inversão acima. Quando o
+   crescimento do cérebro passou a terminar em `REVELA_EM` (Hero.tsx), foi
+   esta linha que impediu de mover o ponto — mexer em um exige mexer nos
+   dois. */
 const ABRE_ATE = 0.85
 
 /** Folga fora da janela antes de considerar o grão perdido. */

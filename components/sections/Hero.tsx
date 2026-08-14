@@ -9,9 +9,11 @@ import { LANDING } from '@/content/landing'
    com o canvas das estrelas entra com nome próprio para não sombrear. */
 import {
   ESCALA_EM,
+  FATOR,
   mergulho as estadoMergulho,
   REVELA_EM,
   REVELA_FIM_EM,
+  TOTAL,
 } from '@/lib/mergulho'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion'
 
@@ -50,16 +52,12 @@ export function Hero() {
           const mergulho = gsap.timeline({ paused: true })
           const cerebro = section.querySelector<HTMLElement>('[data-camada="cerebro"]')
 
-          /* O pin segura além do fim original do mergulho (1,6 telas):
-             o cérebro continua crescendo, em vez de parar, até bem perto
-             de onde a próxima seção começa a chegar (mesma folga do
-             ATRASO em Estacoes.tsx). FATOR comprime as durações do texto
-             e da centralização para o novo total, mantendo os dois no
-             mesmo ponto físico de antes — só o crescimento da escala é
-             que se estica até o novo fim. */
-          const SEGURA = 2.4
-          const TOTAL = 1.6 + SEGURA
-          const FATOR = 1.6 / TOTAL
+          /* `SEGURA`, `TOTAL` e `FATOR` moram em lib/mergulho.ts, ao lado
+             de `ESCALA_EM` — que vale `0,34 * FATOR` e por isso PRECISA
+             mudar junto com eles. Enquanto os três eram locais daqui e o
+             `ESCALA_EM` era um literal lá, encurtar o pin dessincronizava
+             os dois em silêncio: o objeto continuaria interativo depois do
+             ponto em que o mergulho já teria começado. */
 
           /* A janela de revelação — o trecho em que o cérebro some e
              revela o fundo preto com a poeira cósmica de verdade atrás
@@ -68,17 +66,25 @@ export function Hero() {
              junto o retângulo claro que o canvas pinta).
 
              Ela mora em `REVELA_EM`/`REVELA_FIM_EM` (lib/mergulho.ts), não
-             aqui: em telas medidas do topo são 3,5→4,0 de 4,0, e o núcleo
-             estrelado precisa exatamente dos mesmos dois pontos. Havia
-             constantes locais com esses números, e eram armadilha — quem
-             editasse um deles aqui, ao lado desta explicação, não mudaria
-             nada, porque a timeline lê as frações importadas.
+             aqui: o último oitavo do pin, e o núcleo estrelado precisa
+             exatamente dos mesmos dois pontos. Havia constantes locais com
+             esses números, e eram armadilha — quem editasse um deles aqui,
+             ao lado desta explicação, não mudaria nada, porque a timeline
+             lê as frações importadas.
 
-             Era 0,1 tela (3,6→3,7), foi para 0,3 e agora ocupa a folga
-             inteira até o fim do pin. Não sobra mais trecho com o cérebro
-             transparente parado esperando: ele apaga exatamente quando o
-             pin acaba, e a escala termina junto. `TOTAL` nunca mudou, então
-             as seções seguintes não sentem nada. */
+             Era 0,1 tela, foi para 0,3 e agora ocupa a folga inteira até o
+             fim do pin. Não sobra mais trecho com o cérebro transparente
+             parado esperando: ele apaga exatamente quando o pin acaba.
+
+             O que mudou aqui: a escala NÃO termina mais junto com ela —
+             termina no começo dela, em `REVELA_EM`. Esta janela deixou de
+             ser só dissolução e virou também a pista onde o `scrub`
+             alcança o tamanho final. E `TOTAL` deixou de ser imutável:
+             caiu de 4,0 para 3,5 telas para encurtar o movimento. As
+             seções seguintes não sentem, porque a margem da estação é
+             medida em unidades de VIEWPORT e não a partir deste pin (ver
+             `vaoDaEstacao` em Estacoes.tsx) — o vão de 0,45 tela sobrevive
+             sozinho. */
 
           /* O progresso não vem do gatilho, e sim deste valor animado com
              `scrub`, espelhado 1:1 no timeline a cada atualização — sobe
@@ -135,6 +141,16 @@ export function Hero() {
                 const t = apagando < 0 ? 0 : apagando > 1 ? 1 : apagando
                 // Mesma curva do `power1.in` que a timeline usava aqui.
                 section.style.opacity = String(1 - t * t)
+                /* Transparente não é ausente: opacidade 0 continua
+                   recebendo clique e hover. Isso não custava nada
+                   enquanto a hero era a última coisa no seu trecho do
+                   documento, mas a estação agora sobe por cima da cauda
+                   dela (ver `caudaDaHeroAcima` em Estacoes.tsx) — e sem
+                   isto o CTA e o link da oferta, invisíveis, ficariam
+                   sobre o começo da chegada, roubando o clique e trocando
+                   o cursor numa região onde não há nada à vista. Volta a
+                   receber assim que a hero reaparece. */
+                section.style.pointerEvents = t >= 1 ? 'none' : ''
               },
             },
             onUpdate: () => {
@@ -175,20 +191,36 @@ export function Hero() {
                manchete ainda na tela e o cérebro fora do eixo faria a
                passagem parecer um zoom torto, não uma entrada. */
             .to('.hero-col', { xPercent: -22, autoAlpha: 0, ease: 'power2.in', duration: 0.3 * FATOR }, 0)
-            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: 0.34 * FATOR }, 0)
-            // Segundo tempo: centrado e sozinho, agora sim ele cresce —
-            // até o novo fim do pin, não só até o fim do mergulho antigo.
-            // Sem dissolver no fim: a opacidade fica cheia até cobrir a tela.
+            .to('.hero-obj', { x: desloca('x'), y: desloca('y'), ease: 'power2.inOut', duration: ESCALA_EM }, 0)
+            // Segundo tempo: centrado e sozinho, agora sim ele cresce.
             .to(
               '.palco',
-              /* 90×, e agora ele chega lá de verdade. Antes o alvo era 80
-                 mas a seção terminava de apagar em `v = 0,95`, onde a
-                 escala vale ~67× — os últimos 13× rodavam com o cérebro já
-                 invisível, puro custo sem nada na tela. Com a dissolução
-                 indo até o fim do pin, o alvo passou a ser o que se vê. */
-              { scale: grande ? 90 : 60, ease: 'power2.in', duration: 1 - 0.34 * FATOR },
-              0.34 * FATOR,
+              /* 150×, e o crescimento acaba em `REVELA_EM` — onde a
+                 dissolução começa —, não mais no fim do pin.
+
+                 Os dois terminavam juntos no fim, e por isso o tamanho
+                 cheio nunca era visto: a escala anda no relógio atrasado do
+                 `scrub` e a opacidade no relógio cru (ver o `onUpdate`
+                 acima). A opacidade zerava primeiro e os últimos múltiplos
+                 rodavam invisíveis — medido no desenho antigo: quando a
+                 dissolução começava, a escala valia ~57× de 90, e os 33×
+                 que faltavam corriam com o cérebro já apagando.
+
+                 Fechando aqui, a janela de dissolução inteira vira pista de
+                 pouso: o `scrub` gasta o atraso dele nela e o cérebro chega
+                 aos 150× ainda com opacidade na tela. Quanto mais rápido se
+                 rola, mais da pista ele consome — e é por isso que ela não
+                 pode encurtar (ver `REVELA_FIM_EM` em lib/mergulho.ts). */
+              { scale: grande ? 150 : 100, ease: 'power2.in', duration: REVELA_EM - ESCALA_EM },
+              ESCALA_EM,
             )
+            /* A cauda existe só para a timeline MEDIR 1. Sem ela a duração
+               seria `REVELA_EM`, e `mergulho.progress(v)` normaliza sobre a
+               duração real — o crescimento voltaria a terminar no fim do
+               pin, exatamente o que esta mudança desfaz. O alvo é um objeto
+               descartável porque não há o que animar aqui: neste trecho o
+               cérebro está parado em 150× e só a opacidade da seção cai. */
+            .to({ pousando: 0 }, { pousando: 1, ease: 'none', duration: REVELA_FIM_EM - REVELA_EM }, REVELA_EM)
           /* A opacidade da seção NÃO está nesta timeline de propósito —
              ela é escrita direto no `onUpdate` do ScrollTrigger, a partir
              do progresso cru. Ver a nota lá em cima: aqui dentro ela
@@ -197,6 +229,7 @@ export function Hero() {
 
           return () => {
             section.style.opacity = ''
+            section.style.pointerEvents = ''
           }
         },
       )
