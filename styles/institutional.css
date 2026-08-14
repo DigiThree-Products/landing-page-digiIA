@@ -640,11 +640,9 @@ body::after {
   width: 100%;
   min-height: 100svh;
   margin: 0;
-  padding: clamp(110px, 15vh, 170px) var(--world-edge);
+  padding: clamp(84px, 11vh, 130px) var(--world-edge);
   display: grid;
-  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
-  align-items: start;
-  gap: clamp(54px, 9vw, 150px);
+  place-items: center;
   overflow: hidden;
   color: var(--paper);
   /* Sem fundo próprio, igual a #recursos e #demo: passagem inteira para a
@@ -652,14 +650,36 @@ body::after {
 }
 
 /* Mesma troca de #demo: o filho direto agora é o palco da estação. */
+/* O GRID DAS DUAS COLUNAS VIVE AQUI, não na seção — e isto não é
+   preferência de organização, é o conserto de uma regressão real.
+
+   A seção era o grid e tinha dois filhos: o cabeçalho à esquerda e a lista
+   à direita, lado a lado, de modo que a altura da seção era a da lista
+   sozinha. Quando o FAQ virou estação, o `.estacao-palco` entrou entre os
+   dois e passou a ser o ÚNICO filho do grid: as duas colunas colapsaram em
+   uma e o conteúdo empilhou. Medido: a seção foi de ~900px para 1376px
+   numa janela de 900px, e com o pin segurando, as perguntas 4, 5 e 6
+   ficavam abaixo da dobra e inalcançáveis — a página não rola enquanto a
+   estação está presa.
+
+   Com o grid no palco, as colunas voltam e a altura volta a ser a da lista. */
 .page #faq>.estacao-palco {
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  display: grid;
+  grid-template-columns: minmax(260px, 0.74fr) minmax(0, 1.26fr);
+  align-items: center;
+  gap: clamp(40px, 6vw, 110px);
 }
 
+/* Sem `sticky`. Ele existia para o cabeçalho acompanhar a rolagem da
+   lista; numa estação PRESA não há rolagem interna para acompanhar — o
+   painel inteiro fica parado enquanto o pin segura, e um sticky dentro de
+   um ancestral transformado se ancora nele, não na janela. Era código sem
+   efeito. Quem centraliza agora é o `align-items` do palco. */
 .page #faq .sec-head {
-  position: sticky;
-  top: 130px;
   max-width: 520px;
   margin: 0;
 }
@@ -680,6 +700,35 @@ body::after {
 .page #faq .faq summary {
   padding-block: 28px;
   font-size: clamp(18px, 1.6vw, 23px);
+  gap: 16px;
+}
+
+/* A pergunta é quem estica; o índice e o sinal ficam nas pontas. Sem isto o
+   `space-between` herdado distribuiria os TRÊS filhos e a pergunta flutuaria
+   no meio da linha, longe do número que a identifica. */
+.page #faq .faq summary>span {
+  flex: 1 1 auto;
+}
+
+/* Telemetria de bordo: número pequeno em mono, no mesmo idioma dos códigos
+   das aulas do Repertório (R01, R04) e do relógio 00:00 na janela de vídeo.
+   É o que amarra a lista de perguntas ao resto da viagem sem precisar de
+   ornamento — a página já trata número miúdo como leitura de instrumento.
+   Acende no lilás quando a resposta abre, então o índice também informa
+   qual das seis está aberta, coisa que o sinal de + sozinho não diz à
+   distância. */
+.page #faq .faq-indice {
+  flex: none;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: var(--paper-38);
+  transition: color 0.2s var(--ease);
+}
+
+.page #faq details[open] .faq-indice {
+  color: var(--lilac);
 }
 
 .page #faq .faq-body p {

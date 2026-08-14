@@ -188,44 +188,44 @@ const PARTIU = 0.765
 const ATRASO = 0.1
 
 /**
- * A cauda morta da hero: quanto ela ainda ocupa no documento DEPOIS de o
- * pin soltar, já completamente transparente.
+ * A cauda morta do vizinho preso logo acima: quanto ele ainda ocupa no
+ * documento DEPOIS de o pin dele soltar, já fora de cena.
  *
  * `pinSpacing` reserva "duração do pin + altura do elemento". Quando o pin
- * solta, a hero deixa de ser fixa e ainda tem de rolar a própria altura
- * para sair da tela — e faz isso invisível, porque a dissolução termina
- * exatamente no fim do pin (`REVELA_FIM_EM`, lib/mergulho.ts). Medido numa
- * janela de 900px: 900px de rolagem, uma tela inteira, com o cérebro já
- * apagado e a estação ainda fora de cena. Nada acontece ali.
+ * solta, o elemento deixa de ser fixo e ainda tem de rolar a própria altura
+ * para sair da tela — e faz isso invisível: a hero porque a dissolução
+ * termina exatamente no fim do pin (`REVELA_FIM_EM`, lib/mergulho.ts), e
+ * uma estação porque já partiu, escalada além da tela e com opacidade zero
+ * (ver `passagem` no `onUpdate`). Nada acontece ali.
  *
- * O ATRASO era somado DEPOIS dessa cauda, então o vão real valia
- * `cauda + ATRASO` — 1170px, não os 270 que a constante anuncia. Descontar
- * a cauda faz o ATRASO voltar a significar o que ele diz: a folga contada
- * do instante em que o cérebro some.
+ * O ATRASO é somado DEPOIS dessa cauda, então sem o desconto o vão real
+ * vale `cauda + ATRASO`. Descontar faz o ATRASO significar o que ele diz.
  *
- * Só quem PRECISA medir usa isto: abaixo de 980px a hero perde o
- * `min-height: 100svh` (hero.css) e passa a ter altura de conteúdo, que
- * nenhuma unidade CSS sabe dizer. No desktop `vaoDaEstacao` prefere
- * escrever `100svh` direto, porque fórmula sobrevive a resize e número
- * não — mas o valor daqui ainda decide QUAL dos dois ramos vale, já que
- * zero significa "não há hero acima desta estação".
+ * VALIA SÓ PARA A HERO, e esse era o buraco: entre duas estações a função
+ * devolvia 0 e a cauda inteira ficava no caminho. Medido com as cinco
+ * estações no ar, numa janela de 900px: 990px de rolagem morta entre uma e
+ * a seguinte, três vezes, mais 757px antes das perguntas — 3.727px em que
+ * uma estação já partiu e a próxima ainda não começou.
  *
- * Devolve 0 quando não há hero logo acima — uma segunda estação, mais para
- * baixo na página, não tem cauda nenhuma para descontar.
+ * Devolve 0 quando não há vizinho preso logo acima — aí não há cauda para
+ * descontar e o ATRASO vale sozinho.
  */
-function caudaDaHeroAcima(secao: HTMLElement): number {
+function caudaAcima(secao: HTMLElement): { px: number; ehHero: boolean } {
   /* Quando o GSAP prende, a seção passa a morar dentro do próprio
-     `pin-spacer` e o vizinho de cima vira o vizinho do espaçador — e a
-     hero, do mesmo jeito, fica dentro do dela. No primeiro mount nada
+     `pin-spacer` e o vizinho de cima vira o vizinho do espaçador — e o
+     vizinho, do mesmo jeito, fica dentro do dele. No primeiro mount nada
      disso existe ainda (este componente monta antes da Hero e é ele
-     quem cria o pin da estação), mas num remount ou num HMR os dois
+     quem cria os pins das estações), mas num remount ou num HMR os
      espaçadores já estão de pé. Os dois estados precisam funcionar. */
   const meu = secao.parentElement
   const eu = meu?.classList.contains('pin-spacer') ? meu : secao
   const antes = eu.previousElementSibling
-  if (!antes) return 0
-  const hero = antes.matches('.hero') ? antes : antes.querySelector('.hero')
-  return hero instanceof HTMLElement ? hero.offsetHeight : 0
+  if (!antes) return { px: 0, ehHero: false }
+  const vizinho = antes.matches('.hero, .estacao')
+    ? antes
+    : antes.querySelector('.hero, .estacao')
+  if (!(vizinho instanceof HTMLElement)) return { px: 0, ehHero: false }
+  return { px: vizinho.offsetHeight, ehHero: vizinho.classList.contains('hero') }
 }
 
 /**
@@ -235,23 +235,34 @@ function caudaDaHeroAcima(secao: HTMLElement): number {
  * e o reaplica em cada refresh: um número morre na primeira mudança de
  * janela, uma fórmula é reavaliada.
  *
- * Os dois ramos espelham hero.css. Acima de 980px a hero é exatamente
- * `min-height: 100svh`, então a cauda dela É `100svh` e o desconto se
- * escreve sem medir nada — o navegador acompanha qualquer resize sozinho.
- * Abaixo disso a regra vira `min-height: auto` e a hero passa a ter
- * altura de conteúdo, que nenhuma unidade CSS sabe dizer; aí entra o
- * valor medido, com a limitação assumida de envelhecer numa mudança de
- * orientação até o próximo mount. O breakpoint é o mesmo dos dois lados
- * de propósito: se um mudar sem o outro, o desconto passa a descrever
- * uma hero que não existe.
+ * Quando o vizinho é a HERO acima de 980px, o desconto sai como `100svh`:
+ * hero.css garante que ela é exatamente isso, então a fórmula dispensa
+ * medir e o navegador acompanha qualquer resize sozinho. Abaixo de 980px a
+ * regra vira `min-height: auto` e a hero passa a ter altura de conteúdo,
+ * que nenhuma unidade CSS sabe dizer. O breakpoint é o mesmo dos dois lados
+ * de propósito: se um mudar sem o outro, o desconto descreve uma hero que
+ * não existe.
+ *
+ * Quando o vizinho é outra ESTAÇÃO, o desconto é sempre medido, e não por
+ * descuido: as estações NÃO têm altura uniforme. Medido numa janela de
+ * 900px — "+15 anos" tem 667px (o conteúdo é curto) e "Perguntas" tem
+ * 1376px (as seis perguntas passam de uma tela). Escrever `100svh` aqui
+ * acertaria três e erraria duas, e o erro apareceria como sobreposição ou
+ * como vão sobrando, dependendo do lado.
+ *
+ * O preço do valor medido é conhecido e assumido: ele envelhece numa
+ * mudança de tamanho de janela, até o próximo mount. É o mesmo preço que o
+ * ramo mobile da hero já pagava. Uniformizar as alturas das estações
+ * tornaria a fórmula possível — mas exigiria fazer "Perguntas" caber em
+ * uma tela, que é decisão de desenho e não de layout.
  */
 function vaoDaEstacao(secao: HTMLElement): string {
   const folga = `${ATRASO * 100}vh`
-  const cauda = caudaDaHeroAcima(secao)
-  if (!cauda) return folga
-  return window.matchMedia('(min-width: 981px)').matches
+  const { px, ehHero } = caudaAcima(secao)
+  if (!px) return folga
+  return ehHero && window.matchMedia('(min-width: 981px)').matches
     ? `calc(${folga} - 100svh)`
-    : `calc(${folga} - ${cauda}px)`
+    : `calc(${folga} - ${px}px)`
 }
 
 const limita = (v: number) => Math.min(1, Math.max(0, v))
