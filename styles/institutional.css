@@ -548,7 +548,16 @@ body::after {
    ============================================================ */
 .page .credibility-section {
   width: 100%;
-  min-height: 72svh;
+  /* UMA TELA CHEIA, como as outras estações — era 72svh.
+     Enquanto esta seção era uma faixa que se rolava, 72svh dava um respiro
+     menor que o das vizinhas e isso era o desenho. Virando estação, ela
+     passou a ser o QUADRO PRESO: o conteúdo centraliza dentro da altura da
+     seção, não da janela, então 72svh empurrava tudo para o terço de cima e
+     deixava ~233px de vazio embaixo, medido numa janela de 900px.
+     Não custa rolagem: o espaçador cresce 233px e a margem negativa da
+     estação seguinte cresce o mesmo tanto, porque ela desconta a altura do
+     vizinho de cima (ver `caudaAcima` em Estacoes.tsx). */
+  min-height: 100svh;
   margin: 0;
   padding: clamp(90px, 13vh, 150px) var(--world-edge);
   display: grid;
