@@ -261,44 +261,121 @@
    Hero, #oferta e o rodapé não aparecem aqui e não devem aparecer.
    ============================================================ */
 
-/* --- O que ela faz — 7 degraus: rótulo, título e as cinco células.
-       A ordem das células é a da leitura do bento, não a do DOM. --- */
-.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
-.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
-.page #recursos .rec-cell--cria { --de: 0.24; --dur: 0.14; }
-.page #recursos .rec-cell--planeja { --de: 0.36; --dur: 0.14; }
-.page #recursos .rec-cell--calcula { --de: 0.48; --dur: 0.14; }
-.page #recursos .rec-cell--dna { --de: 0.60; --dur: 0.14; }
-/* Intervalo um pouco maior antes da faixa: ela é o fecho, não mais um
-   card — mesma intenção do `transition-delay` de 0,66s que existia na
-   entrada por relógio, agora escrita em espaço. */
-.page #recursos .rec-cell--repertorio { --de: 0.74; --dur: 0.16; }
+/* --- O que ela faz — 7 degraus em DOIS tempos.
+       A ordem das células é a da leitura do bento, não a do DOM.
 
-/* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
-       rosto que emerge e ela é a prova, o corpo mais pesado. --- */
-.page #demo .demo-lado { --de: 0; --dur: 0.22; }
-.page #demo .demo-head .tag { --de: 0.16; --dur: 0.12; }
-.page #demo .demo-head h2 { --de: 0.26; --dur: 0.16; }
-.page #demo .demo-head__sub { --de: 0.40; --dur: 0.14; }
-.page #demo .demo { --de: 0.54; --dur: 0.24; }
+       Primeiro tempo: o rótulo e o título. Segundo tempo: as cinco
+       células. Entre os dois há uma PAUSA de verdade — o título assenta,
+       nada se move por ~250px de rolagem, e só então o bento começa a
+       chegar.
+
+       A pausa é o ponto desta calibragem. Antes o título fechava em 0,22 e
+       CRIA abria em 0,24: eram 39px de rolagem entre um e outro, e os dois
+       tempos se liam como um só borrão contínuo — o texto ainda assentando
+       enquanto o primeiro card já entrava. Agora são ~254px, e a seção
+       passa a dizer duas coisas em vez de uma: primeiro o que ela é,
+       depois o que ela faz.
+
+       Cuidado ao mexer: os números são posição em `--chegada`, que passa
+       por um smoothstep antes de virar rolagem. Diferenças iguais aqui NÃO
+       valem distâncias iguais na tela — no meio da faixa a viagem corre,
+       nas pontas ela freia. Foi por isso que 0,02 de intervalo rendia
+       apenas 39px. Converter exige a inversa do smoothstep. --- */
+.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
+.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.16; }
+
+/* pausa de ~254px — o texto assentado, sozinho na tela */
+
+/* Os cinco nascem a ~230px de rolagem um do outro, contra os 169px de
+   antes: cada célula vira um evento separado em vez de uma sequência
+   corrida. O grid, em compensação, fechou (ver o `gap` em recursos.css) —
+   mais colados como composição, mais espaçados como chegada.
+
+   Os `--de` NÃO sobem em passos iguais, e não é descuido: 0,38 → 0,516 →
+   0,651 → 0,775 são intervalos crescentes em `--chegada` que rendem os
+   MESMOS 230px na tela, porque o smoothstep freia perto das pontas. Passos
+   iguais aqui dariam distâncias desiguais lá.
+
+   As durações encolhem conforme avançam (0,10 → 0,06) pelo mesmo motivo, e
+   com um segundo: o último precisa assentar antes de `--chegada` chegar a
+   1. Em rolagem elas continuam parecidas — de 169px a 145px —, então o
+   gesto de cada card dura praticamente o mesmo apesar dos números caírem
+   pela metade. */
+.page #recursos .rec-cell--cria { --de: 0.38; --dur: 0.10; }
+.page #recursos .rec-cell--planeja { --de: 0.516; --dur: 0.09; }
+.page #recursos .rec-cell--calcula { --de: 0.651; --dur: 0.08; }
+.page #recursos .rec-cell--dna { --de: 0.775; --dur: 0.07; }
+/* Intervalo maior antes da faixa — 316px contra 230px: ela é o fecho, não
+   mais um card. Mesma intenção do `transition-delay` de 0,66s que existia
+   na entrada por relógio, agora escrita em espaço. */
+.page #recursos .rec-cell--repertorio { --de: 0.913; --dur: 0.06; }
+
+/* --- Como funciona — 5 degraus, espalhados pela viagem inteira. O retrato
+       abre, a janela fecha: ele é o rosto que emerge e ela é a prova, o
+       corpo mais pesado.
+
+       A primeira versão destes valores tinha a sequência certa e o
+       espaçamento errado: o subtítulo fechava em 0,54 e a janela abria em
+       0,54 — zero pixel entre um e outro. Os cinco existiam em ordem, mas
+       chegavam emendados e liam como um bloco só. Medido agora, os
+       intervalos em rolagem: 493px até o rótulo, 386 até o título, 415 até
+       o subtítulo e 633 até a janela, com 411px de pausa entre o texto
+       assentar e a janela começar a chegar.
+
+       O desenho copia o de "Veja funcionando" logo acima, que é a
+       referência: blocos de texto distribuídos ao longo de todo o trajeto e
+       a mídia fechando EXATAMENTE em `--chegada` 1, junto com a chegada. É
+       isso que faz o corpo mais pesado encerrar a viagem em vez de só
+       completar a lista. --- */
+.page #demo .demo-lado { --de: 0; --dur: 0.14; }
+.page #demo .demo-head .tag { --de: 0.10; --dur: 0.10; }
+.page #demo .demo-head h2 { --de: 0.28; --dur: 0.14; }
+.page #demo .demo-head__sub { --de: 0.52; --dur: 0.13; }
+.page #demo .demo { --de: 0.86; --dur: 0.14; }
 
 /* --- +15 anos — 3 degraus. É a estação mais próxima do desenho original:
-       poucos blocos, tipografia monumental, nada clicável. O número tem a
-       janela mais longa porque é ele que carrega a seção. --- */
-.page .credibility-section .stat b { --de: 0; --dur: 0.26; }
-.page .credibility-section .stat i { --de: 0.22; --dur: 0.16; }
-.page .credibility-section .cred p { --de: 0.36; --dur: 0.30; }
+       poucos blocos, tipografia monumental, nada clicável.
 
-/* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
-       ressalva sobre clique em components/sections/Faq.tsx. --- */
+       Com três blocos só, o risco não é amontoar e sim o contrário: os
+       valores anteriores (0 / 0,22 / 0,36) se SOBREPUNHAM — a legenda abria
+       em 0,22 com o número ainda chegando até 0,26, e a frase abria em 0,36
+       com a legenda ainda em curso até 0,38. Três blocos entrando por cima
+       um do outro numa seção que tem espaço de sobra.
+
+       Agora: 304px de pausa entre o número e a legenda, 340px entre a
+       legenda e a frase. O número abre sozinho e é o mais demorado (683px
+       de percurso) porque é ele que carrega a seção — os outros dois se
+       penduram nele. --- */
+.page .credibility-section .stat b { --de: 0; --dur: 0.18; }
+.page .credibility-section .stat i { --de: 0.34; --dur: 0.12; }
+.page .credibility-section .cred p { --de: 0.66; --dur: 0.20; }
+
+/* --- Perguntas — 8 degraus em dois tempos, como o Recursos: a coluna da
+       esquerda (rótulo e título) chega, assenta, e só então as seis
+       perguntas descem uma a uma na coluna da direita.
+
+       254px de pausa entre o título e a primeira pergunta — o mesmo
+       intervalo usado no Recursos, de propósito: são as duas seções em que
+       um bloco de texto apresenta uma lista, e a leitura ganha em elas
+       terem o mesmo compasso.
+
+       As seis descem a ~230px uma da outra e a última fecha em 0,998,
+       rente ao fim da chegada. Os `--de` sobem em passos desiguais
+       (0,38 → 0,516 → 0,651 → 0,775 → 0,881 → 0,958) e os `--dur` caem
+       (0,10 → 0,04) pela razão de sempre: é o que rende intervalos e
+       durações IGUAIS em rolagem, porque o smoothstep freia nas pontas.
+       Medidas: ~150px de percurso por pergunta, 230px entre elas. --- */
 .page #faq .sec-head .tag { --de: 0; --dur: 0.12; }
 .page #faq .sec-head h2 { --de: 0.08; --dur: 0.16; }
-.page #faq details:nth-of-type(1) { --de: 0.26; --dur: 0.14; }
-.page #faq details:nth-of-type(2) { --de: 0.35; --dur: 0.14; }
-.page #faq details:nth-of-type(3) { --de: 0.44; --dur: 0.14; }
-.page #faq details:nth-of-type(4) { --de: 0.53; --dur: 0.14; }
-.page #faq details:nth-of-type(5) { --de: 0.62; --dur: 0.14; }
-.page #faq details:nth-of-type(6) { --de: 0.71; --dur: 0.14; }
+
+/* pausa de ~254px — a coluna da esquerda sozinha */
+
+.page #faq details:nth-of-type(1) { --de: 0.38; --dur: 0.10; }
+.page #faq details:nth-of-type(2) { --de: 0.516; --dur: 0.09; }
+.page #faq details:nth-of-type(3) { --de: 0.651; --dur: 0.08; }
+.page #faq details:nth-of-type(4) { --de: 0.775; --dur: 0.07; }
+.page #faq details:nth-of-type(5) { --de: 0.881; --dur: 0.055; }
+.page #faq details:nth-of-type(6) { --de: 0.958; --dur: 0.04; }
 
 @media (prefers-reduced-motion: reduce) {
   .page .approach-kicker,

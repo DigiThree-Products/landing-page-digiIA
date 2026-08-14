@@ -113,7 +113,13 @@
      que precisa de 166, junto. Eram 94px desperdiçados, o suficiente
      para a seção estourar a tela. */
   grid-template-rows: auto auto auto;
-  gap: 12px;
+  /* Fechado de 12px para 8px: as células ficam mais coladas como
+     composição, e a separação entre elas passou a ser feita no TEMPO da
+     chegada, não no espaço do grid — os `--de` em styles/estacao.css abrem
+     ~230px de rolagem entre uma e a seguinte. Trocar respiro físico por
+     respiro de chegada mantém o bento denso sem as células se atropelarem
+     na leitura. */
+  gap: 8px;
 }
 
 /* ---------- Cor das células ----------
@@ -583,7 +589,7 @@
     margin-bottom: clamp(10px, 1.4vh, 18px);
   }
   .page #recursos .bento {
-    gap: 8px;
+    gap: 6px;
   }
   .page #recursos .rec-cell {
     padding: clamp(14px, 1.8vh, 20px) clamp(16px, 1.3vw, 22px);
