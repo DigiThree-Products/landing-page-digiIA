@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Reveal } from '@/components/ui/Reveal'
 import { LiquidPortrait } from '@/components/ui/LiquidPortrait'
 import { LANDING, type DemoScene } from '@/content/landing'
 
@@ -95,8 +94,9 @@ export function Demo() {
   }, [])
 
   return (
-    <section id="demo" ref={secao} aria-labelledby="demo-titulo">
-      <Reveal className="demo-layout">
+    <section id="demo" ref={secao} className="estacao" aria-labelledby="demo-titulo">
+      <div className="estacao-palco">
+      <div className="demo-layout">
         <div className="demo-lado">
           <LiquidPortrait />
         </div>
@@ -144,7 +144,8 @@ export function Demo() {
             </div>
           </div>
         </div>
-      </Reveal>
+      </div>
+      </div>
     </section>
   )
 }

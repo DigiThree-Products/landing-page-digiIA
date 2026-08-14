@@ -3,10 +3,23 @@
 import { gsap, prefersReducedMotion, ScrollTrigger, useGSAP } from '@/lib/motion'
 
 /**
- * Uma estação por vez. Começa por "Veja funcionando"; as outras seções
- * claras seguem como faixa até serem convertidas.
+ * Toda seção marcada como estação. Começou com "Veja funcionando" sozinha
+ * e hoje são cinco: ela, "O que ela faz", "Como funciona", "+15 anos" e
+ * "Perguntas".
+ *
+ * O contrato é de DUAS partes, e as duas são obrigatórias:
+ *   1. a seção leva a classe `estacao` — é ela que o ScrollTrigger mede e
+ *      prende, e por isso não pode ser a que escala;
+ *   2. dentro dela existe um `.estacao-palco` — é ele que escala.
+ * Sem o palco a escala cairia na própria seção, o ScrollTrigger mediria o
+ * retângulo já encolhido e ancoraria o pin no lugar errado.
+ *
+ * Hero, oferta e rodapé NÃO são estações e não devem receber a classe:
+ * a hero tem o mergulho próprio, e as outras duas são o destino do
+ * argumento — prender e afastar o bloco de conversão seria trabalhar
+ * contra ele.
  */
-const PAINEIS = '.page .approach'
+const PAINEIS = '.page .estacao'
 
 /** Escala e opacidade de quando ela ainda é um ponto no fundo. */
 const ESCALA_LONGE = 0.16
@@ -82,13 +95,21 @@ const RE_TAXA = 0.06
  * até o topo) e não há como alongar a aproximação: mexer nos marcos
  * abaixo só redistribuiria esse mesmo pedaço. Presa, a chegada dura o
  * quanto a gente quiser.
+ *
+ * Caiu de 5,5 para 4,0 porque a viagem estava longa demais de rolar. É o
+ * dial mais poderoso da seção: ele escala TUDO junto — a chegada, a
+ * travada, a partida, as janelas dos quatro blocos e até o preto do começo,
+ * porque aquele trecho também é uma fração deste pin (263px hoje, eram 327
+ * em 5,5). Mexer aqui invalida qualquer número em telas escrito em
+ * styles/estacao.css: as proporções entre os blocos sobrevivem, os valores
+ * absolutos não. Estão remedidos para 4,0.
  */
-const TRAVESSIA = 5.5
+const TRAVESSIA = 4
 
 /* Marcos dentro do trecho preso. Entre CHEGOU e PARTIU ela fica parada
    em 1:1 — a composição inteira montada, imóvel e nítida.
 
-   Essa janela é curta de propósito: ~0,73 tela de rolagem. É o instante
+   Essa janela é curta de propósito: 0,26 tela de rolagem. É o instante
    em que os quatro blocos existem juntos, e ele se lê como uma travada
    leve — a página continua rolando e nada se mexe. Longa demais, ela
    deixa de ser o encontro dos blocos e vira uma seção parada esperando
@@ -96,31 +117,28 @@ const TRAVESSIA = 5.5
    entra já saindo.
 
    CHEGOU e TRAVESSIA são mexidos JUNTOS, e o produto dos dois é o que
-   precisa ficar de pé: ele é o comprimento da chegada, e é dele que
-   saem as durações calibradas da cascata em styles/estacao.css.
-   0,87 × 9,89 = 8,60 telas. São dois eixos distintos, e vale não
-   confundi-los: subir o PONTO DE ENCONTRO encolhe o que vem depois da
-   chegada (foi assim de 72% para 82% e para 87%); afastar as chegadas
-   umas das outras alonga a CHEGADA em si, e é o que move este número.
+   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,7 × 4,0 =
+   2,80 telas. São dois eixos distintos, e vale não confundi-los: subir o
+   PONTO DE ENCONTRO encolhe o que vem DEPOIS da chegada; encolher a
+   TRAVESSIA encolhe tudo proporcionalmente, chegada inclusa.
 
-   O comprimento sai somando o que precisa caber: 1,26 tela de trecho
-   mudo, os quatro blocos (0,90 + 0,75 + 1,04 + 1,65 = 4,34) e as duas
-   folgas de 1,50 entre os blocos de texto. Total 8,60. As janelas em
-   styles/estacao.css são reconvertidas a cada mudança daqui, então as
-   durações (0,6 / 0,5 / 0,7 / 1,1s) seguem valendo.
+   O orçamento atual do pin, em telas de 900px:
+     chegada   0,700 × 4,0 = 2,80
+     travada   0,065 × 4,0 = 0,26
+     partida   0,235 × 4,0 = 0,94
+   Com a hero (3,5) e o vão (0,1), são 7,6 telas até o fim deste pin.
 
-   Cada 0,1 tela somado às folgas custa 0,23 tela de seção, porque a
-   chegada é só 87% do trecho. As folgas somadas (3,00) já valem mais
-   que os quatro blocos juntos menos o vídeo, e esta seção sozinha
-   consome quase dez telas — com a hero e o vão, são ~14 até a terceira
-   seção começar. Se a separação ainda não se lê depois disso, o
-   problema não é distância: é a AMPLITUDE do gesto de cada bloco em
-   styles/estacao.css, que hoje é de 54px num palco reduzido — sutil
-   demais para um bloco "chegar" em vez de só "aparecer".
+   ATENÇÃO: os números acima e os de styles/estacao.css são MEDIDOS contra
+   TRAVESSIA 4,0 e CHEGOU 0,7. Este bloco já carregou por muito tempo os
+   valores de uma calibragem morta (0,87 × 9,89 = 8,60 telas, folgas de
+   1,50, "quase dez telas") que sobreviveram a um encolhimento anterior sem
+   ninguém remedir — e um comentário errado aqui custa caro, porque é ele
+   que orienta quem for calibrar. Se mexer em TRAVESSIA ou CHEGOU, remeça.
 
-   O orçamento depois da chegada continua sendo os 13%: 0,73 tela de
-   travada e 0,55 de partida. A partida segue sendo o trecho mais
-   apertado e o primeiro a ceder se o encontro subir de 87%. */
+   Se a separação entre os blocos não se ler, o problema pode não ser
+   distância: é a AMPLITUDE do gesto de cada bloco em styles/estacao.css,
+   hoje 32px (64 no vídeo) num palco ainda reduzido — sutil demais para um
+   bloco "chegar" em vez de só "aparecer". */
 const CHEGOU = 0.7
 const PARTIU = 0.765
 
@@ -130,11 +148,111 @@ const PARTIU = 0.765
  * assim que o topo da seção toca o topo da tela, o que é ainda enquanto o
  * objeto da Hero está terminando de sumir.
  *
- * Encolheu junto com a mudança da curva: agora ela nasce longe de verdade
- * e passa muito tempo pequena, então o vão não precisa mais comprar
- * sozinho a impressão de distância.
+ * Medido a partir do FIM DO PIN da hero, que é onde o cérebro some — ver
+ * `caudaDaHeroAcima`. Antes era medido a partir do fim do BOX dela no
+ * documento, e a diferença entre as duas coisas era uma tela inteira; é por
+ * isso que `vaoDaEstacao` desconta a cauda.
+ *
+ * Hoje é 0,1, e o caminho foi 0,3 → 0,45 → 0,1. O que mudou não foi o
+ * gosto: foi descobrir que o vão era só METADE do problema. Entre o cérebro
+ * sumir e o primeiro texto nascer havia 875px, e apenas 405 vinham daqui —
+ * os outros ~400 eram o trecho mudo já DENTRO do pin, com a estação em cena
+ * porém pequena e transparente demais para se ver. Os dois trechos são
+ * pretos idênticos na tela e se ajustam por dials diferentes, e enquanto só
+ * um deles se mexia a conta nunca fechava. Zerando o `--de` do kicker
+ * (styles/estacao.css) e trazendo isto para 0,1, sobraram 327px; depois
+ * TRAVESSIA caiu de 5,5 para 4,0 e levou o resto junto, para 263px.
+ *
+ * ZERO NÃO É UM VALOR VÁLIDO AQUI, e o motivo não é estético. Este
+ * componente monta ANTES de a Hero criar o pin dela, então no instante em
+ * que a margem é escrita a hero ainda ocupa só a própria altura no
+ * documento. O topo inicial da estação vale, portanto, `ATRASO × 100vh`: em
+ * 0,45 dava +405 e o pin engatava normalmente mais adiante; em 0 dá
+ * exatamente 0, o pin engata no topo da página e a estação nasce presa,
+ * com `--chegada` correndo desde a primeira rolagem. Medido: `position:
+ * fixed` e `--chegada` já em 0,98 na altura em que o cérebro some.
+ *
+ * Dos 263px que sobram, 90 são este vão e 173 são a curva de perspectiva da
+ * própria chegada, que parte devagar de propósito (`suave` no `onUpdate`,
+ * tamanho = 1/distância). Esses 173 não têm dial PRÓPRIO, mas encolhem com
+ * TRAVESSIA, por serem uma fração do pin — era o que eu não tinha percebido
+ * ao chamá-los de piso. Estes 90 têm dial e é linear: cada 0,1 aqui vale
+ * 90px numa janela de 900px. Descer abaixo de ~0,05 reaproxima o topo
+ * inicial de zero e volta a flertar com a falha acima.
+ *
+ * A garantia pedida — nada aparece antes de o cérebro sumir — está medida:
+ * em y=3150 (`REVELA_FIM_EM`, opacidade da hero em 0) `--chegada` vale 0 e
+ * o kicker vale 0. A estação só parte 90px depois, e parte INVISÍVEL, em
+ * ESCALA_LONGE e OPACIDADE_LONGE.
  */
-const ATRASO = 0.3
+const ATRASO = 0.1
+
+/**
+ * A cauda morta da hero: quanto ela ainda ocupa no documento DEPOIS de o
+ * pin soltar, já completamente transparente.
+ *
+ * `pinSpacing` reserva "duração do pin + altura do elemento". Quando o pin
+ * solta, a hero deixa de ser fixa e ainda tem de rolar a própria altura
+ * para sair da tela — e faz isso invisível, porque a dissolução termina
+ * exatamente no fim do pin (`REVELA_FIM_EM`, lib/mergulho.ts). Medido numa
+ * janela de 900px: 900px de rolagem, uma tela inteira, com o cérebro já
+ * apagado e a estação ainda fora de cena. Nada acontece ali.
+ *
+ * O ATRASO era somado DEPOIS dessa cauda, então o vão real valia
+ * `cauda + ATRASO` — 1170px, não os 270 que a constante anuncia. Descontar
+ * a cauda faz o ATRASO voltar a significar o que ele diz: a folga contada
+ * do instante em que o cérebro some.
+ *
+ * Só quem PRECISA medir usa isto: abaixo de 980px a hero perde o
+ * `min-height: 100svh` (hero.css) e passa a ter altura de conteúdo, que
+ * nenhuma unidade CSS sabe dizer. No desktop `vaoDaEstacao` prefere
+ * escrever `100svh` direto, porque fórmula sobrevive a resize e número
+ * não — mas o valor daqui ainda decide QUAL dos dois ramos vale, já que
+ * zero significa "não há hero acima desta estação".
+ *
+ * Devolve 0 quando não há hero logo acima — uma segunda estação, mais para
+ * baixo na página, não tem cauda nenhuma para descontar.
+ */
+function caudaDaHeroAcima(secao: HTMLElement): number {
+  /* Quando o GSAP prende, a seção passa a morar dentro do próprio
+     `pin-spacer` e o vizinho de cima vira o vizinho do espaçador — e a
+     hero, do mesmo jeito, fica dentro do dela. No primeiro mount nada
+     disso existe ainda (este componente monta antes da Hero e é ele
+     quem cria o pin da estação), mas num remount ou num HMR os dois
+     espaçadores já estão de pé. Os dois estados precisam funcionar. */
+  const meu = secao.parentElement
+  const eu = meu?.classList.contains('pin-spacer') ? meu : secao
+  const antes = eu.previousElementSibling
+  if (!antes) return 0
+  const hero = antes.matches('.hero') ? antes : antes.querySelector('.hero')
+  return hero instanceof HTMLElement ? hero.offsetHeight : 0
+}
+
+/**
+ * A margem da estação, como FÓRMULA CSS — ver a nota longa no uso.
+ *
+ * Sai em `calc()` e não em px porque o GSAP fotografa este valor uma vez
+ * e o reaplica em cada refresh: um número morre na primeira mudança de
+ * janela, uma fórmula é reavaliada.
+ *
+ * Os dois ramos espelham hero.css. Acima de 980px a hero é exatamente
+ * `min-height: 100svh`, então a cauda dela É `100svh` e o desconto se
+ * escreve sem medir nada — o navegador acompanha qualquer resize sozinho.
+ * Abaixo disso a regra vira `min-height: auto` e a hero passa a ter
+ * altura de conteúdo, que nenhuma unidade CSS sabe dizer; aí entra o
+ * valor medido, com a limitação assumida de envelhecer numa mudança de
+ * orientação até o próximo mount. O breakpoint é o mesmo dos dois lados
+ * de propósito: se um mudar sem o outro, o desconto passa a descrever
+ * uma hero que não existe.
+ */
+function vaoDaEstacao(secao: HTMLElement): string {
+  const folga = `${ATRASO * 100}vh`
+  const cauda = caudaDaHeroAcima(secao)
+  if (!cauda) return folga
+  return window.matchMedia('(min-width: 981px)').matches
+    ? `calc(${folga} - 100svh)`
+    : `calc(${folga} - ${cauda}px)`
+}
 
 const limita = (v: number) => Math.min(1, Math.max(0, v))
 /** Desacelera ao encostar na vaga, em vez de parar de repente. */
@@ -184,7 +302,7 @@ export function Estacoes() {
       /* A seção é medida e presa; o painel interno é que escala. Se a
          escala fosse na própria seção, o ScrollTrigger mediria o
          retângulo encolhido e ancoraria o pin no lugar errado. */
-      const el = secao.querySelector<HTMLElement>('.approach-stage') ?? secao
+      const el = secao.querySelector<HTMLElement>('.estacao-palco') ?? secao
       paineis.push(el)
 
       /* Estado de repouso pelo JS, não pelo CSS: sem script a seção tem
@@ -207,8 +325,24 @@ export function Estacoes() {
          mente X pixels acima do topo — cortando esse tanto do conteúdo
          durante toda a leitura, não só na chegada. Com a margem, a seção
          já chega X pixels mais abaixo no fluxo normal, e o pin prende
-         limpo em "top top". */
-      secao.style.marginTop = `${ATRASO * 100}vh`
+         limpo em "top top".
+
+         A margem é NEGATIVA no desktop, e é esse o conserto: ela sobe a
+         estação por cima da cauda transparente da hero (ver
+         `caudaDaHeroAcima`) em vez de esperar a cauda passar. O vão deixa
+         de ser `cauda + ATRASO` e passa a ser só o ATRASO.
+
+         Ela continua escrita em UNIDADES CSS, e isso não é preferência
+         de estilo: é a única forma de sobreviver ao resize. O GSAP
+         fotografa a margem no instante em que cria o pin, transfere o
+         valor para o `pin-spacer` e zera a da seção — medido,
+         `secao.style.marginTop` vira `'0px'`. Reescrevê-la depois não
+         chega ao spacer, nem no `refreshInit`, porque o refresh reverte
+         o pin para a foto original antes de medir. Em `vh`/`svh` o valor
+         fotografado é uma FÓRMULA, e o navegador a resolve de novo a
+         cada janela nova — que é como a versão anterior (`30vh`) se
+         mantinha certa sem ninguém cuidar dela. */
+      secao.style.marginTop = vaoDaEstacao(secao)
 
       /* Em qual dos dois caminhos a estação está, de 0 (ida) a 1 (volta).
          É ESTADO, não taxa — ver a nota no `onUpdate`.
@@ -242,8 +376,14 @@ export function Estacoes() {
         invalidateOnRefresh: true,
         /* Abaixo da hero de propósito: ela é presa antes desta no
            documento, e as posições daqui dependem do espaçador dela. Ver a
-           nota em Hero.tsx. */
-        refreshPriority: 1,
+           nota em Hero.tsx.
+
+           Era 1 dos dois lados — ou seja, a intenção estava escrita e não
+           implementada, e a ordem caía no acaso da criação. Com o ATRASO
+           grande isso não aparecia; encolhendo-o, a margem do vão passa a
+           ser quase a altura inteira da hero e medir na ordem errada joga o
+           início da estação para perto de zero. */
+        refreshPriority: 0,
         onUpdate: (self) => {
           const p = self.progress
 

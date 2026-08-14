@@ -21,8 +21,8 @@ import { LANDING } from '@/content/landing'
  */
 export function ApproachSection() {
   return (
-    <section id="video" className="approach" aria-labelledby="approach-title">
-      <div className="approach-stage">
+    <section id="video" className="approach estacao" aria-labelledby="approach-title">
+      <div className="approach-stage estacao-palco">
         <div className="approach-layout">
           <div className="approach-media" role="img" aria-label="Espaço reservado para o vídeo de demonstração da Digi.IA">
             <div className="approach-media__surface">

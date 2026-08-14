@@ -17,6 +17,14 @@
    property comum o fallback teria que ser repetido em cada `var()`, e
    esquecer um único deixaria o bloco invisível para sempre.
    ============================================================ */
+/* O palco é o corpo que viaja. `position: relative` não é enfeite: é o que
+   permite a qualquer decoração da estação (a malha do #recursos, por
+   exemplo) se ancorar NELE e escalar junto, em vez de ficar presa à seção,
+   que não escala. */
+.page .estacao-palco {
+  position: relative;
+}
+
 @property --chegada {
   syntax: '<number>';
   inherits: true;
@@ -65,42 +73,69 @@
    esta calibragem — as durações continuam proporcionais entre si, mas
    deixam de valer os segundos abaixo. */
 
-/* A cascata vive nos últimos 85% do trajeto: nada começa antes de 0,15.
-   O trecho anterior é a viagem crua — só a poeira e o painel se
-   aproximando vazio —, e é de propósito: os quatro blocos se sucedem já
-   a caminho da posição final, e não durante a partida.
+/* A cascata começa em `--chegada` 0: não há mais trecho mudo antes dela.
+   Já houve — os quatro blocos se sucediam só depois da partida, para se
+   lerem "a caminho da posição final" — e isso custava 0,44 tela de tela
+   preta, que somada ao `ATRASO` era o que se sentia como espera. O
+   desenho de agora aceita que o kicker nasça durante a partida.
 
-   O custo é declarado: como o painel não pinta fundo nenhum, painel
-   vazio é tela vazia. Esse trecho mudo vale ~1,26 tela de rolagem — e
-   não os ~0,78 que já estiveram escritos aqui: 0,15 é posição em
-   `--chegada`, e convertê-la em rolagem exige a inversa do smoothstep,
-   não uma multiplicação direta pelo comprimento da chegada.
-   O `--de` do kicker é o dial — subir alonga o silêncio, baixar encurta.
+   Vale saber o que NÃO se ganha zerando isto: como o painel não pinta
+   fundo nenhum, painel vazio é tela vazia, e a viagem parte devagar por
+   desenho. Sobram 263px entre o cérebro sumir e o kicker aparecer — 90 do
+   `ATRASO` (que não pode ir a zero, ver a nota lá) e 173 da curva da
+   chegada. Estes 173 não têm dial próprio, mas encolhem junto com
+   TRAVESSIA, por serem uma fração do pin.
 
-   Os pares abaixo, em telas de rolagem e nos segundos equivalentes a
-   ~1500 px/s numa viewport de 1000px. Rolagem não é relógio: os
-   segundos escalam com a velocidade de quem rola, mas a proporção entre
-   os quatro é fixa. */
+   ATENÇÃO aos números abaixo: eles são telas de rolagem MEDIDAS contra as
+   constantes atuais de Estacoes.tsx (TRAVESSIA 5,5 · CHEGOU 0,7, ou seja
+   uma chegada de 3,85 telas). Já estiveram escritos aqui os valores de uma
+   calibragem anterior — TRAVESSIA 9,89 e chegada de 8,60 telas — e ficaram
+   para trás quando as constantes encolheram, dizendo o dobro do real. Se
+   TRAVESSIA ou CHEGOU mudarem de novo, TODOS os pares abaixo reescalam
+   junto e precisam ser remedidos; as proporções entre os quatro é que são
+   fixas, não os números. */
 
-/* 1,26 → 2,16 tela · 0,90 tela · ~0,6s */
+/* 0,00 → 0,55 tela · 0,55 tela */
 .page .approach-kicker {
-  --de: 0.0581;
+  /* ZERO: o kicker parte junto com a viagem, sem trecho mudo antes dele.
+     Era 0,0581 e desceu por etapas até aqui porque o problema relatado era
+     "fica muito tempo no preto" — e este `--de` era metade dele. A outra
+     metade era o `ATRASO` em Estacoes.tsx, hoje também zero; os dois
+     precisavam cair juntos, porque na tela eram o mesmo preto.
+
+     O que sobrou entre o cérebro sumir e este texto nascer são 263px, dos
+     quais 173 são a partida da própria chegada, lenta por desenho (tamanho
+     = 1/distância), e 90 são o `ATRASO` mínimo. Baixar mais só mexendo
+     aqui é impossível — `--de` já é 0; o que ainda move os 173 é TRAVESSIA.
+
+     Custo assumido: o silêncio entre o kicker e o título subiu para 0,64
+     tela, porque só o primeiro bloco andou. Se isso incomodar, o conserto
+     é descer os outros três `--de` junto — mas aí a composição inteira
+     antecipa e o vídeo deixa de fechar junto com a chegada, que é uma
+     decisão diferente desta.
+
+     A conta para remexer, se um dia voltar a ter folga aqui: o alvo em px
+     vira `p` no pin da estação, `p / CHEGOU` passa pelo smoothstep para
+     virar `--chegada`, e o `--de` é essa `--chegada` menos `0,1354 ×
+     --dur` — os 0,1354 são onde o smoothstep do bloco vale 0,05, o limiar
+     em que o texto começa a ser visto. */
+  --de: 0;
   --dur: 0.0993;
 }
-/* folga de 1,50 tela */
-/* 3,66 → 4,41 tela · 0,75 tela · ~0,5s */
+/* folga de 0,64 tela */
+/* 1,19 → 1,44 tela · 0,24 tela */
 .page .approach-title {
   --de: 0.3889;
   --dur: 0.1299;
 }
-/* folga de 1,50 tela */
-/* 5,91 → 6,95 tela · 1,04 tela · ~0,7s */
+/* folga de 0,48 tela */
+/* 1,92 → 2,26 tela · 0,34 tela */
 .page .approach-description {
   --de: 0.7673;
   --dur: 0.1360;
 }
-/* 6,95 → 8,60 tela · 1,65 tela · ~1,1s — encostado no texto, e fecha
-   junto com a chegada */
+/* 2,26 → 2,80 tela · 0,54 tela — encostado no texto, e fecha junto com a
+   chegada */
 .page .approach-media {
   --de: 0.9033;
   --dur: 0.0967;
@@ -109,7 +144,31 @@
 .page .approach-kicker,
 .page .approach-title,
 .page .approach-description,
-.page .approach-media {
+.page .approach-media,
+.page #recursos .rec-head .tag,
+.page #recursos .rec-head h2,
+.page #recursos .rec-cell,
+.page #demo .demo-lado,
+.page #demo .demo-head .tag,
+.page #demo .demo-head h2,
+.page #demo .demo-head__sub,
+.page #demo .demo,
+.page .credibility-section .stat b,
+.page .credibility-section .stat i,
+.page .credibility-section .cred p,
+.page #faq .sec-head .tag,
+.page #faq .sec-head h2,
+.page #faq details {
+  /* Amplitude do gesto, em variáveis para os corpos mais pesados só
+     trocarem dois números em vez de reescrever o transform inteiro.
+
+     `--vem-x` existe para o bloco poder chegar de LADO, e não só de baixo.
+     O padrão é 0: quase todo bloco de texto sobe, que é o sentido dos
+     grãos da poeira. Quem usa o eixo horizontal são os cards do bento —
+     ver a nota de direções mais abaixo. */
+  --sobe: 32px;
+  --vem-x: 0px;
+  --encolhe: 0.08;
   /* Progresso local cru do bloco dentro da sua janela. O `clamp` é o que
      mantém cada um parado antes da sua vez e assentado depois dela. */
   --u: clamp(0, (var(--chegada) - var(--de)) / var(--dur), 1);
@@ -130,23 +189,136 @@
      porque ele vive no espaço local do palco, que já está sendo
      escalado por fora — de longe estes 54px chegam à tela como 9, e é
      essa compressão que faz o gesto parecer distante. */
-  transform: translate3d(0, calc((1 - var(--t)) * 32px), 0)
-    scale(calc(1 - (1 - var(--t)) * 0.08));
+  transform: translate3d(
+      calc((1 - var(--t)) * var(--vem-x)),
+      calc((1 - var(--t)) * var(--sobe)),
+      0
+    )
+    scale(calc(1 - (1 - var(--t)) * var(--encolhe)));
 }
 
-/* O vídeo é o corpo mais pesado da composição e o último a chegar: vem
-   de mais longe e cresce mais que o texto, para a chegada dele fechar a
-   viagem em vez de só completar a lista. */
-.page .approach-media {
-  transform: translate3d(0, calc((1 - var(--t)) * 64px), 0)
-    scale(calc(1 - (1 - var(--t)) * 0.16));
+/* Os corpos pesados vêm de mais longe e crescem mais que o texto, para a
+   chegada deles FECHAR a viagem em vez de só completar a lista: o vídeo
+   da estação, os cards do bento, a janela da demo e o retrato. */
+.page .approach-media,
+.page #recursos .rec-cell,
+.page #demo .demo,
+.page #demo .demo-lado {
+  --sobe: 64px;
+  --encolhe: 0.16;
 }
+
+/* ---------- Direções do bento ----------
+   Cada célula chega de um lado, e a direção aponta para FORA do centro do
+   grid — é o caminho que ela faria voltando para o lugar. CRIA entra pela
+   esquerda, PLANEJA desce do topo, CALCULA sobe, DNA vem da direita e a
+   faixa do Repertório fecha a composição por baixo, de mais longe.
+
+   Isto reconstrói, em espaço, a coreografia que a entrada por relógio
+   tinha em styles/recursos.css antes de a seção virar estação. Aquela
+   versão morreu junto com o `Reveal`, e a primeira versão desta cascata
+   subia as cinco do mesmo jeito — o que achatava a composição, porque o
+   bento é um grid e não uma lista.
+
+   Nada vaza para os lados: a seção é `overflow: hidden`. */
+.page #recursos .bento {
+  --vem: clamp(52px, 5.4vw, 88px);
+}
+.page #recursos .rec-cell--cria {
+  --vem-x: calc(var(--vem) * -1);
+  --sobe: 0px;
+}
+.page #recursos .rec-cell--planeja {
+  --sobe: calc(var(--vem) * -1);
+}
+.page #recursos .rec-cell--calcula {
+  --sobe: var(--vem);
+}
+.page #recursos .rec-cell--dna {
+  --vem-x: var(--vem);
+  --sobe: 0px;
+}
+.page #recursos .rec-cell--repertorio {
+  --sobe: calc(var(--vem) * 1.35);
+}
+
+/* ============================================================
+   AS OUTRAS QUATRO ESTAÇÕES
+
+   Mesma maquinaria acima; muda só ONDE cada bloco cai na viagem.
+
+   As janelas daqui NÃO são calibradas como as de "Veja funcionando" —
+   aquelas saíram de inverter o smoothstep para render durações pedidas em
+   segundos. Estas são uma progressão regular, com sobreposição de ~0,04
+   entre blocos vizinhos para a cascata fluir em vez de piscar em degraus.
+   Se alguma seção pedir o mesmo cuidado da estação original, o método está
+   documentado lá em cima.
+
+   Todas terminam antes de `--chegada` chegar a 1: o conteúdo precisa estar
+   montado quando a viagem acaba, senão ele ainda estaria nascendo enquanto
+   a estação já começa a partir.
+
+   Hero, #oferta e o rodapé não aparecem aqui e não devem aparecer.
+   ============================================================ */
+
+/* --- O que ela faz — 7 degraus: rótulo, título e as cinco células.
+       A ordem das células é a da leitura do bento, não a do DOM. --- */
+.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
+.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
+.page #recursos .rec-cell--cria { --de: 0.24; --dur: 0.14; }
+.page #recursos .rec-cell--planeja { --de: 0.36; --dur: 0.14; }
+.page #recursos .rec-cell--calcula { --de: 0.48; --dur: 0.14; }
+.page #recursos .rec-cell--dna { --de: 0.60; --dur: 0.14; }
+/* Intervalo um pouco maior antes da faixa: ela é o fecho, não mais um
+   card — mesma intenção do `transition-delay` de 0,66s que existia na
+   entrada por relógio, agora escrita em espaço. */
+.page #recursos .rec-cell--repertorio { --de: 0.74; --dur: 0.16; }
+
+/* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
+       rosto que emerge e ela é a prova, o corpo mais pesado. --- */
+.page #demo .demo-lado { --de: 0; --dur: 0.22; }
+.page #demo .demo-head .tag { --de: 0.16; --dur: 0.12; }
+.page #demo .demo-head h2 { --de: 0.26; --dur: 0.16; }
+.page #demo .demo-head__sub { --de: 0.40; --dur: 0.14; }
+.page #demo .demo { --de: 0.54; --dur: 0.24; }
+
+/* --- +15 anos — 3 degraus. É a estação mais próxima do desenho original:
+       poucos blocos, tipografia monumental, nada clicável. O número tem a
+       janela mais longa porque é ele que carrega a seção. --- */
+.page .credibility-section .stat b { --de: 0; --dur: 0.26; }
+.page .credibility-section .stat i { --de: 0.22; --dur: 0.16; }
+.page .credibility-section .cred p { --de: 0.36; --dur: 0.30; }
+
+/* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
+       ressalva sobre clique em components/sections/Faq.tsx. --- */
+.page #faq .sec-head .tag { --de: 0; --dur: 0.12; }
+.page #faq .sec-head h2 { --de: 0.08; --dur: 0.16; }
+.page #faq details:nth-of-type(1) { --de: 0.26; --dur: 0.14; }
+.page #faq details:nth-of-type(2) { --de: 0.35; --dur: 0.14; }
+.page #faq details:nth-of-type(3) { --de: 0.44; --dur: 0.14; }
+.page #faq details:nth-of-type(4) { --de: 0.53; --dur: 0.14; }
+.page #faq details:nth-of-type(5) { --de: 0.62; --dur: 0.14; }
+.page #faq details:nth-of-type(6) { --de: 0.71; --dur: 0.14; }
 
 @media (prefers-reduced-motion: reduce) {
   .page .approach-kicker,
   .page .approach-title,
   .page .approach-description,
-  .page .approach-media {
+  .page .approach-media,
+  .page #recursos .rec-head .tag,
+  .page #recursos .rec-head h2,
+  .page #recursos .rec-cell,
+  .page #demo .demo-lado,
+  .page #demo .demo-head .tag,
+  .page #demo .demo-head h2,
+  .page #demo .demo-head__sub,
+  .page #demo .demo,
+  .page .credibility-section .stat b,
+  .page .credibility-section .stat i,
+  .page .credibility-section .cred p,
+  .page #faq .sec-head .tag,
+  .page #faq .sec-head h2,
+  .page #faq details {
     opacity: 1;
     transform: none;
   }

@@ -1,6 +1,5 @@
 import { CalculoRoi } from '@/components/sections/CalculoRoi'
 import { PostGerado } from '@/components/sections/PostGerado'
-import { Reveal } from '@/components/ui/Reveal'
 import { LANDING } from '@/content/landing'
 
 const F = LANDING.features
@@ -22,17 +21,18 @@ const F = LANDING.features
  */
 export function WhatItDoes() {
   return (
-    <section id="recursos" aria-labelledby="recursos-titulo">
-      <Reveal className="rec-head">
+    <section id="recursos" className="estacao" aria-labelledby="recursos-titulo">
+      <div className="estacao-palco">
+      <div className="rec-head">
         <div>
           <p className="tag">{F.eyebrow}</p>
           <h2 id="recursos-titulo">
             {F.title} <em>{F.titleHighlight}</em>
           </h2>
         </div>
-      </Reveal>
+      </div>
 
-      <Reveal className="bento">
+      <div className="bento">
         <article className="rec-cell rec-cell--cria">
           <span className="verb">{F.cria.verb}</span>
           <h3>{F.cria.title}</h3>
@@ -96,7 +96,8 @@ export function WhatItDoes() {
             ))}
           </ul>
         </article>
-      </Reveal>
+      </div>
+      </div>
     </section>
   )
 }

@@ -41,22 +41,64 @@ export const mergulho = {
 }
 
 /**
- * Fração do mergulho em que a centralização termina e a escala começa
- * (mesmo ponto — ver a nota sobre `desloca` em Hero.tsx: `0,34 * FATOR`,
- * onde FATOR = 1,6/4,0). Exportada daqui porque HeroObject.tsx também
- * precisa dela: a partir deste ponto o objeto deixa de ser um cérebro
- * pequeno e apertável e passa a ser uma imagem que já está crescendo além
- * da tela, então segurar, a paralaxe do cursor e o flutuar ocioso são
- * desligados — do contrário competiriam com a própria escala. Uma
- * constante fixada duas vezes é a mesma dessincronia que o `cedeEm` já
- * ensinou a evitar.
+ * Quanto o pin da hero segura ALÉM do mergulho original de 1,6 telas.
+ *
+ * Era 2,4 (pin de 4,0 telas). Baixou para 1,9 porque o movimento inteiro —
+ * do instante em que o cérebro começa a ir para o centro até ele chegar ao
+ * tamanho final — estava longo demais. Encurtar por aqui, e não pelas
+ * durações da timeline, é o que mantém a proporção interna intacta: `FATOR`
+ * reabsorve a mudança e a fase de centralização continua ocupando os mesmos
+ * ~490px de rolagem que sempre ocupou. Só o crescimento encolhe.
  */
-export const ESCALA_EM = 0.136
+export const SEGURA = 1.9
+
+/** Comprimento do pin da hero, em telas. */
+export const TOTAL = 1.6 + SEGURA
+
+/**
+ * Comprime as durações do texto e da centralização para o pin alongado,
+ * mantendo as duas no mesmo ponto FÍSICO de rolagem qualquer que seja
+ * `TOTAL` — uma duração de `0,34 * FATOR` num pin de `TOTAL` telas mede
+ * `0,34 * 1,6` telas de rolagem, e o `TOTAL` se cancela.
+ *
+ * É por isso que mexer em `SEGURA` não desloca o começo do mergulho: só o
+ * trecho de crescimento, que é o que sobra, muda de comprimento.
+ */
+export const FATOR = 1.6 / TOTAL
+
+/**
+ * Fração do mergulho em que a centralização termina e a escala começa
+ * (mesmo ponto — ver a nota sobre `desloca` em Hero.tsx).
+ *
+ * DERIVADA, não digitada. Ela vale `0,34 * FATOR`, e enquanto foi um
+ * literal (`0.136`, casado com `FATOR = 1,6/4,0`) qualquer mudança em
+ * `SEGURA` a deixava mentindo em silêncio — o comentário que estava aqui
+ * alertava contra "uma constante fixada duas vezes" sendo exatamente isso.
+ * Agora `SEGURA` é o único dial: os dois valores mudam juntos por
+ * construção.
+ *
+ * Exportada porque HeroObject.tsx também precisa dela: a partir deste
+ * ponto o objeto deixa de ser um cérebro pequeno e apertável e passa a ser
+ * uma imagem que já está crescendo além da tela, então segurar, a paralaxe
+ * do cursor e o flutuar ocioso são desligados — do contrário competiriam
+ * com a própria escala.
+ */
+export const ESCALA_EM = 0.34 * FATOR
 
 /**
  * Fração do mergulho em que a seção inteira começa a apagar, revelando a
- * poeira cósmica de verdade atrás do cérebro (mesmo ponto — ver a nota
- * sobre `REVELA_POEIRA_INICIO`/`TOTAL` em Hero.tsx: `3,5 / 4,0`).
+ * poeira cósmica de verdade atrás do cérebro.
+ *
+ * E, desde agora, o ponto em que o tween de ESCALA termina — o cérebro
+ * chega ao tamanho final aqui, e só então começa a sumir. Antes ele crescia
+ * e apagava ao mesmo tempo, os dois acabando juntos no fim do pin; na
+ * prática isso significava que ele nunca era VISTO no tamanho cheio, porque
+ * a escala anda no relógio atrasado do `scrub` e a opacidade no relógio cru
+ * da rolagem (ver o `onUpdate` em Hero.tsx). A opacidade chegava a zero
+ * primeiro e os últimos múltiplos de escala rodavam invisíveis. Terminar o
+ * crescimento aqui dá ao `scrub` a folga da janela de dissolução inteira
+ * para alcançar — é essa folga que faz os 150× aparecerem.
+ *
  * Exportada daqui pelo mesmo motivo que `ESCALA_EM`: é o prazo que
  * `HeroEstrelas.tsx` tem. O que ele fizer com o grão ao longo do
  * mergulho precisa estar TERMINADO quando esta fração chega — o que
@@ -66,17 +108,21 @@ export const ESCALA_EM = 0.136
 export const REVELA_EM = 0.875
 
 /**
- * Fração em que a seção terminou de apagar (`4,0 / 4,0` — o fim do pin).
+ * Fração em que a seção terminou de apagar — o fim do pin.
  *
- * A janela era 0,1 tela (3,6→3,7), foi para 0,3 (3,5→3,8) e agora ocupa a
- * folga inteira até o fim do pin (3,5→4,0). `TOTAL` nunca mudou, então
- * nada disso muda as seções seguintes.
+ * A janela era 0,1 tela, foi para 0,3 e agora ocupa a folga inteira até o
+ * fim do pin: de `REVELA_EM` a aqui, 1/8 do mergulho.
  *
- * Terminar exatamente no fim do pin tem uma consequência boa além da
- * duração: o tween de escala do cérebro também termina ali. Antes a seção
- * ficava transparente em 0,95, onde a escala vale ~67× de 80 — os últimos
- * 13× rodavam com o cérebro já invisível. Agora o alvo de escala é o
- * tamanho que se vê de verdade.
+ * Terminar exatamente no fim do pin é o que dá a garantia dura: a opacidade
+ * é escrita a partir do progresso CRU (ver o `onUpdate` em Hero.tsx), então
+ * ela chega a zero no mesmo quadro em que o pin solta, em qualquer
+ * velocidade de rolagem. Sem isso via-se o cérebro semitransparente
+ * deslizando junto com a seção seguinte.
+ *
+ * O que esta janela passou a ser, além disso: a PISTA DE POUSO da escala.
+ * O crescimento acaba em `REVELA_EM`, e o atraso do `scrub` é consumido
+ * aqui dentro — é neste 1/8 que o cérebro termina de chegar aos 150× e é
+ * efetivamente visto neles. Encurtá-la volta a esconder o tamanho final.
  *
  * É dentro desta janela que a FOTOMETRIA do núcleo converge, e ela não
  * pode convergir junto com a geometria: enquanto o cérebro cobre a tela o
