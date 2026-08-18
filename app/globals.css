@@ -12,6 +12,7 @@
 /* Depois de conversion.css: a coreografia da chegada precisa vencer as
    regras de layout da approach, que moram lá. */
 @import '../styles/estacao.css';
+@import '../styles/fecho.css';
 @import '../styles/recursos.css';
 @import '../styles/responsive.css';
 @import '../styles/legal.css';

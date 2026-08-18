@@ -474,9 +474,6 @@ body::after {
   justify-content: center;
   overflow: hidden;
   color: var(--paper);
-  background:
-    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
 
 .page #oferta::before {
@@ -793,10 +790,6 @@ body::after {
   margin: 0;
   padding: 72px var(--world-edge) 42px;
   color: var(--paper);
-  border-color: rgba(248, 240, 255, 0.12);
-  background:
-    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
 
 .page .site-footer .foot-top,

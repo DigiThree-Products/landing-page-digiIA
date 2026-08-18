@@ -1,0 +1,26 @@
+/* ============================================================
+   FECHO — o CTA e o rodapé como um campo só
+   ============================================================ */
+
+/* Os fallbacks reproduzem exatamente a declaração antiga (`125deg` e `76%`).
+   Sem JS o campo continua contínuo — só deixa de preservar o CTA ao pé da
+   letra, porque a porcentagem passa a ser relativa à caixa dos dois. Degrada
+   para "um pouco diferente", nunca para "quebrado". */
+.fecho {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(70% var(--oferta-h, 100svh) at 8% 0%,
+      rgba(205, 130, 255, 0.34), transparent 58%),
+    linear-gradient(var(--fecho-angulo, 125deg),
+      var(--abyss), var(--violet) var(--fecho-parada, 76%));
+}
+
+/* Acima do arco (z-index 0, abaixo). Depender da ordem do DOM funcionaria
+   hoje e inverteria em silêncio se alguém reordenasse. */
+.fecho > #oferta,
+.fecho > .site-footer {
+  position: relative;
+  z-index: 1;
+}
