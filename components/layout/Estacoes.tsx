@@ -163,7 +163,7 @@ const PARTIU = 0.75
  * Medido a partir do FIM DO PIN da hero, que é onde o cérebro some — ver
  * `caudaDaHeroAcima`. Antes era medido a partir do fim do BOX dela no
  * documento, e a diferença entre as duas coisas era uma tela inteira; é por
- * isso que `vaoDepoisDaCauda` desconta a cauda.
+ * isso que `vaoDaEstacao` desconta a cauda.
  *
  * Hoje é 0,1, e o caminho foi 0,3 → 0,45 → 0,1. O que mudou não foi o
  * gosto: foi descobrir que o vão era só METADE do problema. Entre o cérebro
@@ -212,6 +212,23 @@ const ATRASO = 0.1
  *
  * O ATRASO é somado DEPOIS dessa cauda, então sem o desconto o vão real
  * vale `cauda + ATRASO`. Descontar faz o ATRASO significar o que ele diz.
+ *
+ * NÃO SE APLICA AO `.fecho`, e a tentação é grande — tentado e revertido.
+ * Depois da última estação sobra ~1 tela de rolagem sem nada na frente, e
+ * ela parece desperdício puro, no pior lugar possível: logo antes do CTA.
+ * Não é. Entre duas estações o desconto funciona porque a que CHEGA é
+ * invisível enquanto a caixa dela entra na tela — nasce em ESCALA_LONGE
+ * (0,16) e OPACIDADE_LONGE (0,1). A oferta não tem chegada: ela é opaca no
+ * instante em que a caixa encosta na tela. Descontar a cauda das perguntas
+ * puxa a oferta para dentro da janela em que a estação ainda está em cena,
+ * e as duas se sobrepõem — medido varrendo 121 posições de rolagem, 7
+ * posições com a FAQ acima de 0,05 de opacidade e a oferta já visível, com
+ * a pior delas em opacidade 1,0. Sem o desconto: zero.
+ *
+ * Ou seja, aquela tela é a PISTA que segura a oferta fora de cena enquanto
+ * a última estação parte, e só parece vazia porque nada acontece nela.
+ * Reclamá-la exigiria dar à oferta uma chegada própria — decisão de
+ * desenho sobre o bloco de conversão, não ajuste de layout.
  *
  * VALIA SÓ PARA A HERO, e esse era o buraco: entre duas estações a função
  * devolvia 0 e a cauda inteira ficava no caminho. Medido com as cinco
@@ -267,15 +284,10 @@ function caudaAcima(secao: HTMLElement): { px: number; ehHero: boolean } {
  * ramo mobile da hero já pagava. Uniformizar as alturas das estações
  * tornaria a fórmula possível — mas exigiria fazer "Perguntas" caber em
  * uma tela, que é decisão de desenho e não de layout.
- *
- * Chamava-se `vaoDaEstacao` e serve a QUALQUER elemento que venha logo
- * depois de um vizinho preso — o que inclui o `.fecho`, que não é estação e
- * mesmo assim herda a cauda morta das perguntas. O nome antigo descrevia
- * quem chamava, não o que a função faz.
  */
-function vaoDepoisDaCauda(elemento: HTMLElement): string {
+function vaoDaEstacao(secao: HTMLElement): string {
   const folga = `${ATRASO * 100}vh`
-  const { px, ehHero } = caudaAcima(elemento)
+  const { px, ehHero } = caudaAcima(secao)
   if (!px) return folga
   return ehHero && window.matchMedia('(min-width: 981px)').matches
     ? `calc(${folga} - 100svh)`
@@ -370,7 +382,7 @@ export function Estacoes() {
          fotografado é uma FÓRMULA, e o navegador a resolve de novo a
          cada janela nova — que é como a versão anterior (`30vh`) se
          mantinha certa sem ninguém cuidar dela. */
-      secao.style.marginTop = vaoDepoisDaCauda(secao)
+      secao.style.marginTop = vaoDaEstacao(secao)
 
       /* Em qual dos dois caminhos a estação está, de 0 (ida) a 1 (volta).
          É ESTADO, não taxa — ver a nota no `onUpdate`.
@@ -503,33 +515,7 @@ export function Estacoes() {
       })
     })
 
-    /* A última estação também deixa cauda morta, e ela cai em cima da
-       OFERTA. As estações se levantam sobre a cauda da vizinha; o `.fecho`
-       não é estação, então não se levantava — e o resultado era rolagem em
-       branco no pior lugar possível de todos, imediatamente antes do CTA.
-       Medido numa janela de 900px: 900px, uma tela inteira de nada entre a
-       última pergunta e a oferta.
-
-       `refreshInit` e não `refresh`: a margem tem de estar aplicada ANTES
-       de o ScrollTrigger medir. Depois, ela deslocaria o documento com as
-       posições já calculadas e desencontraria o fim do pin das perguntas do
-       começo do fecho — que é justamente a emenda que este vão existe para
-       fechar. `caudaAcima` foi escrita para funcionar nos dois estados do
-       DOM, com e sem os espaçadores de pé, e é isso que permite chamá-la de
-       dentro do refresh.
-
-       Sem script ou com movimento reduzido nada disto roda, e é o certo:
-       não havendo pin, não há cauda, e o fecho já encosta na FAQ sozinho. */
-    const fecho = document.querySelector<HTMLElement>('.fecho')
-    const alinhaFecho = () => {
-      if (fecho) fecho.style.marginTop = vaoDepoisDaCauda(fecho)
-    }
-    alinhaFecho()
-    ScrollTrigger.addEventListener('refreshInit', alinhaFecho)
-
     return () => {
-      ScrollTrigger.removeEventListener('refreshInit', alinhaFecho)
-      if (fecho) fecho.style.marginTop = ''
       gatilhos.forEach((g) => g.kill())
       secoes.forEach((secao) => {
         secao.style.marginTop = ''
