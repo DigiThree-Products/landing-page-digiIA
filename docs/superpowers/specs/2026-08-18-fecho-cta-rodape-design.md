@@ -99,18 +99,23 @@ passa a ser o único a pintar. `#oferta` e `.site-footer` ficam transparentes.
   position: relative;
   isolation: isolate;
   overflow: hidden;
-
-  /* sin(125°) e −cos(125°). Moram encostados no `125deg` de propósito:
-     são a mesma decisão escrita duas vezes, e separá-los deixaria fácil
-     mudar o ângulo sem corrigir a projeção. */
-  --l-cta: calc(var(--oferta-w, 100vw) * 0.81915 + var(--oferta-h, 100svh) * 0.57358);
-
   background:
     radial-gradient(70% var(--oferta-h, 100svh) at 8% 0%,
                     rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) calc(var(--l-cta) * 0.76));
+    linear-gradient(var(--fecho-angulo, 125deg),
+                    var(--abyss), var(--violet) var(--fecho-parada, 76%));
 }
 ```
+
+O CSS não faz conta nenhuma. O ângulo e a parada chegam prontos, publicados por
+`lib/fecho.ts` através do `Fecho.tsx` — inclusive o próprio `125deg`. Uma versão
+anterior deste spec deixava a trigonometria em `calc()` no CSS, encostada no
+ângulo, para que não divergissem. Publicar os dois da mesma fonte é mais forte:
+em vez de confiar na proximidade, elimina a segunda cópia, e ainda torna a
+geometria testável em `lib/fecho.test.ts`. É o mesmo arranjo de `lib/grao.ts`.
+
+Os fallbacks `125deg`/`76%` reproduzem exatamente a declaração antiga, então
+sem JS o campo continua contínuo — só deixa de preservar o CTA ao pé da letra.
 
 O raio vertical do brilho radial também deixa de ser `100%`: na caixa estendida
 `100%` seria a altura dos dois somados e o halo cresceria. Amarrado a
@@ -119,7 +124,14 @@ O raio vertical do brilho radial também deixa de ser `100%`: na caixa estendida
 ### A medida
 
 `components/sections/Fecho.tsx`, client, mede o `#oferta` com `ResizeObserver` e
-escreve `--oferta-w` e `--oferta-h` no próprio envelope.
+publica três variáveis no próprio envelope: `--oferta-h` (para o halo e o arco),
+`--fecho-parada` (a parada do violeta em pixels, de `paradaDoVioleta()`) e
+`--fecho-angulo` (de `ANGULO`).
+
+A geometria em si mora em `lib/fecho.ts`, puro — sem DOM, sem React, sem estado
+—, que é o que permite travá-la em `lib/fecho.test.ts`. O teste central fixa a
+invariância provada acima: se a distância deixar de ser independente da caixa, o
+CTA parou de renderizar igual e o desenho perdeu a base.
 
 Medir é necessário, não preguiça: `conversion.css:140` dá ao `#oferta`
 `min-height: 115svh` **e** recuos em `clamp()`, e a altura real observada
@@ -184,9 +196,11 @@ silêncio.
 fallbacks. Como o fecho está a ~24 telas de rolagem do topo, ninguém o vê nesse
 estado — mas a queda precisa ser suave, não um flash.
 
-**Ângulo acoplado.** As constantes `0,81915`/`0,57358` valem só para `125deg`.
-O comentário no CSS existe para isso; se o ângulo mudar sem elas, o CTA muda de
-aparência em silêncio.
+**Ângulo acoplado — resolvido.** A trigonometria vale só para `125deg`, então
+uma segunda cópia do ângulo em outro arquivo seria um jeito silencioso de
+quebrar o CTA. Por isso não existe segunda cópia: `ANGULO` mora em
+`lib/fecho.ts`, e até o `125deg` do CSS chega de lá, via `--fecho-angulo`. Mudar
+o ângulo num lugar só passa a estar correto por construção.
 
 ## Verificação
 
