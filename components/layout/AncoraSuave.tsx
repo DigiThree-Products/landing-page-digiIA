@@ -61,9 +61,35 @@ export function AncoraSuave() {
          (styles/shell.css) — a altura do cabeçalho fixo. Ignorá-lo
          encostaria o topo da seção embaixo do menu. */
       const margem = Number.parseFloat(getComputedStyle(destino).scrollMarginTop) || 0
+
+      /* A CAIXA que mede a posição não é sempre o destino — mesma razão de
+         `caudaAcima` em Estacoes.tsx. `#cadastro` (a hero) e as estações
+         (`#video`, `#recursos`, `#demo`, `#faq`) são presas por scroll, e o
+         GSAP aplica ao elemento pinado um `transform: translateY(...)` do
+         tamanho do próprio pin assim que ele é solto — é o que o mantém no
+         lugar certo do fluxo depois de a rolagem passar por cima dele.
+
+         `getBoundingClientRect()` do destino inclui esse transform, e uma
+         vez que o pin já foi visitado ele fica ali — não reseta com a
+         rolagem. Medido: clicar na logo depois de rolar até o FAQ mandava
+         para y=2340, não para y=0 — exatamente o FIM do pin da hero
+         (TOTAL × vh), o instante em que o cérebro termina de crescer e a
+         hero já está com opacidade 0. "Ir para o início" virava "ir para
+         onde o mergulho acaba".
+
+         O `.pin-spacer` que o GSAP insere é quem sobra: um placeholder
+         comum no fluxo do documento, nunca transformado, sempre na
+         posição verdadeira de chegada da seção. Medir por ele é o mesmo
+         truque que `caudaAcima` já usa para as mesmas seções, pelo mesmo
+         motivo — e por isso ele já existe em toda estação, sem custo
+         adicional aqui. Alvos sem pin (`#oferta`) não têm `.pin-spacer`
+         ancestral, e o `?? destino` cai de volta no comportamento de
+         sempre. */
+      const caixa = destino.closest<HTMLElement>('.pin-spacer') ?? destino
+
       const teto = Math.max(0, raiz.scrollHeight - window.innerHeight)
       const inicio = window.scrollY
-      const fim = Math.min(teto, Math.max(0, destino.getBoundingClientRect().top + inicio - margem))
+      const fim = Math.min(teto, Math.max(0, caixa.getBoundingClientRect().top + inicio - margem))
       const distancia = fim - inicio
 
       const encerra = () => {
