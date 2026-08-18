@@ -535,7 +535,19 @@ body::after {
    ============================================================ */
 .page .credibility-section {
   width: 100%;
-  min-height: 72svh;
+  /* 100svh, como .approach, #recursos, #demo e #faq — as outras quatro
+     estações. Os 72svh são de antes de esta seção virar estação
+     (commit a1976df, "respiro claro" de uma faixa em fluxo normal); quando
+     ela passou a ser presa e a chegar de longe (9037aa6), ninguém subiu
+     este valor junto.
+
+     O `place-items: center` só centraliza DENTRO da própria caixa da
+     seção — e o GSAP fixa essa caixa do tamanho que o CSS manda, sem
+     esticá-la para a tela. Com 72svh a caixa ficava presa a 72% da altura
+     da viewport, ancorada no topo ('top top'), e o conteúdo centralizava
+     nesse retângulo curto: parado visivelmente perto do topo, com ~28% de
+     tela vazia sobrando embaixo, em vez de no centro real da tela. */
+  min-height: 100svh;
   margin: 0;
   padding: clamp(90px, 13vh, 150px) var(--world-edge);
   display: grid;
