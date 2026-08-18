@@ -318,12 +318,8 @@ details[open] .faq-body {
 
 /* --- Rodapé --- */
 .site-footer {
-  border-top: 1px solid var(--rule);
   padding-block: 44px 60px;
   margin-top: clamp(70px, 10vh, 120px);
-  background:
-    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
 .foot-top {
   display: flex;

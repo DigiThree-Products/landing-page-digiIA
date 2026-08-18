@@ -1,0 +1,43 @@
+/* ============================================================
+   FECHO — o CTA e o rodapé como um campo só
+   ============================================================ */
+
+/* Os fallbacks reproduzem exatamente a declaração antiga (`125deg` e `76%`).
+   Sem JS o campo continua contínuo — só deixa de preservar o CTA ao pé da
+   letra, porque a porcentagem passa a ser relativa à caixa dos dois. Degrada
+   para "um pouco diferente", nunca para "quebrado". */
+.fecho {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(70% var(--oferta-h, 100svh) at 8% 0%,
+      rgba(205, 130, 255, 0.34), transparent 58%),
+    linear-gradient(var(--fecho-angulo, 125deg),
+      var(--abyss), var(--violet) var(--fecho-parada, 76%));
+}
+
+/* Acima do arco (z-index 0, abaixo). Depender da ordem do DOM funcionaria
+   hoje e inverteria em silêncio se alguém reordenasse. */
+.fecho > #oferta,
+.fecho > .site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* O arco. Era `inset: -18%` no #oferta; aqui as medidas verticais são
+   amarradas a --oferta-h porque a caixa do envelope é mais alta, e `-18%`
+   dela desenharia um anel maior. Estas contas reproduzem o anel de hoje:
+   -18% de cima, 136% de altura (18% + 100% + 18%). */
+.fecho::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: -18%;
+  width: 136%;
+  top: calc(var(--oferta-h, 100svh) * -0.18);
+  height: calc(var(--oferta-h, 100svh) * 1.36);
+  border: clamp(60px, 8vw, 120px) solid rgba(248, 240, 255, 0.04);
+  border-radius: 50%;
+  transform: translate(38%, 30%);
+}

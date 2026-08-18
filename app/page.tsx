@@ -9,6 +9,7 @@ import { Demo } from '@/components/sections/Demo'
 import { Offer } from '@/components/sections/Offer'
 import { Credibility } from '@/components/sections/Credibility'
 import { Faq } from '@/components/sections/Faq'
+import { Fecho } from '@/components/sections/Fecho'
 import { SiteFooter } from '@/components/sections/SiteFooter'
 import { LANDING } from '@/content/landing'
 
@@ -38,8 +39,10 @@ export default function Home() {
           <Demo />
           <Credibility />
           <Faq />
-          <Offer />
-          <SiteFooter />
+          <Fecho>
+            <Offer />
+            <SiteFooter />
+          </Fecho>
         </div>
       </div>
     </WaitlistModalProvider>
