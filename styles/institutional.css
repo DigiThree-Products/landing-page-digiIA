@@ -476,16 +476,6 @@ body::after {
   color: var(--paper);
 }
 
-.page #oferta::before {
-  content: '';
-  position: absolute;
-  inset: -18%;
-  z-index: 0;
-  border: clamp(60px, 8vw, 120px) solid rgba(248, 240, 255, 0.04);
-  border-radius: 50%;
-  transform: translate(38%, 30%);
-}
-
 .page #oferta>.rv {
   position: relative;
   z-index: 2;
