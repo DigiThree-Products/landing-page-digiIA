@@ -163,7 +163,7 @@ const PARTIU = 0.75
  * Medido a partir do FIM DO PIN da hero, que é onde o cérebro some — ver
  * `caudaDaHeroAcima`. Antes era medido a partir do fim do BOX dela no
  * documento, e a diferença entre as duas coisas era uma tela inteira; é por
- * isso que `vaoDaEstacao` desconta a cauda.
+ * isso que `vaoDepoisDaCauda` desconta a cauda.
  *
  * Hoje é 0,1, e o caminho foi 0,3 → 0,45 → 0,1. O que mudou não foi o
  * gosto: foi descobrir que o vão era só METADE do problema. Entre o cérebro
@@ -267,10 +267,15 @@ function caudaAcima(secao: HTMLElement): { px: number; ehHero: boolean } {
  * ramo mobile da hero já pagava. Uniformizar as alturas das estações
  * tornaria a fórmula possível — mas exigiria fazer "Perguntas" caber em
  * uma tela, que é decisão de desenho e não de layout.
+ *
+ * Chamava-se `vaoDaEstacao` e serve a QUALQUER elemento que venha logo
+ * depois de um vizinho preso — o que inclui o `.fecho`, que não é estação e
+ * mesmo assim herda a cauda morta das perguntas. O nome antigo descrevia
+ * quem chamava, não o que a função faz.
  */
-function vaoDaEstacao(secao: HTMLElement): string {
+function vaoDepoisDaCauda(elemento: HTMLElement): string {
   const folga = `${ATRASO * 100}vh`
-  const { px, ehHero } = caudaAcima(secao)
+  const { px, ehHero } = caudaAcima(elemento)
   if (!px) return folga
   return ehHero && window.matchMedia('(min-width: 981px)').matches
     ? `calc(${folga} - 100svh)`
@@ -365,7 +370,7 @@ export function Estacoes() {
          fotografado é uma FÓRMULA, e o navegador a resolve de novo a
          cada janela nova — que é como a versão anterior (`30vh`) se
          mantinha certa sem ninguém cuidar dela. */
-      secao.style.marginTop = vaoDaEstacao(secao)
+      secao.style.marginTop = vaoDepoisDaCauda(secao)
 
       /* Em qual dos dois caminhos a estação está, de 0 (ida) a 1 (volta).
          É ESTADO, não taxa — ver a nota no `onUpdate`.
@@ -498,7 +503,33 @@ export function Estacoes() {
       })
     })
 
+    /* A última estação também deixa cauda morta, e ela cai em cima da
+       OFERTA. As estações se levantam sobre a cauda da vizinha; o `.fecho`
+       não é estação, então não se levantava — e o resultado era rolagem em
+       branco no pior lugar possível de todos, imediatamente antes do CTA.
+       Medido numa janela de 900px: 900px, uma tela inteira de nada entre a
+       última pergunta e a oferta.
+
+       `refreshInit` e não `refresh`: a margem tem de estar aplicada ANTES
+       de o ScrollTrigger medir. Depois, ela deslocaria o documento com as
+       posições já calculadas e desencontraria o fim do pin das perguntas do
+       começo do fecho — que é justamente a emenda que este vão existe para
+       fechar. `caudaAcima` foi escrita para funcionar nos dois estados do
+       DOM, com e sem os espaçadores de pé, e é isso que permite chamá-la de
+       dentro do refresh.
+
+       Sem script ou com movimento reduzido nada disto roda, e é o certo:
+       não havendo pin, não há cauda, e o fecho já encosta na FAQ sozinho. */
+    const fecho = document.querySelector<HTMLElement>('.fecho')
+    const alinhaFecho = () => {
+      if (fecho) fecho.style.marginTop = vaoDepoisDaCauda(fecho)
+    }
+    alinhaFecho()
+    ScrollTrigger.addEventListener('refreshInit', alinhaFecho)
+
     return () => {
+      ScrollTrigger.removeEventListener('refreshInit', alinhaFecho)
+      if (fecho) fecho.style.marginTop = ''
       gatilhos.forEach((g) => g.kill())
       secoes.forEach((secao) => {
         secao.style.marginTop = ''
