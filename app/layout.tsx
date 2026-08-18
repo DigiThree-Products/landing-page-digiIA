@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { SITE, dadosEstruturados } from '@/config/site'
+import { AncoraSuave } from '@/components/layout/AncoraSuave'
 import { Analytics } from '@/components/layout/Analytics'
 import '@fontsource-variable/sora'
 import '@fontsource-variable/instrument-sans'
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
+        <AncoraSuave />
         <Analytics />
       </body>
     </html>
