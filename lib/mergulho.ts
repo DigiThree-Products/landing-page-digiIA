@@ -43,14 +43,28 @@ export const mergulho = {
 /**
  * Quanto o pin da hero segura ALÉM do mergulho original de 1,6 telas.
  *
- * Era 2,4 (pin de 4,0 telas). Baixou para 1,9 porque o movimento inteiro —
- * do instante em que o cérebro começa a ir para o centro até ele chegar ao
- * tamanho final — estava longo demais. Encurtar por aqui, e não pelas
- * durações da timeline, é o que mantém a proporção interna intacta: `FATOR`
- * reabsorve a mudança e a fase de centralização continua ocupando os mesmos
- * ~490px de rolagem que sempre ocupou. Só o crescimento encolhe.
+ * O caminho foi 2,4 → 1,9 → 1,0 (pins de 4,0, 3,5 e 2,6 telas), sempre pelo
+ * mesmo motivo: o movimento inteiro — do instante em que o cérebro começa a
+ * ir para o centro até ele chegar ao tamanho final — estava longo demais de
+ * rolar. Encurtar por aqui, e não pelas durações da timeline, é o que mantém
+ * a proporção interna intacta: `FATOR` reabsorve a mudança e a fase de
+ * centralização continua ocupando os mesmos ~490px de rolagem que sempre
+ * ocupou.
+ *
+ * "Só o crescimento encolhe" era verdade enquanto `REVELA_EM` foi 0,875, e
+ * deixou de ser: aquela fração é CRUA, não passa pelo `FATOR`, então a
+ * janela de dissolução — que é a pista de pouso onde o cérebro é de fato
+ * visto no tamanho cheio — encolhia junto, calada. Ela agora é defendida
+ * explicitamente (ver `REVELA_EM`), e o corte sai inteiro do crescimento,
+ * que é transporte:
+ *
+ *   centralização   0,54 tela   (preservada pelo `FATOR`)
+ *   crescimento     1,62 tela   (era 2,52 — absorveu o corte inteiro)
+ *   pista de pouso  0,44 tela   (preservada por `REVELA_EM`)
+ *                   ─────────
+ *                   2,60 telas
  */
-export const SEGURA = 1.9
+export const SEGURA = 1
 
 /** Comprimento do pin da hero, em telas. */
 export const TOTAL = 1.6 + SEGURA
@@ -86,6 +100,21 @@ export const FATOR = 1.6 / TOTAL
 export const ESCALA_EM = 0.34 * FATOR
 
 /**
+ * A pista de pouso, em TELAS de rolagem — o comprimento físico da janela de
+ * dissolução, que `REVELA_EM` converte em fração.
+ *
+ * Escrita em telas e não em fração porque é assim que ela precisa ser
+ * pensada: é o espaço em que o `scrub` (~1,1s de atraso) tem de alcançar a
+ * escala para o cérebro ser visto nos 150× antes de apagar. Esse prazo é
+ * medido em rolagem percorrida, não em fração de um pin cujo tamanho muda.
+ *
+ * 0,4375 é o valor que a janela sempre teve na prática — é quanto media o
+ * literal 0,875 num pin de 3,5 telas. Mantido ao encurtar o pin para 2,6,
+ * que é o ponto de existir esta constante.
+ */
+export const PISTA = 0.4375
+
+/**
  * Fração do mergulho em que a seção inteira começa a apagar, revelando a
  * poeira cósmica de verdade atrás do cérebro.
  *
@@ -104,8 +133,18 @@ export const ESCALA_EM = 0.34 * FATOR
  * mergulho precisa estar TERMINADO quando esta fração chega — o que
  * ainda estivesse mudando aqui viraria mais um eixo saltando junto com a
  * dissolução, e a travessia voltaria a ler como corte.
+ *
+ * DERIVADA de `PISTA`, e não mais o literal 0,875 que ficou aqui enquanto o
+ * pin mediu 3,5 telas. A diferença só aparece quando `SEGURA` muda: sendo
+ * fração crua, 0,875 não passa pelo `FATOR`, então encurtar o pin encolhia a
+ * janela de dissolução em silêncio — e ela é justamente onde o `scrub` gasta
+ * o atraso dele e o cérebro é VISTO nos 150×. Encurtando o pin de 3,5 para
+ * 2,6, o literal teria levado a pista de 0,44 para 0,33 tela e escondido de
+ * volta o tamanho final, que é exatamente o que a nota em `REVELA_FIM_EM`
+ * avisa para não fazer. Escrita assim, a pista tem comprimento FÍSICO fixo e
+ * quem encolhe é o crescimento, que é o transporte.
  */
-export const REVELA_EM = 0.875
+export const REVELA_EM = 1 - PISTA / TOTAL
 
 /**
  * Fração em que a seção terminou de apagar — o fim do pin.

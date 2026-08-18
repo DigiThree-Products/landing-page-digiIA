@@ -96,51 +96,90 @@ const RE_TAXA = 0.06
  * abaixo só redistribuiria esse mesmo pedaço. Presa, a chegada dura o
  * quanto a gente quiser.
  *
- * Caiu de 5,5 para 4,0 porque a viagem estava longa demais de rolar. É o
- * dial mais poderoso da seção: ele escala TUDO junto — a chegada, a
- * travada, a partida, as janelas dos quatro blocos e até o preto do começo,
- * porque aquele trecho também é uma fração deste pin (263px hoje, eram 327
- * em 5,5). Mexer aqui invalida qualquer número em telas escrito em
- * styles/estacao.css: as proporções entre os blocos sobrevivem, os valores
- * absolutos não. Estão remedidos para 4,0.
+ * O caminho foi 5,5 → 4,0 → 2,2, sempre pelo mesmo motivo: a viagem estava
+ * longa demais de rolar. É o dial mais poderoso da seção: ele escala TUDO
+ * junto — a chegada, a travada, a partida, as janelas dos quatro blocos e
+ * até o preto do começo, porque aquele trecho também é uma fração deste pin
+ * (185px hoje, eram 263 em 4,0 e 327 em 5,5). Mexer aqui invalida qualquer
+ * número em telas escrito em styles/estacao.css: as proporções entre os
+ * blocos sobrevivem, os valores absolutos não. Estão remedidos para 2,2.
+ *
+ * A queda de 4,0 para 2,2 NÃO foi uniforme, e a diferença importa: ela saiu
+ * inteira da chegada e da partida, e a janela de leitura não só sobreviveu
+ * como cresceu (0,26 → 0,30 tela). Ver o orçamento em CHEGOU. O princípio
+ * era que o cansaço não vinha de haver conteúdo demais, e sim de rolar
+ * muito sem o conteúdo avançar — então o corte tinha que sair do transporte,
+ * nunca do tempo em que se lê.
  */
-const TRAVESSIA = 4
+const TRAVESSIA = 2.2
 
 /* Marcos dentro do trecho preso. Entre CHEGOU e PARTIU ela fica parada
    em 1:1 — a composição inteira montada, imóvel e nítida.
 
-   Essa janela é curta de propósito: 0,26 tela de rolagem. É o instante
-   em que os quatro blocos existem juntos, e ele se lê como uma travada
-   leve — a página continua rolando e nada se mexe. Longa demais, ela
-   deixa de ser o encontro dos blocos e vira uma seção parada esperando
-   o usuário; curta demais, os blocos nunca chegam a coexistir e o vídeo
-   entra já saindo.
+   Essa janela NÃO encolheu quando a travessia caiu de 4,0 para 2,2 — pelo
+   contrário, foi crescendo: 0,26 → 0,30 → 0,40 tela de rolagem, sempre
+   tirando o acréscimo da PARTIDA e nunca da chegada, que já estava no
+   ponto. É o instante em que os quatro blocos existem juntos, e ele se lê
+   como uma travada leve: a página continua rolando e nada se mexe. Longa
+   demais, ela deixa de ser o encontro dos blocos e vira uma seção parada
+   esperando o usuário; curta demais, os blocos nunca chegam a coexistir e
+   o vídeo entra já saindo.
+
+   Mover só PARTIU (e não CHEGOU) é o que isola o ganho na travada: CHEGOU
+   continua marcando o mesmo ponto físico de sempre, então a chegada
+   (1,35 tela) e tudo o que ela contém — as janelas de styles/estacao.css,
+   calculadas a partir de `--chegada`, que satura em CHEGOU — não sentem
+   nada. Só a fração de PARTIU muda, e ela só governa o quanto sobra para
+   a partida.
 
    CHEGOU e TRAVESSIA são mexidos JUNTOS, e o produto dos dois é o que
-   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,7 × 4,0 =
-   2,80 telas. São dois eixos distintos, e vale não confundi-los: subir o
+   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,614 × 2,2 =
+   1,35 telas. São dois eixos distintos, e vale não confundi-los: subir o
    PONTO DE ENCONTRO encolhe o que vem DEPOIS da chegada; encolher a
    TRAVESSIA encolhe tudo proporcionalmente, chegada inclusa.
 
    O orçamento atual do pin, em telas de 900px:
-     chegada   0,700 × 4,0 = 2,80
-     travada   0,065 × 4,0 = 0,26
-     partida   0,235 × 4,0 = 0,94
-   Com a hero (3,5) e o vão (0,1), são 7,6 telas até o fim deste pin.
+     chegada   0,614 × 2,2 = 1,35   (era 2,80)
+     travada   0,182 × 2,2 = 0,40   (era 0,30, antes 0,26)
+     partida   0,204 × 2,2 = 0,45   (era 0,55, antes 0,94)
+   Com a hero (2,6) e o vão (0,1), são 4,9 telas até o fim deste pin.
 
    ATENÇÃO: os números acima e os de styles/estacao.css são MEDIDOS contra
-   TRAVESSIA 4,0 e CHEGOU 0,7. Este bloco já carregou por muito tempo os
+   TRAVESSIA 2,2 e CHEGOU 0,614. Este bloco já carregou por muito tempo os
    valores de uma calibragem morta (0,87 × 9,89 = 8,60 telas, folgas de
    1,50, "quase dez telas") que sobreviveram a um encolhimento anterior sem
    ninguém remedir — e um comentário errado aqui custa caro, porque é ele
-   que orienta quem for calibrar. Se mexer em TRAVESSIA ou CHEGOU, remeça.
+   que orienta quem for calibrar. Se mexer em TRAVESSIA ou CHEGOU, remeça
+   (PARTIU sozinho não invalida a chegada, só o próprio orçamento acima).
 
    Se a separação entre os blocos não se ler, o problema pode não ser
    distância: é a AMPLITUDE do gesto de cada bloco em styles/estacao.css,
    hoje 32px (64 no vídeo) num palco ainda reduzido — sutil demais para um
-   bloco "chegar" em vez de só "aparecer". */
-const CHEGOU = 0.7
-const PARTIU = 0.765
+   bloco "chegar" em vez de só "aparecer".
+
+   A ESTAÇÃO MAIS FOLGADA JÁ ERA "+15 anos" (Credibility), e não por
+   causa desta janela — ela é IGUAL para as cinco. O que difere é onde o
+   último bloco de cada uma termina de nascer dentro da chegada, medido
+   em `--de + --dur` de styles/estacao.css: quanto mais cedo ele termina,
+   mais tempo o conteúdo já fica montado e imóvel ANTES de a travada
+   sequer começar.
+
+     Approach (mídia)      1,00 → 0,00 tela de folga antes da travada
+     Recursos (repertório) 0,90 → 0,14 tela
+     FAQ (6ª pergunta)     0,85 → 0,20 tela
+     Demo (mockup)         0,78 → 0,30 tela
+     Credibility (frase)   0,66 → 0,46 tela
+
+   0,46 tela de folga PRÓPRIA, mais os 0,40 da travada partilhada: a frase
+   de "+15 anos" já fica parada e legível por 0,86 tela antes de partir —
+   mais que o dobro de qualquer outra estação. Ela não precisava de ajuda;
+   já era a mais bem servida das cinco. Quem tem MENOS folga própria é o
+   Approach (a mídia fecha exatamente junto com a chegada, por desenho:
+   ver a nota em `.approach-media` em styles/estacao.css) — mas ali o
+   corpo final é o vídeo em loop, não uma frase para ler, então zero de
+   folga não é o mesmo problema. */
+const CHEGOU = 0.614
+const PARTIU = 0.7958
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
@@ -200,6 +239,23 @@ const ATRASO = 0.1
  *
  * O ATRASO é somado DEPOIS dessa cauda, então sem o desconto o vão real
  * vale `cauda + ATRASO`. Descontar faz o ATRASO significar o que ele diz.
+ *
+ * NÃO SE APLICA AO `.fecho`, e a tentação é grande — tentado e revertido.
+ * Depois da última estação sobra ~1 tela de rolagem sem nada na frente, e
+ * ela parece desperdício puro, no pior lugar possível: logo antes do CTA.
+ * Não é. Entre duas estações o desconto funciona porque a que CHEGA é
+ * invisível enquanto a caixa dela entra na tela — nasce em ESCALA_LONGE
+ * (0,16) e OPACIDADE_LONGE (0,1). A oferta não tem chegada: ela é opaca no
+ * instante em que a caixa encosta na tela. Descontar a cauda das perguntas
+ * puxa a oferta para dentro da janela em que a estação ainda está em cena,
+ * e as duas se sobrepõem — medido varrendo 121 posições de rolagem, 7
+ * posições com a FAQ acima de 0,05 de opacidade e a oferta já visível, com
+ * a pior delas em opacidade 1,0. Sem o desconto: zero.
+ *
+ * Ou seja, aquela tela é a PISTA que segura a oferta fora de cena enquanto
+ * a última estação parte, e só parece vazia porque nada acontece nela.
+ * Reclamá-la exigiria dar à oferta uma chegada própria — decisão de
+ * desenho sobre o bloco de conversão, não ajuste de layout.
  *
  * VALIA SÓ PARA A HERO, e esse era o buraco: entre duas estações a função
  * devolvia 0 e a cauda inteira ficava no caminho. Medido com as cinco
