@@ -96,40 +96,52 @@ const RE_TAXA = 0.06
  * abaixo só redistribuiria esse mesmo pedaço. Presa, a chegada dura o
  * quanto a gente quiser.
  *
- * Caiu de 5,5 para 4,0 porque a viagem estava longa demais de rolar. É o
- * dial mais poderoso da seção: ele escala TUDO junto — a chegada, a
- * travada, a partida, as janelas dos quatro blocos e até o preto do começo,
- * porque aquele trecho também é uma fração deste pin (263px hoje, eram 327
- * em 5,5). Mexer aqui invalida qualquer número em telas escrito em
- * styles/estacao.css: as proporções entre os blocos sobrevivem, os valores
- * absolutos não. Estão remedidos para 4,0.
+ * O caminho foi 5,5 → 4,0 → 2,2, sempre pelo mesmo motivo: a viagem estava
+ * longa demais de rolar. É o dial mais poderoso da seção: ele escala TUDO
+ * junto — a chegada, a travada, a partida, as janelas dos quatro blocos e
+ * até o preto do começo, porque aquele trecho também é uma fração deste pin
+ * (185px hoje, eram 263 em 4,0 e 327 em 5,5). Mexer aqui invalida qualquer
+ * número em telas escrito em styles/estacao.css: as proporções entre os
+ * blocos sobrevivem, os valores absolutos não. Estão remedidos para 2,2.
+ *
+ * A queda de 4,0 para 2,2 NÃO foi uniforme, e a diferença importa: ela saiu
+ * inteira da chegada e da partida, e a janela de leitura não só sobreviveu
+ * como cresceu (0,26 → 0,30 tela). Ver o orçamento em CHEGOU. O princípio
+ * era que o cansaço não vinha de haver conteúdo demais, e sim de rolar
+ * muito sem o conteúdo avançar — então o corte tinha que sair do transporte,
+ * nunca do tempo em que se lê.
  */
-const TRAVESSIA = 4
+const TRAVESSIA = 2.2
 
 /* Marcos dentro do trecho preso. Entre CHEGOU e PARTIU ela fica parada
    em 1:1 — a composição inteira montada, imóvel e nítida.
 
-   Essa janela é curta de propósito: 0,26 tela de rolagem. É o instante
-   em que os quatro blocos existem juntos, e ele se lê como uma travada
-   leve — a página continua rolando e nada se mexe. Longa demais, ela
-   deixa de ser o encontro dos blocos e vira uma seção parada esperando
-   o usuário; curta demais, os blocos nunca chegam a coexistir e o vídeo
-   entra já saindo.
+   Essa janela é a única coisa aqui que NÃO encolheu quando a travessia
+   caiu de 4,0 para 2,2 — ela cresceu, de 0,26 para 0,30 tela de rolagem, e
+   isso é deliberado. É o instante em que os quatro blocos existem juntos, e
+   ele se lê como uma travada leve: a página continua rolando e nada se
+   mexe. Longa demais, ela deixa de ser o encontro dos blocos e vira uma
+   seção parada esperando o usuário; curta demais, os blocos nunca chegam a
+   coexistir e o vídeo entra já saindo. Encurtar a travessia sem defender
+   esta janela teria levado a leitura para 0,14 tela junto com o resto, que
+   é o erro que este bloco existe para impedir.
 
    CHEGOU e TRAVESSIA são mexidos JUNTOS, e o produto dos dois é o que
-   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,7 × 4,0 =
-   2,80 telas. São dois eixos distintos, e vale não confundi-los: subir o
+   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,614 × 2,2 =
+   1,35 telas. São dois eixos distintos, e vale não confundi-los: subir o
    PONTO DE ENCONTRO encolhe o que vem DEPOIS da chegada; encolher a
-   TRAVESSIA encolhe tudo proporcionalmente, chegada inclusa.
+   TRAVESSIA encolhe tudo proporcionalmente, chegada inclusa — e é por isso
+   que defender a leitura exige mexer nos DOIS, subindo estas frações na
+   mesma proporção em que a travessia desceu.
 
    O orçamento atual do pin, em telas de 900px:
-     chegada   0,700 × 4,0 = 2,80
-     travada   0,065 × 4,0 = 0,26
-     partida   0,235 × 4,0 = 0,94
-   Com a hero (3,5) e o vão (0,1), são 7,6 telas até o fim deste pin.
+     chegada   0,614 × 2,2 = 1,35   (era 2,80)
+     travada   0,136 × 2,2 = 0,30   (era 0,26)
+     partida   0,250 × 2,2 = 0,55   (era 0,94)
+   Com a hero (2,6) e o vão (0,1), são 4,9 telas até o fim deste pin.
 
    ATENÇÃO: os números acima e os de styles/estacao.css são MEDIDOS contra
-   TRAVESSIA 4,0 e CHEGOU 0,7. Este bloco já carregou por muito tempo os
+   TRAVESSIA 2,2 e CHEGOU 0,614. Este bloco já carregou por muito tempo os
    valores de uma calibragem morta (0,87 × 9,89 = 8,60 telas, folgas de
    1,50, "quase dez telas") que sobreviveram a um encolhimento anterior sem
    ninguém remedir — e um comentário errado aqui custa caro, porque é ele
@@ -139,8 +151,8 @@ const TRAVESSIA = 4
    distância: é a AMPLITUDE do gesto de cada bloco em styles/estacao.css,
    hoje 32px (64 no vídeo) num palco ainda reduzido — sutil demais para um
    bloco "chegar" em vez de só "aparecer". */
-const CHEGOU = 0.7
-const PARTIU = 0.765
+const CHEGOU = 0.614
+const PARTIU = 0.75
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
