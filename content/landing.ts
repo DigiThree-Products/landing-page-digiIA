@@ -205,10 +205,46 @@ export const LANDING = {
     ticker: 'PRIMEIRA TURMA  CONDIÇÃO DE LANÇAMENTO.',
     cta: 'Garantir minha condição',
   },
+  /**
+   * "Quem está por trás" — a seção de autoridade.
+   *
+   * Era um dado só ("+15 anos") mais uma frase. Passou a ser autoridade em
+   * CAMADAS, que é o que sustenta a afirmação: âncora temporal (o título e o
+   * "desde 2010"), volume (380+ campanhas), alcance (120+ clientes) e
+   * amplitude (9 segmentos). Um número sozinho se lê como slogan; quatro que
+   * se confirmam se leem como registro.
+   *
+   * `titleLineTwo` ecoa de propósito o título da hero ("Seu mês, na palma da
+   * sua mão"): a promessa da primeira tela reaparecendo aqui com prova atrás
+   * dela. Mexer num sem olhar o outro desmancha a costura.
+   */
   credibility: {
-    value: '15+',
-    label: 'anos de mercado',
-    description: `A Digi.IA nasce dentro da ${SITE.organizacaoMae} — construída em cima de campanhas reais, não de teoria.`,
+    kicker: 'Quem está por trás',
+    title: '15 anos de campanhas reais.',
+    titleLineTwo: 'Agora na palma da sua mão.',
+    description: `A ${SITE.organizacaoMae} atende comércio e serviço desde 2010. O planejamento mensal, o tom de voz, o cálculo de ROI, a criação do conteúdo pensada e planejada para te fazer vender mais — tudo que a ${SITE.nome} faz saiu de um processo que já rodou em conta de cliente.`,
+    /**
+     * A ponte entre a agência e o produto, e a única frase do manifesto que
+     * vai em branco cheio. Autoridade de agência não converte sozinha: ela
+     * precisa dizer o que tem a ver com o que está sendo vendido.
+     */
+    punch: 'A IA é nova. O método não.',
+    /**
+     * Números fornecidos pelo dono do produto (ago/2026) e publicados como
+     * FATOS. O "9" é exato de propósito — sem "+": número redondo lê como
+     * marketing, número exato lê como medido. Atualizar aqui quando os dados
+     * mudarem; nenhum componente conhece esses valores.
+     *
+     * O primeiro é a ESTRELA (monumental, ao lado do manifesto); os três
+     * seguintes formam o trilho na base. A ordem deles é volume → alcance →
+     * amplitude, do mais concreto ao mais abstrato.
+     */
+    stats: [
+      { value: '15+', label: 'anos de agência' },
+      { value: '380+', label: 'campanhas no ar' },
+      { value: '120+', label: 'clientes atendidos' },
+      { value: '9', label: 'segmentos' },
+    ],
   },
   faq: {
     eyebrow: 'Perguntas',

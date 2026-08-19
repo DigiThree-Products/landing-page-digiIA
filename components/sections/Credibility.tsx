@@ -1,23 +1,60 @@
 import { LANDING } from '@/content/landing'
 
 /**
- * "+15 anos".
+ * "Quem está por trás" — a estação da autoridade.
  *
  * Estação: sem `Reveal` próprio. Quem revela é a chegada — ver a nota em
  * ApproachSection.tsx, que descreve por que uma segunda revelação por cima
  * da viagem briga com ela: são dois relógios para o mesmo conteúdo, e o do
  * `Reveal` roda por tempo enquanto o da estação roda por rolagem.
  *
- * Os três blocos (número, legenda, frase) recebem janelas próprias em
- * styles/estacao.css e nascem em cascata ao longo da viagem.
+ * A composição tem três andares, e a ordem é a do argumento: quem somos
+ * (kicker + título), por que isso importa para o produto (o manifesto, com o
+ * soco em branco cheio no fim) e a prova dura (o trilho na base).
+ *
+ * `stats[0]` é a ESTRELA — fica monumental ao lado do manifesto. As outras
+ * três formam o trilho. A divisão mora aqui, e não no conteúdo, porque é
+ * decisão de apresentação: o conteúdo só declara quatro números em ordem.
+ *
+ * Os seis blocos recebem janelas próprias de chegada em styles/estacao.css e
+ * nascem em cascata ao longo da viagem.
  */
 export function Credibility() {
+  const { credibility } = LANDING
+  const [estrela, ...provas] = credibility.stats
+
   return (
-    <section className="credibility-section estacao">
+    <section className="credibility-section estacao" aria-labelledby="cred-titulo">
       <div className="estacao-palco">
         <div className="cred">
-          <div className="stat"><b>{LANDING.credibility.value}</b><i>{LANDING.credibility.label}</i></div>
-          <p>{LANDING.credibility.description}</p>
+          <header className="cred-head">
+            <p className="tag">{credibility.kicker}</p>
+            <h2 id="cred-titulo">
+              <span className="cred-titulo-linha">{credibility.title}</span>
+              <span className="cred-titulo-linha cred-titulo-linha--eco">
+                {credibility.titleLineTwo}
+              </span>
+            </h2>
+          </header>
+
+          <div className="cred-corpo">
+            <p className="stat">
+              <b>{estrela.value}</b>
+              <i>{estrela.label}</i>
+            </p>
+            <p className="cred-manifesto">
+              {credibility.description} <strong>{credibility.punch}</strong>
+            </p>
+          </div>
+
+          <ul className="cred-trilho">
+            {provas.map((prova) => (
+              <li key={prova.label}>
+                <b>{prova.value}</b>
+                <i>{prova.label}</i>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
