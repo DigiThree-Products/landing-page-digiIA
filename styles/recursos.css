@@ -624,32 +624,67 @@
    Tablet e celular — empilha. "Uma tela" é meta de desktop.
    ============================================================ */
 @media (max-width: 1023px) {
+  /* PRESA em uma tela, como as outras estações. `min-height: auto` +
+     `display: block` eram de quando a seção rolava solta — mesma família
+     do bug da FAQ, da Demo e dos 72svh da "+15 anos". Presa, tudo que
+     passa da tela fica INALCANÇÁVEL: o pin segura a seção parada e rolar
+     só avança a animação até ela partir. Medido antes, em 390×844:
+     1.763px de conteúdo numa tela de 844 — CALCULA, DNA e Repertório (a
+     calculadora de ROI e o bônus incluso nos planos) nunca apareciam. */
   .page #recursos {
-    min-height: auto;
-    padding: clamp(72px, 10vh, 104px) var(--gutter);
-    display: block;
+    min-height: 100svh;
+    padding: clamp(64px, 9vh, 104px) 0 clamp(96px, 13vh, 116px);
+    display: grid;
+    /* `minmax(0, 1fr)` e não a coluna implícita: sem isto o grid dimensiona
+       a coluna pelo MAX-CONTENT do carrossel — os cinco cards lado a lado,
+       1.734px — e o `.bento` nasce com 1.280px (o `--world-max`) dentro de
+       uma seção de 375. O snap passaria a centralizar numa janela de 1.280
+       que ninguém vê, e o `overflow: hidden` da seção é que estaria
+       recortando. Medido antes: `bento.clientWidth` 1280 contra 375 de
+       seção. */
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    overflow: hidden;
   }
   .page #recursos .rec-head {
-    margin-bottom: 30px;
+    margin: 0 var(--gutter) 20px;
   }
   .page #recursos .rec-head h2 {
     max-width: 16ch;
-    font-size: clamp(32px, 6.4vw, 44px);
+    font-size: clamp(28px, 5.8vw, 40px);
   }
 
+  /* CARROSSEL: os cinco cards em deslize lateral, um por tela, com snap.
+
+     Horizontal e não "mais curto" porque o conteúdo dos cards É o
+     argumento — o post real, o calendário, a calculadora. Encolher os
+     cards até caberem empilhados mataria justamente a prova. O deslize é
+     o único formato que preserva os cinco inteiros dentro de uma tela
+     presa.
+
+     `84vw` de largura deixa uma fatia do próximo card aparecendo na
+     borda: é ela que anuncia que há mais, sem precisar de setas nem de
+     pontinhos. */
   .page #recursos .bento {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    /* O `--world-max` da regra base é largura de desktop; aqui a janela do
+       carrossel tem de ser exatamente a da tela, senão o snap centraliza
+       fora do que se vê. */
+    max-width: 100%;
+    grid-template-columns: none;
     grid-template-rows: none;
-    gap: 12px;
-  }
-  /* Empilhado, o curso do desktop faria a coluna inteira balançar de
-     um lado para o outro. O gesto continua, com metade do percurso.
-     Era `.bento.rv` e ficou órfão quando o `Reveal` saiu da seção — o
-     seletor deixou de casar e o percurso do mobile voltou, sem que nada
-     avisasse, ao valor cheio do desktop. */
-  .page #recursos .bento {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    gap: 14px;
+    padding-inline: var(--gutter);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
     --vem: 34px;
+  }
+  .page #recursos .bento::-webkit-scrollbar {
+    display: none;
   }
   .page #recursos .rec-cell,
   .page #recursos .rec-cell--cria,
@@ -659,6 +694,23 @@
   .page #recursos .rec-cell--repertorio {
     grid-column: auto;
     grid-row: auto;
+    flex: 0 0 min(84vw, 340px);
+    scroll-snap-align: center;
+    min-height: 0;
+  }
+  /* Os gestos de chegada laterais empurrariam os cards contra o eixo do
+     deslize — no carrossel todos chegam de baixo. */
+  .page #recursos .rec-cell--cria,
+  .page #recursos .rec-cell--dna {
+    --vem-x: 0px;
+    --sobe: 34px;
+  }
+  /* O slider de ROI é um arrasto HORIZONTAL dentro de um carrossel
+     horizontal. Sem isto, tentar mexer no controle desliza o carrossel e
+     a calculadora vira enfeite: o controle passa a ser dono do próprio
+     gesto. */
+  .page #recursos .calc__controle {
+    touch-action: none;
   }
   .page #recursos .rec-cell--cria .rec-out {
     flex: none;
@@ -687,12 +739,61 @@
   }
 }
 
-@media (max-width: 620px) {
+/* Paisagem: o cabeçalho vai para o LADO do carrossel, como na FAQ e na
+   demo — deitado sobra largura e falta altura. Empilhar título e cards em
+   390px não cabe; lado a lado, a altura passa a ser só a do card.
+
+   O que sobra depois disso é resolvido por `zoom`, a mesma ferramenta que
+   o bloco de desktop baixo acima usa, e pelo mesmo motivo: `zoom` age no
+   LAYOUT, então a altura real do palco encolhe. Um `transform: scale()`
+   encolheria só o desenho e ainda disputaria a propriedade `transform`,
+   que pertence ao JS da estação. */
+@media (max-width: 1023px) and (max-height: 480px) and (orientation: landscape) {
   .page #recursos {
-    padding-block: 92px 110px;
+    padding: 20px 0 62px;
   }
+
+  .page #recursos .estacao-palco {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.3fr) minmax(0, 0.7fr);
+    align-items: center;
+    gap: 18px;
+    zoom: 0.86;
+  }
+
+  .page #recursos .rec-head {
+    margin: 0 0 0 var(--gutter);
+  }
+
   .page #recursos .rec-head h2 {
-    font-size: clamp(30px, 9vw, 40px);
+    font-size: clamp(20px, 2.8vw, 28px);
+  }
+
+  .page #recursos .bento {
+    padding-inline: 0 var(--gutter);
+  }
+
+  .page #recursos .rec-cell {
+    flex-basis: min(46vw, 300px);
+    padding: 14px;
+  }
+}
+
+/* Mais um degrau de `zoom` para o piso do que existe em celular deitado
+   (360px de altura). Mesmo raciocínio dos degraus de desktop baixo. */
+@media (max-width: 1023px) and (max-height: 400px) and (orientation: landscape) {
+  .page #recursos {
+    padding: 14px 0 58px;
+  }
+
+  .page #recursos .estacao-palco {
+    zoom: 0.74;
+  }
+}
+
+@media (max-width: 620px) {
+  .page #recursos .rec-head h2 {
+    font-size: clamp(26px, 7.6vw, 36px);
   }
   /* Sete colunas em 320px dariam ~38px por dia. Duas linhas de
      quatro mantêm o dia legível. */
