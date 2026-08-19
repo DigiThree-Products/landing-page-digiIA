@@ -325,6 +325,13 @@ details[open] .faq-body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--paper-56);
+  /* Alvo de toque sem mudar o desenho: o padding estende a área tocável
+     para 43px de altura (media 19px), e a margem negativa devolve o espaço
+     ao layout, então nada se move. O `gap` do `.foot-links` já mantém a
+     separação entre os quatro. */
+  display: inline-block;
+  padding-block: 12px;
+  margin-block: -12px;
 }
 .foot-links a:hover {
   color: var(--lilac);
