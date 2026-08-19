@@ -597,39 +597,133 @@ body::after {
   will-change: transform, opacity;
 }
 
+/* Três andares empilhados: cabeçalho, corpo (estrela ‖ manifesto) e o
+   trilho das provas. O `.cred` base em styles/sections.css é flex com
+   bordas em cima e embaixo — aqui ele vira grid sem borda, e as
+   declarações abaixo precisam sobrescrever aquelas. */
 .page .credibility-section .cred {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(300px, 1.1fr);
-  align-items: center;
-  gap: clamp(40px, 8vw, 140px);
+  gap: clamp(30px, 4.5vh, 48px);
   padding: 0;
   border: 0;
 }
 
-.page .credibility-section .stat b {
+.page .cred-head h2 {
+  margin: 16px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4vw, 56px);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.page .cred-titulo-linha {
+  display: block;
+}
+
+/* A segunda linha ecoa o título da hero ("Seu mês, na palma da sua mão") —
+   a promessa da primeira tela reaparecendo aqui com prova atrás dela. O
+   lilás é o que marca o eco; sem ele a repetição parece descuido. */
+.page .cred-titulo-linha--eco {
   color: var(--lilac);
-  font-size: clamp(110px, 17vw, 250px);
+}
+
+.page .cred-corpo {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
+  align-items: center;
+  gap: clamp(40px, 7vw, 120px);
+}
+
+.page .credibility-section .stat {
+  margin: 0;
+}
+
+.page .credibility-section .stat b {
+  display: block;
+  font-family: var(--font-display);
+  color: var(--lilac);
+  /* Era 250px quando a seção tinha só o número e uma frase. Cai para 216
+     porque agora divide os mesmos 100svh com um cabeçalho, um manifesto e
+     o trilho — ver o orçamento vertical no plano. */
+  font-size: clamp(96px, 15vw, 216px);
   font-weight: 700;
   line-height: 0.78;
+  letter-spacing: -0.04em;
 }
 
 .page .credibility-section .stat i {
-  margin-top: 28px;
+  display: block;
+  margin-top: 24px;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
   color: var(--paper-56);
 }
 
-.page .credibility-section .cred p {
-  max-width: 23ch;
+.page .cred-manifesto {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--paper-56);
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.55;
+}
+
+/* O punch é a ÚNICA frase clara do manifesto: o soco cai exatamente onde o
+   olho termina de ler, e é ele que liga a autoridade da agência ao produto
+   que está à venda. */
+.page .cred-manifesto strong {
+  display: block;
+  margin-top: 10px;
   color: var(--paper);
-  font-family: var(--font-display);
-  font-size: clamp(32px, 4.2vw, 60px);
   font-weight: 600;
-  line-height: 1.03;
-  letter-spacing: -0.045em;
+}
+
+/* O trilho das provas, na base, sob um filete.
+   EM LINHA e não empilhadas, e a diferença não é estética: três números
+   lado a lado se leem como um CONJUNTO de provas; empilhados viram lista, e
+   lista se lê item a item, perdendo o efeito de acúmulo.
+   `align-items: start` mantém os três números na mesma linha mesmo quando
+   um rótulo quebra em duas — que é o que acontece com "clientes atendidos"
+   nas telas estreitas. */
+.page .cred-trilho {
+  list-style: none;
+  margin: 0;
+  padding: clamp(20px, 3vh, 30px) 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+  gap: clamp(16px, 4vw, 64px);
+  border-top: 1px solid var(--rule);
+}
+
+.page .cred-trilho li {
+  display: grid;
+  gap: 10px;
+}
+
+.page .cred-trilho b {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3vw, 46px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--lilac);
+}
+
+.page .cred-trilho i {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--paper-56);
 }
 
 /* ============================================================
@@ -894,13 +988,12 @@ body::after {
     font-size: clamp(138px, 44vw, 230px);
   }
 
-  .page .credibility-section .cred {
+  /* A estrela sobe para cima do manifesto. O TRILHO não empilha junto: ele
+     continua em três colunas mesmo aqui, porque é a leitura em linha que o
+     faz ser um conjunto de provas em vez de uma lista. */
+  .page .cred-corpo {
     grid-template-columns: 1fr;
-    gap: 48px;
-  }
-
-  .page .credibility-section .cred p {
-    max-width: 18ch;
+    gap: 36px;
   }
 
   .page #faq {
@@ -955,12 +1048,33 @@ body::after {
     min-height: 360px;
   }
 
-  .page .credibility-section .stat b {
-    font-size: clamp(108px, 38vw, 180px);
+  /* O celular é o viewport apertado da seção: são seis blocos dentro de uma
+     tela travada em 100svh. O padding cede primeiro — antes de qualquer
+     tipografia, e nunca o `min-height` (ver a nota lá em cima). */
+  .page .credibility-section {
+    padding-block: 76px;
   }
 
-  .page .credibility-section .cred p {
-    font-size: clamp(34px, 10vw, 48px);
+  .page .credibility-section .stat b {
+    font-size: clamp(84px, 29vw, 130px);
+  }
+
+  .page .cred-head h2 {
+    font-size: clamp(28px, 8.5vw, 40px);
+  }
+
+  .page .cred-manifesto {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .page .cred-trilho {
+    gap: 14px;
+  }
+
+  .page .cred-trilho i {
+    font-size: 10px;
+    letter-spacing: 0.08em;
   }
 
   .page #lista-final .final h2 {
@@ -969,6 +1083,73 @@ body::after {
 
   .page .site-footer {
     padding: 60px var(--gutter) 120px;
+  }
+}
+
+/* ============================================================
+   TELAS BAIXAS — a compressão vertical de "Quem está por trás"
+
+   Esta seção é a única presa em 100svh com SEIS blocos empilhados
+   (cabeçalho, estrela, manifesto e o trilho de três provas). Nas outras
+   estações o conteúdo é mais largo que alto; aqui é o contrário, e é por
+   isso que só ela precisa desta regra.
+
+   O gatilho é a ALTURA e não a largura, porque o problema é altura: um
+   notebook 1366×768 e um celular 360×740 estouram pelo mesmo motivo, e
+   uma media query de largura pegaria só um dos dois. Medido antes desta
+   regra, em 360×740: 821px de conteúdo numa tela de 740 — 81px para
+   fora, com o trilho cortado.
+
+   Comprime só os DIAIS DE RESPIRO (padding, vãos), nunca a tipografia:
+   é a ordem que o plano fixou, e é a que preserva a leitura. O número
+   continua monumental; o que encolhe é o ar em volta dele.
+   ============================================================ */
+@media (max-height: 860px) {
+  .page .credibility-section {
+    padding-block: clamp(32px, 5vh, 88px);
+  }
+
+  .page .credibility-section .cred {
+    gap: clamp(18px, 2.2vh, 34px);
+  }
+
+  .page .cred-corpo {
+    gap: clamp(24px, 5vw, 90px);
+  }
+
+  .page .cred-trilho {
+    padding-top: clamp(13px, 1.8vh, 24px);
+  }
+
+  .page .cred-manifesto {
+    line-height: 1.45;
+  }
+}
+
+/* Segundo degrau: telas MUITO baixas (iPhone SE 375×667 e parentes).
+   Comprimir só o respiro já não basta — medido, sobravam 2px, que é o
+   mesmo que não caber, porque qualquer variação de fonte estoura.
+
+   Aqui a tipografia cede, e na ordem que menos custa: primeiro o
+   MANIFESTO, que é texto de apoio e aguenta 14px sem perder a leitura;
+   depois o número, que continua sendo o maior elemento da tela mesmo em
+   25vw. O título não é tocado — ele é a afirmação da seção. */
+@media (max-height: 720px) {
+  .page .cred-manifesto {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .page .credibility-section .stat b {
+    font-size: clamp(72px, 25vw, 120px);
+  }
+
+  .page .credibility-section .stat i {
+    margin-top: 14px;
+  }
+
+  .page .cred-trilho li {
+    gap: 6px;
   }
 }
 
