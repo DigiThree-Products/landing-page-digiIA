@@ -309,7 +309,11 @@
    Altura final de 27px, acima do mínimo de 24 da WCAG 2.2 para alvo. */
 .page #recursos .chips button {
   display: block;
-  padding: 6px 11px;
+  /* Media 27px de altura; 10px de padding levam a 34px, o mínimo do
+     Material. Os 44px do iOS deformariam o post — e estes chips são
+     controle secundário dentro de um card, não CTA. */
+  padding: 10px 13px;
+  min-height: 34px;
   border: 1px solid var(--rule-hi);
   border-radius: 999px;
   background: none;
@@ -418,6 +422,11 @@
      nativo de teclado, que reconstrução artesanal costuma perder. */
   accent-color: var(--paper);
   cursor: ew-resize;
+  /* O elemento media 16px de altura — a espessura do trilho. O dedo mira o
+     marcador, mas quem recebe o toque é a caixa, e 16px é alvo pequeno
+     demais para um controle que é o ponto da calculadora. O trilho continua
+     fino; o que cresce é a área tocável. */
+  min-height: 36px;
 }
 .page #recursos .calc__controle:focus-visible {
   outline: 2px solid var(--paper);

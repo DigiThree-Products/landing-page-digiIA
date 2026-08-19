@@ -25,7 +25,16 @@
   transition: width 0.55s var(--ease), background 0.35s var(--ease), border-color 0.35s var(--ease);
 }
 .site-nav--expanded { --nav-max: 1040px; }
-.site-nav .brand { min-width: max-content; }
+/* `display: flex` + padding para o alvo de toque: a logo media 92×32, e a
+   altura vinha só da imagem. O padding leva a 44px sem mexer no desenho,
+   porque o nav centraliza os itens. */
+.site-nav .brand {
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 6px;
+}
 .site-nav .logo { width: clamp(90px, 8vw, 112px); }
 .site-nav__links {
   display: flex;
@@ -141,7 +150,9 @@
   gap: 3px;
   padding: 7px 2px 9px;
   color: var(--paper-56);
-  font-size: 9px;
+  /* 9px era pequeno demais para rotulo de navegacao; 10px continua discreto
+     e passa a ser legivel. As cinco palavras seguem cabendo em 360px. */
+  font-size: 10px;
   font-weight: 600;
 }
 .mobile-dock a:hover { text-decoration: none; }
@@ -155,7 +166,9 @@
   .site-nav { min-height: 54px; padding: 7px 8px 7px 14px; }
   .site-nav__links { display: none; }
   .site-nav .logo { width: 92px; }
-  .site-nav__cta { min-height: 38px; padding-inline: 15px; }
+  /* 44px e o minimo de alvo de toque recomendado, e este e o CTA principal
+     do site — media 139x39 antes. */
+  .site-nav__cta { min-height: 44px; padding-inline: 15px; }
   .mobile-dock { display: flex; }
   #cadastro, #video, #recursos, #demo, #oferta, #faq, #lista-final { scroll-margin-top: 78px; }
 }
