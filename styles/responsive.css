@@ -1,21 +1,231 @@
 /* ============================================================
    RESPONSIVO
    ============================================================ */
-/* Duas colunas só onde há largura para elas. Abaixo disso o objeto desce
-   para baixo do texto e encolhe. */
+/* ============================================================
+   A HERO NO MOBILE — empilhamento e encaixe em uma tela
+
+   Este bloco é a ÚNICA definição do assunto, e mora aqui por CASCATA.
+
+   O bug que ele conserta: a hero nunca empilhou, em largura nenhuma. A
+   regra de duas colunas é `.page .hero-grid` (0,2,0) em conversion.css, e
+   existiam DUAS tentativas de empilhar — uma em hero.css e outra aqui —
+   ambas escritas como `.hero-grid` (0,1,0). Media query não soma
+   especificidade, então as duas perdiam sempre.
+
+   Especificidade certa não bastava: hero.css é o import 6 e conversion.css
+   o 11 em app/globals.css, então mesmo um `.page .hero-grid` escrito lá
+   perderia por ORDEM, no empate. responsive.css é o import 17, o último —
+   é aqui que a sobrescrita ganha, e é por isso que o assunto inteiro veio
+   para cá em vez de ficar dividido.
+
+   O tamanho do estrago, medido antes: a coluna da direita é
+   `minmax(390px, .92fr)`, então o objeto reservava 390px fixos e o texto
+   ficava com a sobra — 369px em 900 de largura, 195px em 700, 15px em 500
+   e ZERO em 390. No celular, a primeira tela do site aparecia com as
+   palavras quebrando uma por linha no canto esquerdo, sem descrição, sem
+   contagem regressiva e sem CTA.
+
+   Duas cópias erradas foi o que manteve o bug invisível: quem abrisse
+   qualquer um dos dois arquivos via a hero "já tratada" e seguia adiante.
+   ============================================================ */
 @media (max-width: 980px) {
-  .hero-grid {
+  .page .hero-grid {
     grid-template-columns: 1fr;
-    gap: clamp(20px, 5vw, 40px);
+    gap: clamp(22px, 4vh, 40px);
   }
-  .palco {
+  .page .hero {
+    align-items: stretch;
+    /* O respiro do desktop (15vh no topo) é de quando a hero tinha duas
+       colunas e sobrava altura. Empilhada são seis blocos disputando a
+       mesma tela, então o padding encolhe junto — sem isto o iPad em pé
+       (768×1024) estourava por 13px. */
+    padding-top: clamp(96px, 12vh, 140px);
+    padding-bottom: clamp(28px, 5vh, 72px);
+  }
+  .page .hero-col {
+    max-width: 650px;
+  }
+  .page .hero h1 {
+    max-width: 12ch;
+    font-size: clamp(38px, 8.5vw, 64px);
+  }
+  .page .hero p.sub {
+    max-width: 56ch;
+  }
+  /* Empilhado, o objeto divide a tela com o texto em vez de ficar ao lado
+     dele — por isso encolhe. Era `min(100%, 600px)`, largura de quem tinha
+     uma coluna inteira só para si. */
+  .page .hero-obj {
+    width: min(72vw, 340px);
+    margin: 0 auto;
+  }
+  .page .hero-visual {
+    min-height: 0;
+  }
+  .page .palco {
     max-width: 460px;
   }
-  .hero-obj::before {
+  .page .hero-obj::before {
     inset: -8% -4%;
   }
-  .hero p.sub {
-    max-width: 56ch;
+}
+
+@media (max-width: 620px) {
+  .page .hero {
+    padding-top: 106px;
+    padding-bottom: 40px;
+  }
+  .page .hero h1 {
+    margin-top: 16px;
+    font-size: clamp(34px, 10.5vw, 48px);
+  }
+  .page .hero p.sub {
+    margin-top: 16px;
+    font-size: 15px;
+  }
+  .page .palco {
+    max-width: 340px;
+  }
+}
+
+/* Telas baixas. Empilhada, a hero divide uma tela entre seis blocos (tag,
+   título, descrição, contagem, CTA e objeto) onde antes eram duas colunas
+   lado a lado. O RESPIRO cede primeiro, o objeto é o segundo, o título
+   nunca.
+
+   Gatilho por ALTURA e não por largura, mesma razão da "+15 anos": um
+   celular deitado (844×390) e um notebook baixo estouram pelo mesmo
+   motivo, e uma media query de largura pegaria só um dos dois.
+
+   DEPOIS dos blocos de largura de propósito: mesma especificidade, então
+   quem decide é a ordem. Sem isso o bloco de 620px devolveria o padding
+   cheio justamente no aparelho mais apertado. */
+@media (max-width: 980px) and (max-height: 900px) {
+  .page .hero {
+    padding-top: 88px;
+    padding-bottom: 16px;
+  }
+  .page .hero-grid {
+    gap: clamp(13px, 2vh, 22px);
+  }
+  .page .hero p.sub {
+    margin-top: 12px;
+  }
+  .page .hero-obj {
+    width: min(46vw, 190px);
+  }
+}
+
+@media (max-width: 980px) and (max-height: 700px) {
+  .page .hero {
+    padding-top: 72px;
+    padding-bottom: 14px;
+  }
+  .page .hero h1 {
+    margin-top: 10px;
+    font-size: clamp(28px, 6.6vw, 38px);
+  }
+  .page .hero p.sub {
+    margin-top: 8px;
+  }
+  .page .hero-obj {
+    width: min(34vw, 132px);
+  }
+}
+
+/* PAISAGEM curta (celular deitado). Aqui empilhar é o erro: sobra LARGURA
+   e falta altura, exatamente o oposto do retrato. As duas colunas voltam,
+   com o objeto de vizinho do texto em vez de embaixo dele — é a única
+   forma de a contagem e o CTA continuarem na tela.
+
+   `orientation: landscape` e não só `max-height`: um celular em pé com
+   teclado aberto também fica baixo, e ali empilhado continua sendo o
+   certo, porque a largura segue estreita. */
+@media (max-width: 980px) and (max-height: 560px) and (orientation: landscape) {
+  .page .hero-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 46px);
+  }
+  .page .hero {
+    padding-top: 62px;
+    padding-bottom: 14px;
+  }
+  .page .hero-col {
+    max-width: none;
+  }
+  .page .hero h1 {
+    max-width: 14ch;
+    font-size: clamp(24px, 3.4vw, 34px);
+  }
+  .page .hero p.sub {
+    max-width: 52ch;
+    font-size: 13px;
+  }
+  .page .hero-obj {
+    width: min(30vw, 230px);
+  }
+}
+
+/* Paisagem MUITO curta (celular deitado de verdade: 390px de altura e
+   menos). Aqui não há corte de respiro que resolva — 360px de altura não
+   comportam tag, título, descrição, contagem e CTA de jeito nenhum.
+
+   Então o orçamento é escolhido, e não espremido: sai a DESCRIÇÃO. É o
+   bloco mais dispensável dos cinco porque o título já carrega a promessa
+   ("Seu mês, na palma da sua mão"), e o que fica são as duas coisas que
+   fazem a tela converter — a contagem regressiva, que dá a urgência, e o
+   CTA. A descrição continua inteira em pé, que é como quase todo mundo
+   lê uma landing. */
+@media (max-width: 980px) and (max-height: 480px) and (orientation: landscape) {
+  /* O `padding-bottom` reserva o dock. Ele é `position: fixed`, então não
+     empurra nada — sem reserva ele simplesmente cobre o CTA, que foi o que
+     mediu 78px de sobreposição em 844×390. O dock também encolhe deitado
+     (ver styles/shell.css): 54px em vez de 82. */
+  .page .hero {
+    padding-top: 28px;
+    padding-bottom: 66px;
+  }
+  .page .hero p.sub {
+    display: none;
+  }
+  /* A contagem gasta 70px só em margem e filete antes do primeiro dígito.
+     Deitada ela se aproxima do título e os dígitos encolhem — continua
+     legível e continua dando a urgência, que é o trabalho dela. */
+  .page .hero .meter {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+  .page .hero .count {
+    --digito: clamp(20px, 2.4vw, 30px);
+  }
+  .page .hero .unit {
+    min-width: 46px;
+  }
+  .page .hero .unit i {
+    margin-top: 4px;
+  }
+  .page .hero-actions {
+    margin-top: 10px;
+  }
+  .page .hero-obj {
+    width: min(26vw, 190px);
+  }
+}
+
+/* Paisagem de 400px de altura para baixo — o piso do que existe em
+   celular. Sobravam 6px de CTA por baixo do dock; as margens entre os
+   blocos são o último lugar de onde tirar sem mexer em tamanho de letra. */
+@media (max-width: 980px) and (max-height: 400px) and (orientation: landscape) {
+  .page .hero .meter {
+    margin-top: 6px;
+    padding-top: 8px;
+  }
+  .page .hero-actions {
+    margin-top: 6px;
+  }
+  .page .hero h1 {
+    margin-top: 6px;
   }
 }
 @media (max-width: 860px) {

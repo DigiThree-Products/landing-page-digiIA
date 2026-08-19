@@ -165,6 +165,48 @@
   .site-nav__cta::before { content: 'Lista'; }
 }
 
+/* ------------------------------------------------------------
+   O DOCK EM PAISAGEM CURTA
+
+   82px de dock numa tela de 390px de altura são 21% do viewport, e ele é
+   `position: fixed` — come essa fatia de TODAS as seções, não só da hero.
+   Medido antes disto: o dock cobria o CTA da hero por 78px em 844×390 e
+   por 90px em 740×360.
+
+   O que faz o dock precisar de 82px é a saliência do ícone ativo (62 de
+   barra + 20 de bico). Deitado, a saliência encolhe e a barra vem junto.
+   Continua o mesmo dock, com os mesmos cinco destinos — só mais rente à
+   borda.
+   ------------------------------------------------------------ */
+@media (max-height: 480px) and (orientation: landscape) {
+  .mobile-dock {
+    inset: auto 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .mobile-dock__shell {
+    height: 54px;
+    padding-top: 12px;
+  }
+  .mobile-dock__shape {
+    inset: 12px 0 0;
+    height: 42px;
+  }
+  .mobile-dock ul {
+    height: 42px;
+  }
+  .mobile-dock__active {
+    width: 34px;
+    height: 34px;
+  }
+  .mobile-dock__active svg {
+    width: 16px;
+    height: 16px;
+  }
+  .mobile-dock a {
+    gap: 1px;
+    padding: 4px 2px 6px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-nav,
   .site-nav__links,
