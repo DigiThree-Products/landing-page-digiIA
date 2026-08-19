@@ -617,7 +617,7 @@
    uma tela só —, mas está escrito aqui para não ser descoberto de novo do
    zero. A solução definitiva seria a seção deixar de ser estação quando
    não couber, e isso é decisão de desenho, não de CSS. */
-@media (min-width: 1024px) and (max-height: 760px) {
+@media (min-width: 1024px) and (max-height: 790px) {
   .page #recursos .estacao-palco {
     zoom: 0.92;
   }
