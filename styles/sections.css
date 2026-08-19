@@ -168,40 +168,15 @@
   margin-top: 3px;
 }
 
-/* --- Credibilidade --- */
-.cred {
-  display: flex;
-  flex-wrap: wrap;
-  gap: clamp(24px, 5vw, 64px);
-  align-items: flex-end;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  padding-block: clamp(28px, 4vw, 44px);
-}
-.stat b {
-  display: block;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(30px, 4vw, 46px);
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.stat i {
-  font-style: normal;
-  display: block;
-  margin-top: 9px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--paper-38);
-}
-.cred p {
-  margin: 0;
-  color: var(--paper-56);
-  font-size: 15px;
-  max-width: 34ch;
-}
+/* --- Credibilidade ---
+   A base desta seção morava aqui e foi REMOVIDA, não movida por gosto: as
+   classes `.cred`, `.stat` e `.cred p` são usadas por um componente só
+   (components/sections/Credibility.tsx), e styles/institutional.css já as
+   redefinia inteiras com especificidade maior. O que sobrava era peso morto
+   com uma armadilha dentro — `.cred p { max-width: 34ch }` passou a casar
+   com a estrela quando ela virou `<p class="stat">`, e 34ch a 15px são
+   ~250px, estreito demais para um número de 216px, que quebraria a linha.
+   A seção inteira se estiliza em institutional.css. */
 
 /* --- FAQ --- */
 .faq {

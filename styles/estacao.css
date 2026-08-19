@@ -153,9 +153,12 @@
 .page #demo .demo-head h2,
 .page #demo .demo-head__sub,
 .page #demo .demo,
+.page .credibility-section .cred-head .tag,
+.page .credibility-section .cred-head h2,
+.page .credibility-section .cred-manifesto,
 .page .credibility-section .stat b,
 .page .credibility-section .stat i,
-.page .credibility-section .cred p,
+.page .credibility-section .cred-trilho li,
 .page #faq .sec-head .tag,
 .page #faq .sec-head h2,
 .page #faq details {
@@ -282,12 +285,27 @@
 .page #demo .demo-head__sub { --de: 0.40; --dur: 0.14; }
 .page #demo .demo { --de: 0.54; --dur: 0.24; }
 
-/* --- +15 anos — 3 degraus. É a estação mais próxima do desenho original:
-       poucos blocos, tipografia monumental, nada clicável. O número tem a
-       janela mais longa porque é ele que carrega a seção. --- */
-.page .credibility-section .stat b { --de: 0; --dur: 0.26; }
-.page .credibility-section .stat i { --de: 0.22; --dur: 0.16; }
-.page .credibility-section .cred p { --de: 0.36; --dur: 0.30; }
+/* --- Quem está por trás — 8 degraus. Eram 3 quando a seção era só um
+       número e uma frase.
+
+       A ordem é a do ARGUMENTO, não a do DOM: quem somos (kicker, título),
+       por que isso importa para o produto (manifesto), a estrela, e por fim
+       as três provas do trilho, da esquerda para a direita. O número
+       aparece DEPOIS do manifesto de propósito — ele é a evidência do que
+       acabou de ser afirmado, e evidência que chega antes da afirmação é só
+       um número grande na tela.
+
+       Termina em 0,75 da chegada (era 0,66). A seção continua com a maior
+       folga de leitura das cinco — ver a tabela na nota de CHEGOU em
+       Estacoes.tsx: 0,25 da chegada já montada, mais os 0,40 da travada. --- */
+.page .credibility-section .cred-head .tag { --de: 0; --dur: 0.12; }
+.page .credibility-section .cred-head h2 { --de: 0.10; --dur: 0.16; }
+.page .credibility-section .cred-manifesto { --de: 0.24; --dur: 0.16; }
+.page .credibility-section .stat b { --de: 0.38; --dur: 0.20; }
+.page .credibility-section .stat i { --de: 0.50; --dur: 0.10; }
+.page .credibility-section .cred-trilho li:nth-child(1) { --de: 0.52; --dur: 0.12; }
+.page .credibility-section .cred-trilho li:nth-child(2) { --de: 0.58; --dur: 0.12; }
+.page .credibility-section .cred-trilho li:nth-child(3) { --de: 0.63; --dur: 0.12; }
 
 /* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
        ressalva sobre clique em components/sections/Faq.tsx. --- */
@@ -313,9 +331,12 @@
   .page #demo .demo-head h2,
   .page #demo .demo-head__sub,
   .page #demo .demo,
+  .page .credibility-section .cred-head .tag,
+  .page .credibility-section .cred-head h2,
+  .page .credibility-section .cred-manifesto,
   .page .credibility-section .stat b,
   .page .credibility-section .stat i,
-  .page .credibility-section .cred p,
+  .page .credibility-section .cred-trilho li,
   .page #faq .sec-head .tag,
   .page #faq .sec-head h2,
   .page #faq details {
