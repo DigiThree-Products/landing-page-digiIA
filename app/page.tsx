@@ -6,6 +6,7 @@ import { Hero } from '@/components/sections/Hero'
 import { ApproachSection } from '@/components/sections/ApproachSection'
 import { WhatItDoes } from '@/components/sections/WhatItDoes'
 import { Demo } from '@/components/sections/Demo'
+import { DnaEstrategico } from '@/components/sections/DnaEstrategico'
 import { Offer } from '@/components/sections/Offer'
 import { Credibility } from '@/components/sections/Credibility'
 import { Faq } from '@/components/sections/Faq'
@@ -17,9 +18,16 @@ import { LANDING } from '@/content/landing'
  * A landing.
  *
  * A ordem das seções é o argumento da página: promessa → abordagem → o que faz
- * → como funciona → credibilidade → objeções → oferta.
+ * → como funciona → por que não sai genérico → credibilidade → objeções → oferta.
  * A oferta é o destino: o site inteiro constrói o argumento até chegar nela,
  * por último, antes do rodapé. Mexer na ordem muda o argumento, não só o layout.
+ *
+ * O DNA fica ENTRE o Demo e a credibilidade, e as duas vizinhanças são
+ * deliberadas. Antes dele, a pessoa acabou de ver a máquina produzindo — é
+ * exatamente aí que nasce a objeção "IA faz conteúdo genérico". Depois dele, o
+ * "+15 anos" deixa de ser um selo solto e vira a história de origem do DNA: o
+ * fecho da seção entrega o bastão, e a credibilidade responde com "A IA é
+ * nova. O método não.". Separar os dois desfaz as duas costuras de uma vez.
  */
 export default function Home() {
   return (
@@ -37,6 +45,7 @@ export default function Home() {
           <ApproachSection />
           <WhatItDoes />
           <Demo />
+          <DnaEstrategico />
           <Credibility />
           <Faq />
           <Fecho>

@@ -685,6 +685,25 @@ body::after {
   font-weight: 600;
 }
 
+/* A linha da escassez.
+   Fica DISCRETA de propósito, em mono e pequena, com um filete à esquerda em
+   vez de peso tipográfico. O número precisa ser lido como registro
+   operacional — "é assim que a gente trabalha" — e não como cartaz de
+   promoção. Escassez que grita é a que o visitante desconfia; a que só
+   informa é a que ele acredita. Aumentar o tamanho desta frase desfaz
+   exatamente o que a faz funcionar. */
+.page .cred-escassez {
+  margin: 0;
+  max-width: 46ch;
+  padding-left: 14px;
+  border-left: 2px solid var(--lilac);
+  font-family: var(--font-mono);
+  font-size: clamp(11.5px, 1vw, 13px);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--paper-56);
+}
+
 /* O trilho das provas, na base, sob um filete.
    EM LINHA e não empilhadas, e a diferença não é estética: três números
    lado a lado se leem como um CONJUNTO de provas; empilhados viram lista, e

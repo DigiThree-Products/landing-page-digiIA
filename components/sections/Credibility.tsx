@@ -47,6 +47,13 @@ export function Credibility() {
             </p>
           </div>
 
+          {/* A escassez vive aqui porque a seção da oferta está congelada — e
+              escassez sem lugar nenhum é escassez perdida. Ela cabe nesta
+              seção por mérito, não por sobra: o motivo do teto (a conta é
+              montada à mão) é a mesma prova de autoridade que o resto do
+              bloco sustenta. */}
+          <p className="cred-escassez">{credibility.escassez}</p>
+
           <ul className="cred-trilho">
             {provas.map((prova) => (
               <li key={prova.label}>

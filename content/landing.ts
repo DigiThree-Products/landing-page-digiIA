@@ -25,8 +25,12 @@ export const LANDING = {
     title: 'A gente usando',
     titleLineTwo: 'sem corte e sem',
     titleAccent: 'mágica.',
+    /* A descrição não explica o que o vídeo mostra — a tela já mostra. Ela diz
+       por que assistir, e a aposta é a honestidade da gravação: "no tempo que
+       leva de verdade" é uma promessa que quase ninguém no mercado de IA faz.
+       Só manter enquanto o vídeo for realmente sem corte. */
     description:
-      'Antes de entrar na lista, veja a Digi.IA sendo operada de verdade — do pedido em português até a peça pronta.',
+      'Sem corte, sem aceleração, sem tela regravada. Do pedido em português até a peça pronta — no tempo que leva de verdade.',
   },
   /**
    * O que ela faz.
@@ -146,7 +150,13 @@ export const LANDING = {
     },
 
     repertorio: {
-      title: '10 aulas que ensinam a pedir',
+      /* Era "10 aulas que ensinam a pedir", e contradizia a FAQ, que promete
+         "não existe técnica de prompt para aprender". Os títulos das aulas
+         resolvem a discussão: "Post solto x plano de conteúdo" e "Ler o
+         resultado sem se enganar" ensinam estratégia, não prompt. O título
+         agora diz o que elas são de verdade — e de quebra reforça a mesma
+         autoridade que a seção "+15 anos" sustenta. */
+      title: '10 aulas de quem faz isso há 15 anos',
       selo: 'Repertório · incluso em todos os planos',
       aulas: [
         { codigo: 'R01', titulo: 'Post solto x plano de conteúdo' },
@@ -163,7 +173,11 @@ export const LANDING = {
        que ficava aqui virou subtítulo, que é o papel dela. */
     title: 'Você pede.',
     titleAccent: 'Ela entrega.',
-    subtitle: 'Seu pedido ganha forma e evolui com cada ajuste.',
+    /* A segunda frase vende CONTROLE, que é o segundo medo de quem compra IA
+       de marketing — o primeiro é sair genérico, e disso cuida a seção de DNA.
+       A etapa de aprovação existe no produto e o site não a vendia. */
+    subtitle:
+      'Seu pedido ganha forma e evolui com cada ajuste. Nada vai para o ar sem o seu de acordo.',
     windowLabel: 'Digi.IA — demonstração',
     scenes: [
       {
@@ -198,6 +212,114 @@ export const LANDING = {
       },
     ] satisfies readonly DemoScene[],
   },
+  /**
+   * DNA Estratégico — a estação que responde "por que não sai com cara de IA".
+   *
+   * A REGRA DESTA SEÇÃO, e ela não é negociável: mostrar o EFEITO, nunca a
+   * CAUSA. O diferencial da Digi.IA está no método, e o método é segredo
+   * comercial. Nada aqui pode dizer COMO a direção é produzida.
+   *
+   * Por isso:
+   *   - só `abertos` tem valor legível, e são os dois campos que qualquer
+   *     concorrente já supõe existir (tom de voz e público). Custam nada.
+   *   - `travados` são NOMES DE CATEGORIA e mais nada. Nenhum deles é uma
+   *     pergunta reaproveitável. Dizem que existe sistema e param aí.
+   *
+   * Antes de mexer em qualquer linha daqui, o teste: um concorrente
+   * conseguiria copiar alguma coisa lendo isto? Se sim, a linha virou causa e
+   * precisa voltar a ser efeito.
+   *
+   * SEM MARCA DE EXEMPLO, por decisão do dono do produto (20/08/2026). A ficha
+   * é a DO VISITANTE, não a de um cliente fictício. Houve aqui um contraste
+   * "uma IA qualquer × a sua", com dois textos de saída lado a lado, e ele era
+   * a peça mais forte da seção — mas copy concreta é necessariamente sobre
+   * ALGUM negócio, e sem exemplo ela não existe. Foi removido inteiro em vez
+   * de virar texto abstrato, que não demonstraria nada.
+   *
+   * Os valores de `abertos` ficam: "Direto, caloroso, sem formalidade" e
+   * "Famílias do bairro, 30 a 55" são descritores, não nomeiam negócio nenhum.
+   * Se algum dia voltarem a soar como exemplo, é aqui que se troca.
+   *
+   * Posição: depois do Demo, antes do "+15 anos". Não é estética — a objeção
+   * "IA faz conteúdo genérico" nasce logo depois de ver a máquina produzindo,
+   * e o "+15 anos" passa a ser a história de origem do DNA em vez de um selo
+   * solto. Mexer na ordem desfaz as duas costuras.
+   */
+  dna: {
+    eyebrow: 'DNA Estratégico',
+    title: 'Por que não sai com cara de IA.',
+    /* "Cara de IA" é a palavra que o dono de negócio usa; "genérico" é a que
+       nós usamos. A segunda frase é o que justifica os cadeados abaixo — e
+       justifica por CONFIDENCIALIDADE DO CLIENTE, não por segredo nosso. É
+       verdade, e ecoa a promessa de privacidade que a FAQ já faz. */
+    /* UMA IDEIA SÓ, e curta. É o posto 2 da seção — a resposta à pergunta do
+       título — e posto 2 que carrega duas ideias empata com o posto 3.
+
+       Havia aqui uma segunda oração sobre o dado ficar na conta do cliente.
+       Saiu por ser redundante: quem justifica os cadeados é a nota do próprio
+       cartão ("O DNA completo é confidencial de cada marca"), que está ao
+       lado deles, que é onde a dúvida nasce. */
+    description: 'Toda IA escreve. A diferença está no que ela sabe antes de escrever.',
+    ficha: {
+      /* A ficha é a DO VISITANTE. Era "Pizzaria Bella" e virou isto quando os
+         exemplos saíram: em vez de espiar o DNA de um estranho, ele olha para
+         o próprio. Converte melhor pelo mesmo motivo — a tela passa a falar
+         dele, não de um caso. */
+      marca: 'a sua marca',
+      /* Renomeadas de propósito: no produto as abas têm outros nomes. Estas
+         dizem o que interessa a quem compra — que o DNA aprende com o mês
+         anterior — sem espelhar a arquitetura interna. */
+      abas: ['Marca', 'Resultados', 'Evolução'],
+      abertos: [
+        { rotulo: 'Tom de voz', valor: 'Direto, caloroso, sem formalidade' },
+        { rotulo: 'Público', valor: 'Famílias do bairro, 30 a 55' },
+      ],
+      /* "Restrições editoriais" e "Diretrizes de linguagem" fazem o trabalho
+         mais pesado: plantam a ideia de que existem regras sobre o que ela NÃO
+         pode escrever, sem entregar uma única regra. */
+      travados: [
+        'Posicionamento',
+        'Território de marca',
+        'Restrições editoriais',
+        'Diretrizes de linguagem',
+        'Indicadores do mês',
+      ],
+      nota: 'O DNA completo é confidencial de cada marca.',
+    },
+    /**
+     * As três respostas que a seção precisa dar, agora que não há contraste
+     * para dá-las por demonstração.
+     *
+     * Cada uma responde a uma pergunta que o dono de negócio faz de verdade,
+     * nesta ordem: vou ter trabalho? vai ficar igual ao dos outros? e daqui a
+     * seis meses? Todas falam do EFEITO — nenhuma descreve o mecanismo.
+     *
+     * UMA LINHA CADA, e isso é requisito de layout, não de estilo. Eram pares
+     * de título e parágrafo, e três blocos de texto ao lado do cartão faziam
+     * a seção inteira competir consigo mesma — sem hierarquia, embolada. Como
+     * linha única elas viram ritmo na coluna de leitura em vez de um segundo
+     * objeto. Se alguma passar de ~55 caracteres, quebra em duas e o ritmo
+     * se perde.
+     */
+    pilares: [
+      'A ficha é montada numa conversa, não num formulário.',
+      'Duas marcas nunca partem da mesma base.',
+      'O que funcionou num mês vira instrução no seguinte.',
+    ],
+    /* UM trabalho só: entregar o bastão para a próxima seção, que responde
+       com "A IA é nova. O método não."
+
+       Fazia três, e por isso era um parágrafo: matava o medo de preencher,
+       justificava a vaga limitada e fazia a ponte. Os dois primeiros
+       saíram porque já estavam ditos em outro lugar — o primeiro na linha de
+       abertura dos pilares ("não num formulário"), o segundo na linha de
+       escassez da própria seção de credibilidade. Repetido, cada argumento
+       vale menos, não mais.
+
+       A data é o que faz a ponte: ela abre a pergunta "desde 2010?" que a
+       seção seguinte existe para responder. */
+    fecho: `É o mesmo briefing que a ${SITE.organizacaoMae} monta para cada cliente desde 2010.`,
+  },
   offer: {
     eyebrow: 'A oferta',
     title: 'Restam poucas vagas.',
@@ -230,6 +352,20 @@ export const LANDING = {
      */
     punch: 'A IA é nova. O método não.',
     /**
+     * A escassez mora AQUI porque a seção da oferta está congelada por decisão
+     * do dono do produto — e escassez sem lugar nenhum é escassez perdida.
+     *
+     * Diz o número e o MOTIVO, nessa ordem. Motivo verdadeiro é o que separa
+     * escassez que converte de urgência que queima confiança: "restam poucas
+     * vagas" sem causa lê como marketing; "é montado à mão, por isso acaba" é
+     * verificável. E o motivo é o mesmo argumento da seção de DNA, o que faz as
+     * duas se sustentarem em vez de competirem.
+     *
+     * O número vem de SITE.turma — provisório até o painel de admin. Ver a nota
+     * lá antes de publicar.
+     */
+    escassez: `Cada conta é montada à mão pela nossa equipe. É por isso que a primeira turma tem ${SITE.turma.vagas} vagas, e não mil.`,
+    /**
      * Números fornecidos pelo dono do produto (ago/2026) e publicados como
      * FATOS. O "9" é exato de propósito — sem "+": número redondo lê como
      * marketing, número exato lê como medido. Atualizar aqui quando os dados
@@ -249,7 +385,27 @@ export const LANDING = {
   faq: {
     eyebrow: 'Perguntas',
     title: 'O que costumam perguntar antes de entrar.',
+    /**
+     * As DUAS PRIMEIRAS são as mais novas e estão em primeiro de propósito.
+     *
+     * A FAQ virou peça de conversão, e não só de suporte: a seção da oferta
+     * está congelada, então os argumentos que deveriam viver lá — a objeção
+     * contra IA e a escassez com motivo — foram realocados para cá, que é o
+     * lugar disponível mais perto da decisão.
+     *
+     * A primeira responde pelo EFEITO. Nenhuma resposta desta FAQ pode
+     * descrever como a direção é produzida: ver a regra em LANDING.dna.
+     */
     items: [
+      {
+        question: 'O conteúdo não vai sair com cara de IA?',
+        answer:
+          'Essa é a pergunta certa. A diferença não está no texto, está no que vem antes dele: a sua marca é configurada com a nossa equipe antes de qualquer conteúdo existir — como ela fala, com quem fala, o que nunca diria. Depois disso, nada é publicado sem você aprovar.',
+      },
+      {
+        question: 'Por que a primeira turma é limitada?',
+        answer: `Porque a configuração inicial de cada conta é feita à mão pela nossa equipe, uma por uma. São ${SITE.turma.vagas} vagas nesta primeira turma — é o que conseguimos atender bem até ${SITE.lancamento.diaMes}. Quando encher, a lista continua aberta para a turma seguinte, sem a condição de lançamento.`,
+      },
       {
         question: 'Quanto vai custar?',
         answer:
