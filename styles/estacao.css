@@ -153,9 +153,16 @@
 .page #demo .demo-head h2,
 .page #demo .demo-head__sub,
 .page #demo .demo,
+.page #dna .dna-head .tag,
+.page #dna .dna-head h2,
+.page #dna .dna-head__sub,
+.page #dna .dna-ficha,
+.page #dna .dna-pilares li,
+.page #dna .dna-fecho,
 .page .credibility-section .cred-head .tag,
 .page .credibility-section .cred-head h2,
 .page .credibility-section .cred-manifesto,
+.page .credibility-section .cred-escassez,
 .page .credibility-section .stat b,
 .page .credibility-section .stat i,
 .page .credibility-section .cred-trilho li,
@@ -202,13 +209,136 @@
 
 /* Os corpos pesados vêm de mais longe e crescem mais que o texto, para a
    chegada deles FECHAR a viagem em vez de só completar a lista: o vídeo
-   da estação, os cards do bento, a janela da demo e o retrato. */
+   da estação, os cards do bento, a janela da demo e o retrato.
+
+   O cartão do DNA saiu desta lista — não porque deixou de ser pesado, mas
+   porque a seção inteira passou a viajar por PROFUNDIDADE, e lá o "vem de
+   mais longe" se escreve em `--longe`, não em `--encolhe`. Ver o bloco a
+   seguir. */
 .page .approach-media,
 .page #recursos .rec-cell,
 .page #demo .demo,
 .page #demo .demo-lado {
   --sobe: 64px;
   --encolhe: 0.16;
+}
+
+/* ------------------------------------------------------------
+   DNA ESTRATÉGICO — a chegada por profundidade
+
+   As outras estações encolhem o bloco por interpolação linear
+   (`scale(1 - (1-t) * --encolhe)`). Isso produz um bloco que CRESCE, e
+   crescer não é a mesma coisa que se aproximar: o tamanho aparente de um
+   corpo é 1/distância, então a metade inicial de um caminho quase não muda
+   o tamanho e o último quarto muda tudo. Interpolando o tamanho direto,
+   metade do crescimento se gasta antes de a viagem começar a se ler.
+
+   Não é teoria: é exatamente o que Estacoes.tsx já faz com a estação
+   inteira, e a nota lá diz por quê — "o `suave` fica na distância, e não no
+   tamanho, para frear a chegada sem desmanchar a perspectiva". O conteúdo
+   dentro do painel estava sob outra lei que a caixa que o carrega.
+
+   `perspective()` resolve isso sem uma divisão em `calc`: o navegador já
+   projeta `translateZ` por 1/distância. A escala aparente de partida é
+   `--lente / (--lente - --longe)`, com `--longe` negativo — 620/1800 = 0,34
+   para o texto e 620/2600 = 0,24 para o cartão.
+
+   `perspective()` vem em PRIMEIRO na lista de propósito: como função de
+   transformação ela só projeta o que vem depois dela.
+
+   Fica no eixo Z e não na `perspective` do pai porque a propriedade só
+   alcança os FILHOS DIRETOS. O `.tag`, o `h2` e os pilares são netos e
+   bisnetos de `.dna`, e chegar até eles exigiria `preserve-3d` em três
+   contêineres intermediários — que qualquer `overflow`, `filter` ou
+   `opacity` futuro nesses contêineres desligaria em silêncio, deixando os
+   blocos sem escala nenhuma e ninguém sabendo por quê. Na função, a
+   projeção é local e nada de fora a quebra.
+
+   O `--encolhe` não é lido aqui. Mexer nele para esta seção não faz nada.
+
+   A LENTE É A MESMA PARA TODOS, e é isso que faz os blocos parecerem
+   habitar um espaço só em vez de terem cada um a sua caixa. Quem muda por
+   bloco é a distância.
+
+   O BORRÃO é o que separa "longe" de "pequeno". Sem ele um bloco distante é
+   só um bloco pequeno e nítido, que o olho lê como miniatura; com ele o
+   bloco chega resolvendo o foco, que é como as coisas chegam de longe. Ele
+   é proporcional ao que falta da viagem, então no repouso vale 0.
+
+   Escala invariante: `--lente` e `--longe` vivem no espaço local do palco,
+   que o GSAP escala por fora. Como os dois escalam juntos, a razão entre
+   eles não muda — o gesto é o mesmo com a estação a 0,16 e a 1,0.
+   ------------------------------------------------------------ */
+.page #dna .dna {
+  /* Um dial só para a amplitude lateral e vertical da seção inteira. */
+  --fuga: clamp(40px, 3.6vw, 72px);
+}
+
+.page #dna .dna-head .tag,
+.page #dna .dna-head h2,
+.page #dna .dna-head__sub,
+.page #dna .dna-pilares li,
+.page #dna .dna-fecho,
+.page #dna .dna-ficha {
+  --lente: 620px;
+  --longe: -1180px;
+  --borrao: 5px;
+  --sobe: calc(var(--fuga) * 1.1);
+  /* A coluna de leitura parte deslocada para a DIREITA, ou seja, para
+     dentro — em direção ao centro da composição, que é de onde um ponto de
+     fuga cospe as coisas. O cartão parte da esquerda pelo mesmo motivo, e
+     por isso o sinal dele é o contrário. Os dois convergem para o mesmo
+     ponto no fundo, e é a convergência que diz "vieram do mesmo lugar".
+
+     Isto INVERTE a convenção do bento logo acima, onde a direção aponta
+     para fora do centro. Lá as células voltam para o lugar vindas da borda;
+     aqui os blocos vêm do fundo, e o que vem do fundo entra pelo meio. */
+  --vem-x: calc(var(--fuga) * 0.55);
+  transform: perspective(var(--lente))
+    translate3d(
+      calc((1 - var(--t)) * var(--vem-x)),
+      calc((1 - var(--t)) * var(--sobe)),
+      calc((1 - var(--t)) * var(--longe))
+    );
+  filter: blur(calc((1 - var(--t)) * var(--borrao)));
+}
+
+/* O cartão: mais fundo, mais borrado e vindo do outro lado. Ele é o corpo
+   pesado que FECHA a viagem, e a distância extra é o que dá a ele uma
+   chegada de peso diferente sem precisar de mais tempo de rolagem.
+
+   Sobe menos que o texto porque já nasce na altura em que assenta: a coluna
+   dele é centrada na linha do grid, então o centro do cartão é quase o
+   centro da composição, e um ponto de fuga não empurra para cima nem para
+   baixo o que já está na sua altura. */
+.page #dna .dna-ficha {
+  --longe: -1980px;
+  --borrao: 9px;
+  --sobe: calc(var(--fuga) * 0.4);
+  --vem-x: calc(var(--fuga) * -1.1);
+}
+
+/* No celular a composição é UMA COLUNA (ver dna.css): o cartão fica embaixo
+   do texto, e não ao lado. Sem as duas colunas não sobra convergência
+   lateral para expressar — o deslocamento em X deixa de significar coisa
+   alguma e passa a ser só risco.
+
+   Risco de verdade, e medido: aqui os blocos perdem o `max-width` e ocupam a
+   largura inteira, e nem `#dna` nem o palco recortam — os dois são
+   `overflow: visible`. O comentário do bento, logo acima, diz que "a seção é
+   `overflow: hidden`"; aquilo vale para o `#recursos`, não para esta.
+
+   A profundidade continua fazendo o trabalho sozinha, que é o gesto que
+   importa. */
+@media (max-width: 1023px) {
+  .page #dna .dna-head .tag,
+  .page #dna .dna-head h2,
+  .page #dna .dna-head__sub,
+  .page #dna .dna-pilares li,
+  .page #dna .dna-fecho,
+  .page #dna .dna-ficha {
+    --vem-x: 0px;
+  }
 }
 
 /* ---------- Direções do bento ----------
@@ -306,6 +436,86 @@
 .page .credibility-section .cred-trilho li:nth-child(1) { --de: 0.52; --dur: 0.12; }
 .page .credibility-section .cred-trilho li:nth-child(2) { --de: 0.58; --dur: 0.12; }
 .page .credibility-section .cred-trilho li:nth-child(3) { --de: 0.63; --dur: 0.12; }
+/* A escassez chega DEPOIS do trilho de provas, e essa ordem é o argumento:
+   primeiro os números que sustentam a autoridade, só então o motivo de a
+   turma ter fim. Invertido, o teto soa a pressão de venda antes de haver
+   razão para acreditar nele. */
+.page .credibility-section .cred-escassez { --de: 0.72; --dur: 0.14; }
+
+/* ------------------------------------------------------------
+   DNA ESTRATÉGICO — oito chegadas, uma de cada vez
+
+   A versão anterior copiava as janelas da approach número por número e
+   pendurava as cinco sobras (três linhas, fecho e cartão) na esteira do
+   subtítulo. Medido em rolagem, o resultado era este:
+
+       sub     visível de 0,947 a 1,065 tela
+       pilar1              0,983    1,105     pausa antes: -0,083
+       pilar2              1,012    1,145                  -0,093
+       pilar3              1,043    1,193                  -0,102
+       fecho               1,075    1,247                  -0,118
+       cartão              1,111    1,259                  -0,136
+
+   Cinco pausas NEGATIVAS: cada bloco começava a aparecer antes de o
+   anterior ter assentado. Seis conteúdos nasciam dentro de 0,16 tela, todos
+   se mexendo ao mesmo tempo. Não era uma cascata rápida demais — era um
+   borrão único, e nenhum ajuste de velocidade conserta isso.
+
+   POR QUE PASSOU DESPERCEBIDO: `--de` e `--dur` vivem no domínio de
+   `--chegada`, que é um smoothstep da rolagem. Escolher os pares olhando
+   para eles é escolher no domínio errado — 0,80 e 0,8250 parecem
+   escalonados e caem quase em cima um do outro na tela. Os números abaixo
+   foram resolvidos ao contrário: eu digo em que TELA cada bloco aparece e
+   assenta, e inverto o smoothstep para achar o par.
+
+   O que sai disso, medido, com a chegada de 1,3508 tela (CHEGOU 0,614 ×
+   TRAVESSIA 2,2):
+
+       bloco    visível de   até     pausa antes
+       tag         0,045    0,116        —
+       h2          0,211    0,306      +0,095
+       sub         0,391    0,481      +0,085
+       pilar 1     0,586    0,661      +0,105
+       pilar 2     0,716    0,791      +0,055
+       pilar 3     0,846    0,921      +0,055
+       fecho       1,026    1,111      +0,105
+       cartão      1,185    1,287      +0,074
+
+   As pausas são DESIGUAIS pela mesma razão que os respiros da coluna são
+   (ver dna.css): 0,105 nas quebras de registro — do subtítulo para as
+   linhas, das linhas para o fecho —, 0,055 entre os três pilares, que são a
+   mesma espécie e se leem como um tempo triplo, e não como três eventos
+   soltos. Uniformizar as sete pausas devolve a lista sem hierarquia.
+
+   O CARTÃO é o único com `--de + --dur` = exatamente 1, e isso não é
+   arredondamento: `--chegada` satura em 1 no fim da viagem, então um bloco
+   com soma maior que 1 nunca completa. Com 1,0059 — que foi o meu primeiro
+   valor — ele ficava preso em 98% de opacidade e ligeiramente deslocado
+   durante a leitura inteira, sem nada na tela explicando por quê.
+
+   A TAG APARECE MAIS CEDO que antes (0,045 contra 0,093 de tela), e isso é
+   de graça: ela ficava tanto tempo na janela porque herdava o `--dur` do
+   kicker da approach, que tem quatro blocos para gastar 1,35 tela e pode se
+   dar ao luxo. Encurtá-la pagou parte das pausas de baixo e ainda reduziu a
+   espera no preto, que é a queixa antiga anotada em `.approach-kicker`.
+
+   SE TRAVESSIA OU CHEGOU MUDAREM, todos os oito pares reescalam e as telas
+   acima deixam de valer. As proporções entre eles é que são o desenho. */
+.page #dna .dna-head .tag { --de: 0.0000; --dur: 0.0241; }
+/* pausa de 0,095 tela */
+.page #dna .dna-head h2 { --de: 0.0535; --dur: 0.0893; }
+/* pausa de 0,085 tela — a menor das quebras, porque título e subtítulo são
+   pergunta e resposta, uma unidade só. */
+.page #dna .dna-head__sub { --de: 0.1867; --dur: 0.1196; }
+/* pausa de 0,105 tela — muda o registro: sai o argumento, entra o apoio. */
+.page #dna .dna-pilares li:nth-child(1) { --de: 0.3860; --dur: 0.1134; }
+/* 0,055 tela entre as três: um tempo triplo, não três eventos. */
+.page #dna .dna-pilares li:nth-child(2) { --de: 0.5298; --dur: 0.1126; }
+.page #dna .dna-pilares li:nth-child(3) { --de: 0.6714; --dur: 0.1032; }
+/* pausa de 0,105 tela — o fecho é de outra espécie (ver dna.css). */
+.page #dna .dna-fecho { --de: 0.8428; --dur: 0.0854; }
+/* O corpo pesado, que fecha a chegada. `--de + --dur` = 1 exato. */
+.page #dna .dna-ficha { --de: 0.9520; --dur: 0.0480; }
 
 /* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
        ressalva sobre clique em components/sections/Faq.tsx. --- */
@@ -337,10 +547,21 @@
   .page .credibility-section .stat b,
   .page .credibility-section .stat i,
   .page .credibility-section .cred-trilho li,
+  .page .credibility-section .cred-escassez,
+  .page #dna .dna-head .tag,
+  .page #dna .dna-head h2,
+  .page #dna .dna-head__sub,
+  .page #dna .dna-pilares li,
+  .page #dna .dna-fecho,
+  .page #dna .dna-ficha,
   .page #faq .sec-head .tag,
   .page #faq .sec-head h2,
   .page #faq details {
     opacity: 1;
     transform: none;
+    /* O DNA é o único que borra, mas zerar aqui vale para todos: se um dia
+       outra seção ganhar `filter`, ela já entra coberta em vez de chegar
+       desfocada para quem pediu menos movimento. */
+    filter: none;
   }
 }
