@@ -18,6 +18,33 @@ export const SITE = {
     porExtenso: '14 de setembro de 2026',
     curto: '14.09',
   },
+  /**
+   * O tamanho da primeira turma.
+   *
+   * NÚMEROS PROVISÓRIOS, combinados com o dono do produto: existem para a copy
+   * de escassez ficar de pé antes do painel de admin, e PRECISAM virar os reais
+   * antes do lançamento. Não é preciosismo — escassez que o visitante desconfia
+   * ser inventada derruba a confiança mais do que a escassez levanta a
+   * conversão, e o resto do site é honesto demais para pagar esse preço.
+   *
+   * Fonte única: nenhum componente conhece esses valores, todos leem daqui.
+   * Quando o painel existir, é este objeto que ele passa a preencher — a forma
+   * abaixo já é a que ele vai escrever.
+   *
+   * `vagas` é redondo de propósito e `restantes` não: capacidade se decide em
+   * número redondo ("vamos atender 120"), saldo não. O contrário — 127 vagas,
+   * restam 30 — lê como número inventado.
+   *
+   * `mostrarRestantes` nasce DESLIGADO, e isso é deliberado. Contador estático
+   * é pior que contador nenhum: quem volta ao site dias depois vê o mesmo
+   * "restam 31" e aprende que o número é enfeite. Ligar só quando o painel
+   * puder movê-lo de verdade.
+   */
+  turma: {
+    vagas: 120,
+    restantes: 31,
+    mostrarRestantes: false,
+  },
   titulo: 'Digi.IA — pré-cadastro com desconto de lançamento | DigiThree',
   descricao:
     'A IA de conteúdo e marketing da DigiThree chega em 14 de setembro. Planejamento, campanhas, roteiros, custos e ROI com o método de mais de 15 anos da casa. Entre na lista e receba o preço antes de todo mundo.',
