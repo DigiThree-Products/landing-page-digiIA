@@ -462,8 +462,28 @@ body::after {
 }
 
 /* ============================================================
-   OFERTA �?" grande bloco de cor da referencia
+   OFERTA + RODAPÉ �?" o fecho, um bloco de cor só
    ============================================================ */
+
+/* O gradiente mora AQUI, no pai das duas seções (ver a nota em
+   app/page.tsx), e não em cada uma.
+
+   Estava declarado idêntico nas duas e mesmo assim emendava: cada caixa
+   pinta a própria rampa do começo, então a oferta acabava no violeta e o
+   rodapé recomeçava do abismo, com o brilho radial nascendo de novo. Uma
+   rampa só sobre os dois resolve em qualquer altura de janela.
+
+   Nada de `overflow: hidden` aqui: o anel de `#oferta::before` estoura a
+   seção de propósito e é ela quem o corta. */
+.page .fecho {
+  position: relative;
+  isolation: isolate;
+  color: var(--paper);
+  background:
+    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
+    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
+}
+
 .page #oferta {
   width: 100%;
   min-height: 100svh;
@@ -474,9 +494,6 @@ body::after {
   justify-content: center;
   overflow: hidden;
   color: var(--paper);
-  background:
-    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
 }
 
 .page #oferta::before {
@@ -802,10 +819,19 @@ body::after {
   margin: 0;
   padding: 72px var(--world-edge) 42px;
   color: var(--paper);
-  border-color: rgba(248, 240, 255, 0.12);
-  background:
-    radial-gradient(70% 100% at 8% 0%, rgba(205, 130, 255, 0.34), transparent 58%),
-    linear-gradient(125deg, var(--abyss), var(--violet) 76%);
+  /* As duas linhas abaixo são anulações EXPLÍCITAS de sections.css, e
+     precisam ser explícitas: lá `.site-footer` é uma classe só, mas se
+     esta regra apenas deixasse de declarar, a de lá voltaria a valer.
+
+     `background`: o gradiente subiu para o `.fecho`, que é o pai comum
+     com a oferta. Deixar um aqui repintaria a rampa do começo e traria a
+     emenda de volta.
+
+     `border-top`: era ela, com 1px, que desenhava a linha da divisão
+     exatamente onde a continuidade precisa ser invisível. Quem separa o
+     rodapé por dentro é a régua do `.foot-bot`, que continua lá. */
+  background: none;
+  border-top: none;
 }
 
 .page .site-footer .foot-top,
@@ -822,8 +848,12 @@ body::after {
   color: var(--paper-56);
 }
 
+/* Sem teto de largura: com 440px os quatro links não cabiam numa linha e
+   o INSTAGRAM caía sozinho numa segunda, encostado à direita — lia como
+   erro, não como coluna. Medido em 1440: os quatro ocupam ~558px e há
+   ~842px livres ao lado do bloco do logo. Em telas estreitas o
+   `flex-wrap` de sections.css continua quebrando, que é o certo lá. */
 .page .site-footer .foot-links {
-  max-width: 440px;
   justify-content: flex-end;
 }
 
@@ -919,6 +949,16 @@ body::after {
 
   .page #faq {
     min-height: auto;
+    display: block;
+  }
+
+  /* O grid de duas colunas mudou de dono quando o FAQ virou estação: ele
+     mora no `.estacao-palco`, e o reset acima é do `#faq`, que agora só
+     contém o palco. Sem esta linha a lista mantinha a largura da coluna
+     de desktop dentro de um celular — medido num 390px, as perguntas
+     saíam pela direita (a caixa de "Quanto vai custar?" começava em 352
+     e terminava em 419, com a tela acabando em 390). */
+  .page #faq>.estacao-palco {
     display: block;
   }
 

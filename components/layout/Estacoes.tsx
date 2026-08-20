@@ -109,27 +109,49 @@ const TRAVESSIA = 4
 /* Marcos dentro do trecho preso. Entre CHEGOU e PARTIU ela fica parada
    em 1:1 — a composição inteira montada, imóvel e nítida.
 
-   Essa janela é curta de propósito: 0,26 tela de rolagem. É o instante
-   em que os quatro blocos existem juntos, e ele se lê como uma travada
-   leve — a página continua rolando e nada se mexe. Longa demais, ela
-   deixa de ser o encontro dos blocos e vira uma seção parada esperando
-   o usuário; curta demais, os blocos nunca chegam a coexistir e o vídeo
-   entra já saindo.
+   É O ÚNICO TRECHO VERDADEIRAMENTE IMÓVEL da estação, e isso é literal:
+   em `p >= CHEGOU` o `viagem` satura em 1, então `tamanho` vale 1,
+   `perto` vale 1 e `passagem` ainda vale 0 — o transform é identidade e a
+   opacidade é 1. A página continua rolando e nada se mexe. É a travada
+   que o usuário usa para de fato OLHAR a composição.
+
+   Cuidado com uma leitura tentadora e errada: "os blocos terminaram a
+   cascata" não é o mesmo que "a estação chegou". As janelas de
+   styles/estacao.css correm em `--chegada`, e o palco inteiro ainda está
+   crescendo enquanto elas terminam — em "+15 anos", cuja última janela
+   fecha em 0,86, a composição está completa com o palco em 58% de escala,
+   ainda vindo. Completo NA TELA é `p = CHEGOU`, igual para as cinco. Por
+   isso a travada é a mesma para todas, e mexer nas janelas do CSS não a
+   encurta nem a alonga.
+
+   A janela foi 0,065 e virou 0,130 — 234px viraram 468px numa tela de
+   900px, ~4 estalos de roda. O pedido foi "uma travadinha para o usuário
+   visualizar, mas sem muito scroll para não cansar", e são duas exigências
+   opostas: a segunda proíbe alongar TRAVESSIA. Então a travada saiu da
+   CHEGADA, não do total — o pin continua com as mesmas 4,0 telas e o
+   documento tem exatamente a mesma altura de antes. O que se paga é uma
+   aproximação 8,6% mais rápida, que era justamente a parte longa demais.
+
+   Longa demais, a travada deixa de ser o encontro dos blocos e vira uma
+   seção parada esperando o usuário — e aí a sensação vira "travou" em vez
+   de "trava para eu ler". Curta demais, os blocos não chegam a coexistir e
+   a seção entra já saindo. 0,52 tela é o meio-termo medido.
 
    CHEGOU e TRAVESSIA são mexidos JUNTOS, e o produto dos dois é o que
-   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,7 × 4,0 =
-   2,80 telas. São dois eixos distintos, e vale não confundi-los: subir o
+   precisa ficar de pé: ele é o comprimento da chegada. Hoje 0,64 × 4,0 =
+   2,56 telas. São dois eixos distintos, e vale não confundi-los: subir o
    PONTO DE ENCONTRO encolhe o que vem DEPOIS da chegada; encolher a
    TRAVESSIA encolhe tudo proporcionalmente, chegada inclusa.
 
    O orçamento atual do pin, em telas de 900px:
-     chegada   0,700 × 4,0 = 2,80
-     travada   0,065 × 4,0 = 0,26
-     partida   0,235 × 4,0 = 0,94
-   Com a hero (3,5) e o vão (0,1), são 7,6 telas até o fim deste pin.
+     chegada   0,640 × 4,0 = 2,56
+     travada   0,130 × 4,0 = 0,52
+     partida   0,230 × 4,0 = 0,92
+   Com a hero (3,5) e o vão (0,1), são 7,6 telas até o fim deste pin — os
+   mesmos de antes, porque só a divisão interna mudou.
 
    ATENÇÃO: os números acima e os de styles/estacao.css são MEDIDOS contra
-   TRAVESSIA 4,0 e CHEGOU 0,7. Este bloco já carregou por muito tempo os
+   TRAVESSIA 4,0 e CHEGOU 0,64. Este bloco já carregou por muito tempo os
    valores de uma calibragem morta (0,87 × 9,89 = 8,60 telas, folgas de
    1,50, "quase dez telas") que sobreviveram a um encolhimento anterior sem
    ninguém remedir — e um comentário errado aqui custa caro, porque é ele
@@ -139,8 +161,8 @@ const TRAVESSIA = 4
    distância: é a AMPLITUDE do gesto de cada bloco em styles/estacao.css,
    hoje 32px (64 no vídeo) num palco ainda reduzido — sutil demais para um
    bloco "chegar" em vez de só "aparecer". */
-const CHEGOU = 0.7
-const PARTIU = 0.765
+const CHEGOU = 0.64
+const PARTIU = 0.77
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
@@ -161,7 +183,9 @@ const PARTIU = 0.765
  * pretos idênticos na tela e se ajustam por dials diferentes, e enquanto só
  * um deles se mexia a conta nunca fechava. Zerando o `--de` do kicker
  * (styles/estacao.css) e trazendo isto para 0,1, sobraram 327px; depois
- * TRAVESSIA caiu de 5,5 para 4,0 e levou o resto junto, para 263px.
+ * TRAVESSIA caiu de 5,5 para 4,0 e levou o resto junto, para 263px; e
+ * CHEGOU de 0,7 para 0,64 encurtou a curva mais um tanto, para 250px
+ * (medido: hero em opacidade 0 aos 3150, kicker visível aos 3400).
  *
  * ZERO NÃO É UM VALOR VÁLIDO AQUI, e o motivo não é estético. Este
  * componente monta ANTES de a Hero criar o pin dela, então no instante em
@@ -172,11 +196,12 @@ const PARTIU = 0.765
  * com `--chegada` correndo desde a primeira rolagem. Medido: `position:
  * fixed` e `--chegada` já em 0,98 na altura em que o cérebro some.
  *
- * Dos 263px que sobram, 90 são este vão e 173 são a curva de perspectiva da
+ * Dos 250px que sobram, 90 são este vão e 160 são a curva de perspectiva da
  * própria chegada, que parte devagar de propósito (`suave` no `onUpdate`,
- * tamanho = 1/distância). Esses 173 não têm dial PRÓPRIO, mas encolhem com
- * TRAVESSIA, por serem uma fração do pin — era o que eu não tinha percebido
- * ao chamá-los de piso. Estes 90 têm dial e é linear: cada 0,1 aqui vale
+ * tamanho = 1/distância). Esses 160 não têm dial PRÓPRIO, mas encolhem com
+ * TRAVESSIA **e com CHEGOU**, por serem uma fração da chegada — era o que eu
+ * não tinha percebido ao chamá-los de piso. Estes 90 têm dial e é
+ * linear: cada 0,1 aqui vale
  * 90px numa janela de 900px. Descer abaixo de ~0,05 reaproxima o topo
  * inicial de zero e volta a flertar com a falha acima.
  *
@@ -303,9 +328,42 @@ const suave = (t: number) => t * t * (3 - 2 * t)
  * A escala fica em `data-escala` porque o canvas da poeira precisa dela
  * para arredondar o retângulo branco no mesmo raio aparente do painel.
  */
+/**
+ * Abaixo desta largura não existe estação, e a razão é de conteúdo, não
+ * de gosto.
+ *
+ * A estação PRENDE a seção por quatro telas. Enquanto ela está presa a
+ * página não rola, então tudo que não couber na janela naquele instante é
+ * inalcançável — não "difícil de ver", inalcançável. No desktop o desenho
+ * garante que cabe (é o que as regras de `max-height` em recursos.css
+ * negociam). No celular não cabe nem de longe: medido num 390×844, o
+ * palco de "O que ela faz" tem 1.543px, o de "Perguntas" 1.110 e o de
+ * "Como funciona" 975 — respectivamente 699, 266 e 131 pixels de conteúdo
+ * que o usuário nunca alcançaria.
+ *
+ * Empilhado, cada seção volta a ser um bloco que rola normalmente, e a
+ * cascata não fica sem estado: o `initial-value` do `@property --chegada`
+ * é 1 (styles/estacao.css), ou seja "tudo montado". Quem zerava era este
+ * componente, e ele não roda mais aqui.
+ *
+ * 1024px porque é a fronteira que recursos.css e institutional.css já
+ * usam (`max-width: 1023px`) para empilhar. Uma fronteira só, nos três
+ * arquivos: se um mudar sozinho, aparece uma faixa de larguras que
+ * empilha o conteúdo e mesmo assim o prende.
+ *
+ * Consultado UMA VEZ, na montagem, sem `gsap.matchMedia`. É o mesmo trato
+ * que `vaoDaEstacao` já assume logo abaixo — os valores envelhecem numa
+ * mudança de janela, até o próximo mount. Um celular nunca atravessa esta
+ * fronteira; um desktop redimensionado até abaixo dela fica com os pins
+ * de pé até recarregar, e é o preço aceito aqui. Se um dia isso importar,
+ * o upgrade é `gsap.matchMedia(SO_DESKTOP, ...)`, que reverte sozinho.
+ */
+const SO_DESKTOP = '(min-width: 1024px)'
+
 export function Estacoes() {
   useGSAP(() => {
     if (prefersReducedMotion()) return
+    if (!window.matchMedia(SO_DESKTOP).matches) return
 
     const secoes = gsap.utils.toArray<HTMLElement>(document.querySelectorAll(PAINEIS))
     const paineis: HTMLElement[] = []
@@ -450,7 +508,9 @@ export function Estacoes() {
           const perto = (tamanho - ESCALA_LONGE) / (1 - ESCALA_LONGE)
 
           /* O `suave` aqui não é enfeite: sem ele a partida começa com um
-             canto. A rampa crua tem inclinação 1/(1-PARTIU) ≈ 17,9, então
+             canto. A rampa crua tem inclinação 1/(1-PARTIU) — hoje ≈ 4,3;
+             era ≈ 17,9 quando isto foi medido, com um PARTIU bem mais
+             tarde —, então
              o termo da partida saía de parado para 428vh por unidade de
              progresso no primeiro quadro — medido em 17,3px/quadro contra
              0,24 de aceleração máxima na volta, um salto 47× maior que

@@ -9,16 +9,14 @@ import { useEffect, useRef } from 'react'
  * daqueles ~600px não existia. Aqui o disco percorre a seção toda.
  *
  * CHEGOU A TER UM CAMPO DE ESCRITAS ATRÁS — 60 cópias de "garanta sua
- * vaga" espalhadas, invisíveis até o disco passar por cima. Foi retirado a
- * pedido: a repetição da frase no fundo não agradou. O que sobrou é o
- * vidro sozinho, e ele não fica sem função: sobre o título continua
- * revelando o texto alternativo, que é a revelação original e independe
- * deste componente.
+ * vaga" espalhadas pelo fundo da seção, invisíveis até o disco passar por
+ * cima. Foi retirado a pedido: a repetição da frase no fundo não agradou.
  *
- * Se um dia voltar a existir algo para revelar, o lugar é aqui dentro, e a
- * exigência é que as posições sejam DETERMINÍSTICAS — servidor e cliente
- * precisam gerar a mesma marcação, e um `Math.random` quebraria a
- * hidratação de um jeito que só aparece em produção.
+ * O campo voltou depois, e NÃO É AQUI. Ele vive dentro da máscara do
+ * título (`ECOS`, em OfferCursorReveal.tsx), em volta da frase revelada,
+ * onde o `clip-path` circular garante que nenhum eco exista fora do
+ * vidro. Este componente continua sendo só o anel: o que ele faz é a
+ * lupa não morrer nos limites da caixa do título.
  *
  * ANEXA-SE AO PAI EM VEZ DE ENVOLVÊ-LO, e isso é deliberado. Envolver a
  * seção num wrapper mudaria o box model de um bloco que não pode quebrar —

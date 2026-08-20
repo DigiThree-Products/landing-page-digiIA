@@ -16,9 +16,27 @@ html.waitlist-modal-open body {
   justify-content: center;
 }
 
-.page .hero-grid {
-  grid-template-columns: minmax(0, 1.08fr) minmax(390px, 0.92fr);
-  gap: clamp(30px, 4vw, 62px);
+/* Composição de duas colunas — SÓ no desktop, e o guarda é o conserto.
+
+   Esta regra tem DUAS classes; as versões de celular vivem em hero.css e
+   responsive.css (`@media (max-width: 980px) { .hero-grid { ... } }`) e
+   têm UMA. Media query não soma especificidade, então sem o guarda esta
+   aqui vencia em toda largura e as duas de lá nunca chegavam a valer.
+   Consequência medida num 390×844: a segunda trilha tem mínimo de 390px,
+   comia a linha inteira, e a coluna de texto ficava com `0px` — o
+   computado era `grid-template-columns: 0px 390px`, com cada palavra do
+   hero quebrando numa linha só.
+
+   É a MESMA armadilha que a nota no topo de hero.css descreve para o
+   z-index, e que já custou semanas por lá: um arquivo de fora, com duas
+   classes, mandando naquele que parece ser o dono do componente. Ao
+   acrescentar regra de hero aqui, ou o guarda vem junto, ou a mobile
+   perde de novo sem nenhum aviso. */
+@media (min-width: 1024px) {
+  .page .hero-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(390px, 0.92fr);
+    gap: clamp(30px, 4vw, 62px);
+  }
 }
 .page .hero-col {
   max-width: none;
@@ -238,10 +256,12 @@ html.waitlist-modal-open body {
    O disco de vidro segue o ponteiro por toda a seção, e não só pela caixa
    do título como antes.
 
-   Houve aqui um campo de "garanta sua vaga" repetido no fundo, revelado
-   por este mesmo disco via `clip-path: circle()`. Foi retirado a pedido.
-   Restou o vidro, que sobre o título continua descobrindo o texto
-   alternativo — essa revelação é do `.offer-reveal` e não depende daqui.
+   ESTE disco não revela nada: é só o anel, e existe para a lupa não
+   morrer nos limites do título. Houve aqui um campo de "garanta sua
+   vaga" espalhado pelo FUNDO DA PÁGINA, e foi retirado a pedido. O campo
+   voltou depois, mas noutro lugar: dentro da máscara do título
+   (`.offer-reveal__campo`), onde o recorte circular garante que nada
+   apareça fora do vidro. Não recriar nada aqui.
 
    Duas coordenadas convivem de propósito: `--offer-reveal-*` é relativa à
    caixa do TÍTULO e governa a revelação dele; `--lupa-*` é relativa à
@@ -326,11 +346,51 @@ html.waitlist-modal-open body {
 .offer-reveal__mask {
   display: grid;
   grid-area: 1 / 1;
+  /* Âncora do campo de ecos. Não muda a pintura: `z-index` num item de
+     grid já criava o contexto de empilhamento. */
+  position: relative;
   z-index: 3;
   clip-path: circle(0 at var(--offer-reveal-x) var(--offer-reveal-y));
 }
 .offer-reveal__text--revealed {
+  /* Posicionado só para vencer o campo: sem isto os ecos, que são
+     absolutos, pintariam POR CIMA da frase revelada. */
+  position: relative;
+  z-index: 1;
   color: var(--paper);
+}
+
+/* ---- O campo de ecos ----------------------------------------------
+   "Garanta sua vaga" repetido em volta da frase revelada. Está dentro da
+   máscara, então o `clip-path` acima é o dono dele: sem lupa em cima,
+   não há nada na tela.
+
+   O campo ESTOURA a caixa do título — é em volta do texto que os ecos
+   precisam caber, e dentro dela só sobrariam as bordas laterais. Estourar
+   é seguro justamente porque o recorte circular limita o que aparece:
+   `clip-path` corta o elemento e toda a descendência, inclusive o que
+   transborda. */
+.offer-reveal__campo {
+  position: absolute;
+  inset: -46% -13%;
+  pointer-events: none;
+}
+.offer-reveal__eco {
+  position: absolute;
+  top: var(--eco-y);
+  left: var(--eco-x);
+  font-family: var(--font-mono);
+  /* Uma linha, sempre: o disco tem 280px no pior caso e um eco quebrado
+     em duas linhas lê como parágrafo, não como sussurro. */
+  white-space: nowrap;
+  /* Menor que a .tag (12px) de propósito — isto é fundo, não rótulo. */
+  font-size: calc(clamp(9px, 0.72vw, 12px) * (0.82 + var(--eco-forca) * 0.42));
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lilac);
+  opacity: var(--eco-forca);
+  transform: translate(-50%, -50%) rotate(var(--eco-giro));
 }
 .offer-reveal[data-active='true'] .offer-reveal__mask {
   clip-path: circle(var(--offer-reveal-radius) at var(--offer-reveal-x) var(--offer-reveal-y));
@@ -395,6 +455,10 @@ html.waitlist-modal-open body {
   }
   .offer-reveal__text--revealed { color: var(--lilac); }
   .offer-reveal__lens { display: none; }
+  /* Aqui a máscara perde o `clip-path`, e sem ele o campo apareceria
+     inteiro, espalhado por cima da seção. Ele só faz sentido sob o
+     vidro. */
+  .offer-reveal__campo { display: none; }
 }
 
 /* Última chamada reutiliza o mesmo dialog. */

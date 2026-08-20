@@ -38,8 +38,26 @@ export default function Home() {
           <Demo />
           <Credibility />
           <Faq />
-          <Offer />
-          <SiteFooter />
+
+          {/* O fecho é UM plano de fundo só, e por isso a oferta e o rodapé
+              vivem dentro de um mesmo elemento.
+
+              Os dois já declaravam o MESMO gradiente, e mesmo assim havia
+              emenda: gradiente é pintado em relação à caixa de cada um, então
+              a oferta terminava no fim da rampa (violeta) e o rodapé
+              recomeçava do início dela (azul-abismo), com o brilho radial
+              nascendo uma segunda vez no canto de cima. Medido em 1440×900:
+              1.035px de oferta e 346px de rodapé, dois degradês completos
+              empilhados. Com o pai carregando o fundo, existe uma rampa só,
+              de 1.381px, e a divisão desaparece sem ninguém precisar acertar
+              números que mudam com a janela.
+
+              Manter os dois aqui dentro. Um deles fora do `.fecho` volta a
+              ficar sem fundo — o próprio foi removido — e aparece preto. */}
+          <div className="fecho">
+            <Offer />
+            <SiteFooter />
+          </div>
         </div>
       </div>
     </WaitlistModalProvider>

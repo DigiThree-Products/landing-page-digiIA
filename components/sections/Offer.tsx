@@ -28,6 +28,7 @@ export function Offer() {
         <OfferCursorReveal
           primaryText={LANDING.offer.title}
           revealedText={LANDING.offer.revealedTitle}
+          echoText={LANDING.offer.revealedEcho}
         />
 
         <div className="offer-action">

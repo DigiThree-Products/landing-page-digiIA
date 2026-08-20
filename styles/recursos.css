@@ -670,8 +670,17 @@
     flex: none;
     margin-top: 18px;
   }
+  /* `flex: none` sozinho dimensionava o post pelo MAX-CONTENT — a legenda
+     inteira numa linha só. Medido num 390px: 938px de post dentro de uma
+     coluna de 304, com a legenda cortada e os chips saindo pela direita.
+     O `.rec-out` que o abriga é uma FILA, então aqui `flex` governa a
+     LARGURA, não a altura; o que se queria dizer com `none` era "não
+     estica", e isso continua valendo — quem conserta a largura é o
+     `width`. */
   .page #recursos .post {
     flex: none;
+    width: 100%;
+    min-width: 0;
   }
   .page #recursos .post__body {
     display: block;

@@ -81,19 +81,25 @@
 
    Vale saber o que NÃO se ganha zerando isto: como o painel não pinta
    fundo nenhum, painel vazio é tela vazia, e a viagem parte devagar por
-   desenho. Sobram 263px entre o cérebro sumir e o kicker aparecer — 90 do
-   `ATRASO` (que não pode ir a zero, ver a nota lá) e 173 da curva da
-   chegada. Estes 173 não têm dial próprio, mas encolhem junto com
-   TRAVESSIA, por serem uma fração do pin.
+   desenho. Sobram 250px entre o cérebro sumir e o kicker aparecer — 90 do
+   `ATRASO` (que não pode ir a zero, ver a nota lá) e 160 da curva da
+   chegada. Estes 160 não têm dial próprio, mas encolhem junto com
+   TRAVESSIA e com CHEGOU, por serem uma fração da chegada.
 
-   ATENÇÃO aos números abaixo: eles são telas de rolagem MEDIDAS contra as
-   constantes atuais de Estacoes.tsx (TRAVESSIA 5,5 · CHEGOU 0,7, ou seja
-   uma chegada de 3,85 telas). Já estiveram escritos aqui os valores de uma
-   calibragem anterior — TRAVESSIA 9,89 e chegada de 8,60 telas — e ficaram
-   para trás quando as constantes encolheram, dizendo o dobro do real. Se
-   TRAVESSIA ou CHEGOU mudarem de novo, TODOS os pares abaixo reescalam
-   junto e precisam ser remedidos; as proporções entre os quatro é que são
-   fixas, não os números. */
+   ATENÇÃO aos números abaixo — e leia isto antes de confiar em qualquer um
+   deles. As constantes de hoje são TRAVESSIA 4,0 · CHEGOU 0,64, ou seja uma
+   chegada de 2,56 telas. Os pares em TELA e as distâncias em PX escritas
+   daqui para baixo foram medidas contra CHEGOU 0,7 (chegada de 2,80
+   telas), então todas encolheram 8,6% e não foram reescritas uma a uma:
+   MULTIPLIQUE POR 0,914 qualquer px citado abaixo. Os `--de`/`--dur` em si
+   continuam exatos — eles vivem em `--chegada`, que é adimensional; o que
+   envelheceu foi só a tradução deles para rolagem.
+
+   Este cabeçalho já mentiu duas vezes por não ser remedido junto com as
+   constantes (chegou a dizer TRAVESSIA 9,89, depois 5,5), e as duas vezes
+   custou tempo de quem foi calibrar. Se TRAVESSIA ou CHEGOU mudarem de
+   novo, TODOS os pares abaixo reescalam junto; as proporções entre os
+   blocos é que são fixas, não os números. */
 
 /* 0,00 → 0,55 tela · 0,55 tela */
 .page .approach-kicker {
@@ -103,10 +109,11 @@
      metade era o `ATRASO` em Estacoes.tsx, hoje também zero; os dois
      precisavam cair juntos, porque na tela eram o mesmo preto.
 
-     O que sobrou entre o cérebro sumir e este texto nascer são 263px, dos
-     quais 173 são a partida da própria chegada, lenta por desenho (tamanho
+     O que sobrou entre o cérebro sumir e este texto nascer são 250px, dos
+     quais 160 são a partida da própria chegada, lenta por desenho (tamanho
      = 1/distância), e 90 são o `ATRASO` mínimo. Baixar mais só mexendo
-     aqui é impossível — `--de` já é 0; o que ainda move os 173 é TRAVESSIA.
+     aqui é impossível — `--de` já é 0; o que ainda move os 160 são
+     TRAVESSIA e CHEGOU.
 
      Custo assumido: o silêncio entre o kicker e o título subiu para 0,64
      tela, porque só o primeiro bloco andou. Se isso incomodar, o conserto

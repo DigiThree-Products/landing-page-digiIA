@@ -202,13 +202,22 @@ export const LANDING = {
     eyebrow: 'A oferta',
     title: 'Restam poucas vagas.',
     revealedTitle: 'Condições especiais de lançamento.',
+    /**
+     * Repetido em volta do título revelado, só sob o vidro da lupa. É o
+     * mesmo verbo do botão do topo de propósito: quem varre a seção com o
+     * cursor encontra a instrução, não uma frase nova para interpretar.
+     *
+     * Frase curta é requisito, não estilo: cada eco é uma linha só, sem
+     * quebra, e o disco tem 280px de diâmetro no pior caso.
+     */
+    revealedEcho: 'Garanta sua vaga',
     ticker: 'PRIMEIRA TURMA  CONDIÇÃO DE LANÇAMENTO.',
     cta: 'Garantir minha condição',
   },
   credibility: {
     value: '15+',
     label: 'anos de mercado',
-    description: `A Digi.IA nasce dentro da ${SITE.organizacaoMae} — construída em cima de campanhas reais, não de teoria.`,
+    description: `A Digi.IA nasce dentro da ${SITE.organizacaoMae} construída em cima de campanhas reais, não de teoria.`,
   },
   faq: {
     eyebrow: 'Perguntas',
