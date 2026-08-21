@@ -7,13 +7,19 @@ const F = LANDING.features
 /**
  * O que ela faz.
  *
- * Cinco células em bento, dimensionadas por peso: CRIA domina porque é a dor
- * imediata de quem compra; DNA Estratégico e Repertório existem porque são o
- * que separa a Digi.IA de uma IA genérica.
+ * Quatro células em bento, dimensionadas por peso: CRIA domina porque é a dor
+ * imediata de quem compra, e o Repertório fecha porque é o que separa a
+ * Digi.IA de uma IA genérica.
+ *
+ * ERAM CINCO. O DNA Estratégico saiu daqui quando ganhou estação própria, em
+ * components/sections/DnaEstrategico.tsx. O motivo não é só evitar repetir o
+ * assunto: os dois campos que este card mostrava — tom de voz e público —
+ * eram exatamente os dois que a ficha de lá abre, com o mesmo texto. A
+ * página dizia a mesma coisa duas vezes, e a versão fraca vinha primeiro.
  *
  * Cada célula termina em uma superfície de saída — um post escrito, um
- * calendário preenchido, números em real, campos preenchidos. É de propósito:
- * a seção mostra o produto em vez de descrevê-lo.
+ * calendário preenchido, números em real. É de propósito: a seção mostra o
+ * produto em vez de descrevê-lo.
  *
  * A composição cabe em uma tela no desktop (ver styles/recursos.css). Em telas
  * baixas ou no celular ela cresce em vez de cortar — conteúdo escondido por
@@ -64,22 +70,6 @@ export function WhatItDoes() {
           <h3>{F.calcula.title}</h3>
 
           <CalculoRoi />
-        </article>
-
-        <article className="rec-cell rec-cell--dna">
-          <span className="verb">{F.dna.verb}</span>
-          <h3>{F.dna.title}</h3>
-
-          <div className="rec-out">
-            <dl className="campos">
-              {F.dna.campos.map((campo) => (
-                <div key={campo.rotulo}>
-                  <dt>{campo.rotulo}</dt>
-                  <dd>{campo.valor}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
         </article>
 
         <article className="rec-cell rec-cell--repertorio">

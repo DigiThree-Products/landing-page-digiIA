@@ -344,8 +344,13 @@
 /* ---------- Direções do bento ----------
    Cada célula chega de um lado, e a direção aponta para FORA do centro do
    grid — é o caminho que ela faria voltando para o lugar. CRIA entra pela
-   esquerda, PLANEJA desce do topo, CALCULA sobe, DNA vem da direita e a
-   faixa do Repertório fecha a composição por baixo, de mais longe.
+   esquerda, PLANEJA desce do topo, CALCULA sobe e a faixa do Repertório
+   fecha a composição por baixo, de mais longe.
+
+   Havia uma quinta, o DNA, que vinha da direita. Saiu com o card. Com ela
+   fora, CALCULA cresceu para a largura toda da direita e a única entrada
+   lateral que resta é a de CRIA — que é por isso que a regra do carrossel em
+   recursos.css passou a listar só ela.
 
    Isto reconstrói, em espaço, a coreografia que a entrada por relógio
    tinha em styles/recursos.css antes de a seção virar estação. Aquela
@@ -366,10 +371,6 @@
 }
 .page #recursos .rec-cell--calcula {
   --sobe: var(--vem);
-}
-.page #recursos .rec-cell--dna {
-  --vem-x: var(--vem);
-  --sobe: 0px;
 }
 .page #recursos .rec-cell--repertorio {
   --sobe: calc(var(--vem) * 1.35);
@@ -394,18 +395,25 @@
    Hero, #oferta e o rodapé não aparecem aqui e não devem aparecer.
    ============================================================ */
 
-/* --- O que ela faz — 7 degraus: rótulo, título e as cinco células.
-       A ordem das células é a da leitura do bento, não a do DOM. --- */
+/* --- O que ela faz — 6 degraus: rótulo, título e as quatro células.
+       A ordem das células é a da leitura do bento, não a do DOM.
+
+       Eram 7 enquanto existia o card do DNA, que ocupava `--de: 0.60`.
+       Tirá-lo sem mais nada deixaria um vão de 0,26 entre CALCULA e a faixa
+       — mais que o dobro do intervalo normal, e um buraco parado no meio da
+       cascata. O REPERTÓRIO subiu de 0,74 para 0,62 para fechar esse vão.
+
+       O passo de 0,12 entre as células e o acréscimo antes da faixa são os
+       MESMOS de antes: a cascata ficou mais curta, não mais rápida. --- */
 .page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
 .page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
 .page #recursos .rec-cell--cria { --de: 0.24; --dur: 0.14; }
 .page #recursos .rec-cell--planeja { --de: 0.36; --dur: 0.14; }
 .page #recursos .rec-cell--calcula { --de: 0.48; --dur: 0.14; }
-.page #recursos .rec-cell--dna { --de: 0.60; --dur: 0.14; }
 /* Intervalo um pouco maior antes da faixa: ela é o fecho, não mais um
    card — mesma intenção do `transition-delay` de 0,66s que existia na
    entrada por relógio, agora escrita em espaço. */
-.page #recursos .rec-cell--repertorio { --de: 0.74; --dur: 0.16; }
+.page #recursos .rec-cell--repertorio { --de: 0.62; --dur: 0.16; }
 
 /* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
        rosto que emerge e ela é a prova, o corpo mais pesado. --- */
