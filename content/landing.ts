@@ -140,15 +140,15 @@ export const LANDING = {
       },
     },
 
-    dna: {
-      verb: 'DNA Estratégico',
-      title: 'Por que não sai genérico',
-      campos: [
-        { rotulo: 'Tom de voz', valor: 'Direto, caloroso, sem formalidade' },
-        { rotulo: 'Público', valor: 'Famílias do bairro, 30 a 55' },
-      ],
-    },
+    /* Havia aqui um quinto card, `dna`, com "Tom de voz" e "Público". Saiu
+       quando o DNA Estratégico ganhou seção própria: os dois campos eram os
+       MESMOS dois que a ficha de lá abre, com o mesmo texto, e o bento os
+       mostrava primeiro e menor. Repetir o argumento na versão fraca antes
+       da forte é o pior dos dois mundos.
 
+       Se alguém precisar de um card de DNA aqui de novo, o problema não é
+       recriá-lo — é que ele vai brigar com `LANDING.dna`. Resolva lá
+       primeiro. */
     repertorio: {
       /* Era "10 aulas que ensinam a pedir", e contradizia a FAQ, que promete
          "não existe técnica de prompt para aprender". Os títulos das aulas

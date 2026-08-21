@@ -108,20 +108,122 @@
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  /* Linhas por conteúdo, não `1fr`. Com `1fr` as duas linhas assumem a
-     altura da mais alta — o DNA precisa de ~260px e arrastava PLANEJA,
-     que precisa de 166, junto. Eram 94px desperdiçados, o suficiente
-     para a seção estourar a tela. */
+  /* Linhas por conteúdo, não `1fr`. Com `1fr` as linhas assumem todas a
+     altura da mais alta, e o excedente vira vão dentro das outras.
+
+     A medição que fixou isto foi feita quando o card do DNA existia: ele
+     precisava de ~260px e arrastava PLANEJA, que precisa de 166, junto —
+     94px desperdiçados, o suficiente para a seção estourar a tela. O card
+     saiu, o princípio fica: as células daqui não têm altura parecida, e
+     `auto` é o que impede a mais alta de ditar as outras. */
   grid-template-rows: auto auto auto;
   gap: 12px;
+}
+
+/* ---------- Tamanho dos cards ----------
+   Um dial só: encolhe o BENTO inteiro, não cada célula. O cabeçalho da seção
+   fica do tamanho que estava, porque o pedido era sobre os cards.
+
+   POR QUE `zoom` E NÃO `max-width`. Mexer só na largura não encolhe o card,
+   ESPREME: o texto rebobina em menos colunas e a célula fica mais ALTA.
+   Medido nesta página — levando o bento a 1000px de largura, a altura subiu
+   de 462 para 467, e o card grande passou de 557×369 para 456×372. Vira uma
+   coluna estreita e alta, que é o contrário de um card menor.
+
+   `zoom` age no LAYOUT e leva junto padding, gaps e tipografia, então a
+   célula encolhe como OBJETO, com as proporções intactas: 557×369 vira
+   515×325. É a mesma ferramenta, e pelo mesmo motivo, que os degraus de tela
+   baixa mais abaixo usam.
+
+   Detalhe que faz o dial funcionar: com `width: 100%` o bento preenche o pai
+   e o zoom sozinho não mudaria a largura — o percentual se resolve no espaço
+   já escalado. Quem faz a largura acompanhar é o `max-width: --world-max`,
+   que passa a ser o limite ativo em vez da largura do pai.
+
+   MULTIPLICA com os degraus de `zoom` do palco em tela baixa (0,92 e 0,82).
+   É intencional: lá o motivo é caber, aqui é tamanho aparente, e os dois
+   devem valer ao mesmo tempo.
+
+   Só no desktop. Abaixo de 1024px o bento vira carrossel e as células têm
+   largura de viewport (`flex: 0 0 min(84vw, 340px)`); encolher aquilo é
+   outra decisão, não esta.
+
+   O CABEÇALHO ACOMPANHA A LARGURA, mas não o zoom. Encolher o bento sozinho
+   desalinhou a borda esquerda do título da borda dos cards em 63px — o
+   cabeçalho continuava com a largura cheia. Alinhar é obrigatório: a tarja
+   do Repertório e o título dividem a mesma coluna, e 63px de degrau entre
+   eles se lê como erro.
+
+   O conserto NÃO é `zoom` no cabeçalho também. Isso levaria a etiqueta de
+   11px para 9,7px, pequena demais para um rótulo em caixa alta. Só o
+   `max-width` dele é multiplicado — e a razão é contraintuitiva o bastante
+   para valer a nota abaixo, porque eu errei aqui antes de medir.
+
+   `zoom` NÃO ESTREITA O BENTO. O navegador divide o bloco recipiente pelo
+   fator antes de resolver o percentual, então `width: 100%` vira `pai ÷
+   0,88` em unidades locais e volta a render exatamente a largura do pai.
+   Medido: pai 1117px, `width` computado 1269,32px, retângulo 1117px. O que
+   encolhe são só os conteúdos — células, gaps e tipografia.
+
+   Quem estreita o bento é o `max-width: --world-max`, quando o pai é largo
+   o bastante para a conta local passar de 1280. Ou seja, a largura dele é
+   `min(pai, --world-max × fator)` — as duas pontas do `min` já com o fator
+   embutido, uma pela divisão e outra pelo teto.
+
+   Daí a regra do cabeçalho: `width` fica em 100% e só o `max-width` leva o
+   fator. Confere nos dois regimes:
+     pai 1117 (estreito) → cabeçalho min(1117, 1126) = 1117 · bento 1117
+     pai 1218 (largo)    → cabeçalho min(1218, 1126) = 1126 · bento 1126
+   Multiplicar o `width` também, que foi a minha primeira tentativa, encolhe
+   o cabeçalho DUAS vezes e desalinha para o outro lado: 983 contra 1117. */
+.page #recursos {
+  /* O fator vive aqui para os dois lugares não poderem divergir. */
+  --cards: 0.88;
+}
+@media (min-width: 1024px) {
+  .page #recursos .bento {
+    zoom: var(--cards);
+  }
+  .page #recursos .rec-head {
+    max-width: calc(var(--world-max) * var(--cards));
+  }
+
+  /* O TÍTULO EM UMA LINHA SÓ, a pedido.
+     Quem o quebrava em três era o `max-width: 14ch` da regra base — não
+     falta de espaço. Sobra bastante.
+
+     A frase inteira em uma linha mede 793px com a fonte no teto de 40px, e
+     o cabeçalho oferece 1126. Trinta por cento de folga.
+
+     E a folga NÃO SOME nas telas menores, porque as duas pontas encolhem
+     juntas. Entre 1024 e 1280px de janela o padding lateral é `--gutter`
+     dos dois lados, com `--gutter: 5vw`, então o cabeçalho vale 0,9 da
+     janela; e a fonte é `clamp(30px, 3vw, 40px)`, então o texto vale
+     0,595 da janela. A razão fica presa em ~66% em toda a faixa. Acima de
+     1333px a fonte trava em 40px e o cabeçalho no teto de 1126, e a razão
+     só melhora. Medido quebrando em duas linhas apenas abaixo de 800px de
+     cabeçalho, largura que o desktop não alcança.
+
+     Sem `white-space: nowrap` de propósito. Com essa folga o fluxo normal
+     já resolve; e se um dia a fonte cair para a de sistema, mais larga, o
+     pior caso vira uma quebra em duas linhas em vez de texto vazando.
+
+     No celular nada disso vale: o bloco de `max-width: 1023px` mais abaixo
+     mantém o `max-width: 16ch`, e o título continua empilhado. */
+  .page #recursos .rec-head h2 {
+    max-width: none;
+  }
 }
 
 /* ---------- Cor das células ----------
    A rampa vem do símbolo da marca. Amostrando os pixels de
    assets/simbolo.png, ele não é uma cor só: é um gradiente de #5010ff a
-   #b070ff, com #9040ff dominante. Três células percorrem essa rampa e
-   duas ficam claras — o mesmo trio do título do hero, que é branco na
-   primeira linha e vai do roxo ao azul na segunda.
+   #b070ff, com #9040ff dominante. Duas células percorrem essa rampa e duas
+   ficam claras — eco do título do hero, que é branco na primeira linha e vai
+   do roxo ao azul na segunda.
+
+   Eram três na rampa enquanto existia o card do DNA. Com ele fora, PLANEJA e
+   CALCULA dividem entre si o mesmo percurso de cor.
 
    Teto de #8a3aff: o tom dominante da logo (#9040ff) dá 4,33:1 com texto
    branco e reprova na WCAG. Acima disso o texto dentro do card some.
@@ -153,10 +255,9 @@
     0 26px 60px -46px rgba(124, 43, 255, 0.5);
 }
 
-/* As três células da rampa: fundo saturado, texto claro. */
+/* As duas células da rampa: fundo saturado, texto claro. */
 .page #recursos .rec-cell--planeja,
-.page #recursos .rec-cell--calcula,
-.page #recursos .rec-cell--dna {
+.page #recursos .rec-cell--calcula {
   --paper: var(--color-paper);
   --paper-80: rgba(248, 240, 255, 0.93);
   --paper-56: rgba(248, 240, 255, 0.84);
@@ -168,11 +269,16 @@
 .page #recursos .rec-cell--planeja {
   background: linear-gradient(152deg, #4500f9, #5010ff);
 }
+/* CALCULA herdou o FIM da rampa quando o card do DNA saiu: ia até #7c2bff e
+   agora fecha em #8a3aff, que era o destino da terceira célula. Duas células
+   passam a percorrer o mesmo trecho que três percorriam.
+
+   Não é capricho: parar em #7c2bff deixaria o roxo claro do símbolo sem
+   representação nenhuma na seção, e a rampa existe justamente para trazer o
+   gradiente da logo para dentro do bento. O teto de #8a3aff continua sendo o
+   limite de contraste explicado acima, não uma escolha de gosto. */
 .page #recursos .rec-cell--calcula {
-  background: linear-gradient(152deg, #5010ff, #7c2bff);
-}
-.page #recursos .rec-cell--dna {
-  background: linear-gradient(152deg, #7c2bff, #8a3aff);
+  background: linear-gradient(152deg, #5010ff, #8a3aff);
 }
 
 .page #recursos .verb {
@@ -213,8 +319,15 @@
 }
 
 .page #recursos .rec-cell--planeja { grid-column: 3 / 5; grid-row: 1; }
-.page #recursos .rec-cell--calcula { grid-column: 3; grid-row: 2; }
-.page #recursos .rec-cell--dna { grid-column: 4; grid-row: 2; }
+/* CALCULA passou a ocupar a LARGURA TODA da direita quando o DNA saiu da
+   coluna 4. Manter `grid-column: 3` deixaria um buraco de uma célula ao lado
+   dela: o preenchimento automático não tapa o vão porque REPERTÓRIO tem
+   linha fixa (3) e não sobe para a 2.
+
+   Com isso a direita fica em duas faixas cheias, PLANEJA sobre CALCULA, e a
+   composição volta a ser dois blocos e uma tarja — a mesma leitura de antes,
+   só sem a divisão da linha de baixo. */
+.page #recursos .rec-cell--calcula { grid-column: 3 / 5; grid-row: 2; }
 .page #recursos .rec-cell--repertorio {
   grid-column: 1 / 5;
   grid-row: 3;
@@ -443,28 +556,11 @@
   color: var(--paper-38);
 }
 
-/* ---------- Campos preenchidos (DNA ESTRATÉGICO) ---------- */
-.page #recursos .campos {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-}
-.page #recursos .campos > div {
-  padding: 8px 10px;
-}
-.page #recursos .campos dt {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--paper-38);
-}
-.page #recursos .campos dd {
-  margin: 4px 0 0;
-  color: var(--paper-80);
-  font-size: 12.5px;
-  line-height: 1.4;
-}
+/* Havia aqui um bloco `.campos`, a superfície de saída do card do DNA. Saiu
+   junto com o card: era o único lugar da folha que usava aquelas regras, e
+   CSS que não casa com nenhum elemento não é inofensivo — é armadilha para
+   quem vier procurar onde um estilo é aplicado. A ficha da seção do DNA tem
+   estilos próprios, em styles/dna.css. */
 
 /* ---------- Prateleira de aulas (REPERTÓRIO) ---------- */
 .page #recursos .repertorio__head {
@@ -699,7 +795,6 @@
   .page #recursos .rec-cell--cria,
   .page #recursos .rec-cell--planeja,
   .page #recursos .rec-cell--calcula,
-  .page #recursos .rec-cell--dna,
   .page #recursos .rec-cell--repertorio {
     grid-column: auto;
     grid-row: auto;
@@ -708,9 +803,9 @@
     min-height: 0;
   }
   /* Os gestos de chegada laterais empurrariam os cards contra o eixo do
-     deslize — no carrossel todos chegam de baixo. */
-  .page #recursos .rec-cell--cria,
-  .page #recursos .rec-cell--dna {
+     deslize — no carrossel todos chegam de baixo. Sobrou só CRIA na lista:
+     o DNA era o outro card com entrada lateral, e saiu. */
+  .page #recursos .rec-cell--cria {
     --vem-x: 0px;
     --sobe: 34px;
   }
