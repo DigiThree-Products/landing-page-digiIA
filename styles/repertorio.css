@@ -1,0 +1,152 @@
+/* ============================================================
+   REPERTÓRIO — as dez aulas
+
+   Seção nova de 21/08. Nasceu de uma faixa que vivia no rodapé do bento de
+   "O que ela faz" e saiu de lá quando aquela seção passou a mostrar só o
+   que a IA cria — aula gravada por gente não é criação da IA.
+
+   NÃO É ESTAÇÃO, e a folha reflete isso: nada de `100svh`, nada de
+   `.estacao-palco`, nada de janela de `--chegada`. Ela rola normal, entre
+   duas seções que são presas (a credibilidade antes, as perguntas depois).
+   O porquê está em components/sections/Repertorio.tsx: a página já tem seis
+   estações, e mais uma cobraria duas telas de rolagem por um argumento só.
+
+   Por não ser estação, ela também é o RESPIRO entre duas chegadas — a
+   única parte daquele trecho da página em que a rolagem anda sem nada
+   preso. Encurtá-la demais devolve o efeito de "cauda colada" que a
+   função `caudaAcima` em Estacoes.tsx existe para evitar.
+   ============================================================ */
+
+.page #repertorio {
+  width: 100%;
+  margin: 0;
+  padding: clamp(72px, 11vh, 128px) var(--world-edge);
+  /* A barra de navegação é fixa e mede 78px. Sem isto, um salto por âncora
+     para `#repertorio` para com o rótulo e a primeira aula escondidos atrás
+     dela — verificado no navegador. Hoje a seção não está no menu, então o
+     salto só acontece por link direto; a margem fica porque o dia em que
+     ela entrar no menu, ninguém vai lembrar de conferir isto. */
+  scroll-margin-top: 96px;
+  /* SEM fundo próprio, como as vizinhas: a poeira atravessa a seção
+     inteira. Quem aparece por trás é o --ink de `.page`. */
+  color: var(--paper);
+}
+
+/* Duas colunas: o argumento à esquerda, a lista à direita. Em uma coluna
+   só, a lista de aulas viraria o assunto e o "de quem faz há 15 anos" —
+   que é o que a seção realmente vende — viraria legenda. */
+.page #repertorio .rep-wrap {
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: start;
+}
+
+.page #repertorio .rep-head .tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lilac);
+}
+.page #repertorio .rep-head .tag::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+.page #repertorio .rep-head h2 {
+  margin: 14px 0 0;
+  font-size: clamp(26px, 2.6vw, 36px);
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
+}
+.page #repertorio .rep-lede {
+  /* ~65 caracteres é a medida de leitura confortável, e este é o único
+     parágrafo corrido da seção. */
+  max-width: 46ch;
+  margin: 16px 0 0;
+  font-size: clamp(14px, 1.15vw, 15.5px);
+  line-height: 1.55;
+  color: var(--paper-80);
+}
+/* O selo é a informação comercial da seção — "não é upsell" — e por isso
+   fica destacado do parágrafo, não dentro dele. */
+.page #repertorio .rep-selo {
+  margin: 18px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lilac);
+}
+
+/* A lista. Cada aula é uma linha com filete embaixo: sem caixa, sem
+   cartão — a seção inteira segue a mesma economia visual dos quadrados
+   de "O que ela faz". */
+.page #repertorio .rep-aulas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+.page #repertorio .rep-aulas li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.page #repertorio .rep-aulas li:first-child {
+  padding-top: 0;
+}
+.page #repertorio .rep-aulas em {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--lilac);
+  font-variant-numeric: tabular-nums;
+}
+.page #repertorio .rep-aulas span {
+  font-size: clamp(14px, 1.15vw, 15.5px);
+  line-height: 1.35;
+  color: var(--paper);
+}
+/* A última linha não é aula: é a admissão de que só quatro têm título.
+   Recuada um tom e sem filete embaixo, porque não abre outra. Ocupa as
+   duas colunas — não tem código, e alinhá-la com os títulos das aulas
+   sugeriria que é mais uma. */
+/* `li.rep-aulas__resto` e não `.rep-aulas__resto` sozinho: a regra de cima
+   é `.rep-aulas li`, que carrega um seletor de elemento a mais e vence uma
+   classe pura. Sem o `li` aqui, o `border-bottom: 0` era ignorado e o
+   filete continuava desenhado — visto no navegador antes de ser medido. */
+.page #repertorio .rep-aulas li.rep-aulas__resto {
+  grid-template-columns: minmax(0, 1fr);
+  border-bottom: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--paper-56);
+}
+
+@media (max-width: 1023px) {
+  .page #repertorio {
+    padding: clamp(56px, 9vh, 88px) var(--gutter);
+  }
+  /* Empilha: 46ch de parágrafo ao lado de uma lista não cabe em largura de
+     celular sem espremer as duas. */
+  .page #repertorio .rep-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+}

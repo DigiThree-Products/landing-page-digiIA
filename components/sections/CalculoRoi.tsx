@@ -43,7 +43,7 @@ export function CalculoRoi() {
   const roi = R.maior - fracao * (R.maior - R.menor)
 
   return (
-    <div className="rec-out calc">
+    <div className="calc">
       <dl className="numeros">
         <div>
           <dt>

@@ -1,10 +1,28 @@
 /* ============================================================
-   O QUE ELA FAZ — bento de uma tela
+   O QUE ELA FAZ — quatro quadrados de uma tela
 
-   Fonte única do estilo desta seção. Antes as regras viviam em três
-   arquivos: institutional.css montava os cards, conversion.css desfazia
-   (borda, fundo, sombra) e encolhia o texto até 8,5px, e sections.css
-   guardava a base. O resultado era uma seção que ninguém lia.
+   Fonte única do estilo desta seção.
+
+   REESCRITA EM 21/08, quando a seção deixou de ser um bento. O que havia
+   aqui eram cinco (depois quatro) células de tamanhos diferentes, com fundo
+   claro ou gradiente violeta, borda, sombra e elevação no hover — a área de
+   cada uma comunicava peso, e uma rampa de cor ligava duas delas.
+
+   Agora são QUATRO QUADRADOS IGUAIS, sem fundo e sem borda. A troca não é
+   cosmética, muda o argumento: o bento dizia "este recurso importa mais que
+   aquele"; os quadrados dizem "são quatro coisas que você deixa de fazer".
+   Peso igual porque a promessa é a mesma quatro vezes — tempo que volta.
+
+   SEM CAIXA, QUEM SEPARA É O VAZIO. Não há borda para marcar onde um card
+   termina, então o `gap` do grid e o filete acima de cada verbo são a única
+   fronteira que existe. Reduzi-los para ganhar espaço não aperta o respiro:
+   dissolve os quatro em um bloco só.
+
+   E O FUNDO PASSOU A SER PRETO. As células claras morreram e com elas o
+   contexto de "texto escuro sobre papel": tudo aqui é claro sobre a poeira.
+   Qualquer cor herdada do desenho antigo precisa ser reconferida — o
+   --violet (#4500F9) que rotulava campos dentro do card claro reprova no
+   preto e virou --lilac. É o erro mais fácil de cometer nesta folha.
 
    Regra que governa este arquivo: caber em uma tela é restrição de
    COMPOSIÇÃO, nunca de tamanho de fonte. Nada aqui desce de 11px. Se o
@@ -42,7 +60,10 @@
    é a vaga no espaço e não escala, então uma malha presa a ela ficaria em
    tamanho de tela cheia enquanto o conteúdo chega pequeno lá no fundo —
    uma grade fixa com um painel minúsculo flutuando por cima, exatamente o
-   oposto de um corpo se aproximando. No palco ela viaja junto. */
+   oposto de um corpo se aproximando. No palco ela viaja junto.
+
+   Ganhou peso na composição nova: sem as caixas dos cards, é a malha que
+   dá profundidade ao fundo por trás dos quadrados soltos. */
 .page #recursos .estacao-palco::before {
   content: '';
   position: absolute;
@@ -57,17 +78,204 @@
   mask-image: radial-gradient(75% 80% at 50% 48%, #000, transparent 92%);
 }
 
-/* ---------- Cabeçalho ----------
-   Era uma banda de duas colunas: título à esquerda, credencial da
-   DigiThree à direita. A credencial saiu e a segunda coluna foi junto —
-   grade de duas colunas com uma vazia não é composição, é sobra. A
-   altura do bloco não muda: quem a definia era a coluna do título. */
-.page #recursos .rec-head {
+/* ---------- O layout da seção ----------
+   Cabeçalho em cima, os quatro cards numa FILEIRA embaixo.
+
+   Passou por três formas até chegar aqui, e cada troca resolveu o problema
+   da anterior:
+     1. fileira de quatro, cabeçalho em cima — os cards liam como uma régua
+        contínua, sem separação entre eles;
+     2. 2×2 com o cabeçalho à esquerda — separou os cards, mas deixou meia
+        tela vazia embaixo do título e espremeu a grade na metade direita;
+     3. de volta à fileira, agora com a estrutura interna consertada.
+
+   O que mudou entre 1 e 3 não é o arranjo: é que o artefato subiu para o
+   topo de cada card, num slot de altura igual nos quatro. A régua contínua
+   da primeira versão vinha de os quatro terem ritmos internos diferentes,
+   não de estarem lado a lado.
+
+   Empilhado e não em grid de duas colunas: quatro cards lado a lado ao
+   LADO de um título deixariam ~120px por card. A fileira precisa da
+   largura inteira. */
+.page #recursos .rec-layout {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
-  margin: 0 auto clamp(18px, 2.4vh, 28px);
+  margin-inline: auto;
+  min-height: 0;
+
+  /* ---- A ATRACAÇÃO ----
+     Progresso próprio, com relógio separado do resto da chegada. Começa em
+     0.78 e termina exatamente em 1: a moldura é a ÚLTIMA coisa a acontecer,
+     e ela acontece no instante em que a viagem acaba.
+
+     É esse o ponto da peça inteira. A página gasta 2,2 telas de rolagem por
+     seção na viagem, e até esta moldura existir a chegada não tinha
+     recompensa nenhuma: o `--chegada` batia em 1 e nada acontecia. A
+     moldura fechando é a parada ficando visível.
+
+     O 0.78 JÁ TEVE OUTRA JUSTIFICATIVA: ele vinha depois de o último card
+     da cascata assentar (o CALCULA fechava em 0.76). A cascata acabou, e o
+     número ficou — agora ele se sustenta pelo foco, que termina em 0.88
+     (ver "a chegada sem cascata" em styles/estacao.css). A sobreposição é
+     de desenho: o conteúdo resolve enquanto as cantoneiras fecham.
+
+     Nome próprio (`--trava`) e não `--t`: `--t` é da cascata, e embora esta
+     seção não tenha mais nenhuma, o nome continua em uso nas outras cinco
+     estações e herda por aqui. Duas coisas diferentes com o mesmo nome, uma
+     por cima da outra, é bug esperando acontecer. */
+  --atraca: clamp(0, (var(--chegada) - 0.78) / 0.22, 1);
+  --trava: calc(var(--atraca) * var(--atraca) * (3 - 2 * var(--atraca)));
+
+  /* Distância da moldura ao conteúdo, travada e aberta. A diferença é o
+     quanto ela "se recolhe" ao atracar.
+
+     `--folga` passou por 18 e por 32 antes de virar proporcional. A 18px as
+     cantoneiras encostavam no texto e liam como borda do bloco; a 32px já
+     eram moldura, mas ainda tímidas numa tela larga.
+
+     O TETO NÃO É ARBITRÁRIO: a moldura não pode passar do `--world-edge`,
+     que é o padding lateral da seção, senão o `overflow: hidden` a recorta.
+     E a conta tem uma pegadinha — o padding está FORA do `.estacao-palco` e
+     a moldura está DENTRO, então ela é escalada pelo `zoom` do palco e o
+     padding não. A condição real é `folga × zoom ≤ world-edge`.
+
+     O pior caso é a janela de 1024px, onde o `--world-edge` desaba para o
+     `--gutter` (51px). Com `3.4vw` ali a folga vale 35px, e mesmo sem zoom
+     nenhum sobra margem. Nas telas largas o `--world-edge` sobe para 200px
+     e o teto de 56px nem chega perto.
+
+     `--abertura` fica onde estava, para o percurso da atracação continuar o
+     mesmo: o que muda é onde ela PARA, não o quanto ela anda.
+
+     E ELA VIROU A MEDIDA ÚNICA DA SEÇÃO: governa a distância da moldura ao
+     conteúdo, o vão entre o cabeçalho e a fileira (2×folga) e a altura do
+     trilho e das marcas (no meio desse vão). Mexer aqui move as três linhas
+     juntas e mantém as duas caixas centradas; mexer em qualquer uma delas
+     isoladamente quebra a relação. */
+  --folga: clamp(32px, 3.4vw, 56px);
+  --abertura: 34px;
+  --canto: 28px;
+
+  /* ---- A COR DAS TRÊS LINHAS ----
+     Tokens PRÓPRIOS da seção, e não os globais `--rule`/`--rule-hi`. A razão
+     é escopo: aqueles pintam filetes na página inteira, inclusive o divisor
+     entre os números do CALCULA aqui dentro. Subir os globais para clarear a
+     moldura mexeria em coisa que ninguém pediu.
+
+     MEDIDO, com o fundo em preto puro (`.page` é #000):
+       trilho, antes 10% .......... 1,19:1  — some numa olhada rápida
+       moldura e marcas, antes 22%  1,72:1
+       trilho, agora 26% .......... 2,00:1
+       moldura e marcas, agora 34%  2,71:1
+
+     O TRILHO SUBIU MAIS QUE OS OUTROS DOIS de propósito. Ele vinha de um
+     token diferente e ficava uma parada inteira abaixo da moldura e das
+     marcas — as três lêem como um instrumento só, e uma delas estava em
+     menos da metade do alfa das outras. Agora a distância entre eles é de
+     um degrau, não de um abismo.
+
+     Parei antes de 3:1 nos dois. Acima disso o fio de 1px deixa de ler como
+     traço de instrumento e vira borda desenhada, que é justamente o que a
+     composição sem caixa não pode ter. */
+  --fio: rgba(248, 240, 255, 0.26);
+  --fio-forte: rgba(248, 240, 255, 0.34);
+  /* Terceiro degrau, para o que é INTERNO a um instrumento: o divisor entre
+     as duas linhas da calculadora, e o que mais vier. Fica abaixo do trilho
+     de propósito — filete dentro de um painel não pode competir com a
+     estrutura que segura o painel. 20% dá 1,60:1, contra 2,00 do trilho e
+     2,71 da moldura: presente, e claramente subordinado.
+
+     Substituiu o `--rule` global (10%, 1,19:1) que sobrara ali quando as
+     outras três linhas subiram — o divisor tinha ficado visivelmente mais
+     apagado que tudo à volta. */
+  --fio-fraco: rgba(248, 240, 255, 0.2);
+
+  /* Altura do slot do artefato, agora com nome porque DUAS coisas a usam: o
+     próprio slot e o conduíte que desce do trilho até o piso do painel. Se
+     só uma delas mudar, o conduíte passa do piso ou não chega nele. */
+  --slot: 166px;
+
+  /* Altura mínima do bloco de texto — nome do card, título e subtítulo.
+
+     Existe pelo MESMO motivo que `--slot`, e virou obrigatória quando o
+     texto subiu para cima do artefato: com o texto em primeiro, um subtítulo
+     que quebre em três linhas em vez de duas empurra o artefato daquele card
+     para baixo e desalinha a fileira inteira. Com o piso travado, os quatro
+     artefatos começam na mesma linha aconteça o que acontecer com a copy.
+
+     108px é a altura que os quatro têm hoje (medido: 98,7px na tela, com o
+     palco a 0,917). Se alguém escrever um subtítulo mais longo, o card
+     cresce e o desalinhamento aparece — é o aviso de que este número precisa
+     subir, exatamente como no slot. */
+  --cabeca: 108px;
+
+  /* Respiro do artefato dentro do painel, em cima e embaixo.
+
+     MEDIDO ANTES: acima do filete separador havia 15,7px (o `padding-bottom`
+     do cabeçalho), e abaixo dele, ZERO — a leitura começava colada na linha.
+     Na base era pior: a calculadora, que é o artefato mais alto, parava a
+     3,7px do piso do painel.
+
+     Duas linhas com conteúdo encostado nelas param de ler como estrutura do
+     painel e passam a ler como sublinhado do texto. O respiro é o que faz o
+     filete e o piso serem as PAREDES do instrumento, e não decoração colada
+     nele.
+
+     15px espelha os 15,7 que o cabeçalho já tinha: o filete fica com a mesma
+     folga dos dois lados. */
+  --respiro: 15px;
+}
+
+/* Cantoneiras, não caixa. Quatro cantos em fio de 1px marcam o volume sem
+   fechar uma borda em volta — que é o que permite manter os cards sem
+   fundo e sem borda e ainda assim tê-los enquadrados.
+
+   Oito gradientes em vez de quatro elementos: cada canto é um par de fios,
+   um horizontal e um vertical, e `background` empilha os oito numa camada
+   só. Sem DOM extra, e a moldura inteira anima com duas propriedades. */
+.page #recursos .rec-layout::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: calc(-1 * (var(--folga) + (1 - var(--trava)) * var(--abertura)));
+  opacity: var(--trava);
+  background:
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--canto) 1px no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / 1px var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / var(--canto) 1px no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / 1px var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / var(--canto) 1px no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / 1px var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / var(--canto) 1px no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / 1px var(--canto) no-repeat;
+}
+
+/* O VÃO ENTRE O CABEÇALHO E A FILEIRA É DERIVADO, não escolhido: vale
+   exatamente o DOBRO da `--folga` da moldura.
+
+   A razão está no que as três linhas fazem juntas. A moldura envolve o
+   cabeçalho E a fileira; o trilho corta entre os dois. Somadas, elas lêem
+   como DUAS CAIXAS EMPILHADAS — e caixa pede conteúdo centrado.
+
+   Com o vão em 2×`--folga` e o trilho no meio dele, cada caixa fica com
+   `--folga` em cima, embaixo e dos dois lados. A conta fecha sozinha: a
+   moldura está a `--folga` para fora do bloco nos quatro lados, o trilho a
+   `--folga` acima da fileira e portanto a `--folga` abaixo do cabeçalho.
+
+   MEDIDO ANTES, em 1536×695: o cabeçalho tinha 46px acima e 9px abaixo; a
+   fileira, 19px acima e 48px abaixo. Os dois conteúdos espremidos contra o
+   trilho, com o ar todo nas pontas — é isso que fazia a moldura ler como
+   borda solta em volta do conjunto em vez de enquadramento dele.
+
+   Um número escolhido à mão aqui descentraliza as duas caixas de novo. Para
+   mais ou menos respiro, mexa em `--folga`: ela é a medida única da seção e
+   as três linhas andam junto. */
+.page #recursos .rec-head {
+  min-width: 0;
+  margin-bottom: calc(var(--folga) * 2);
 }
 .page #recursos .rec-head .tag {
   display: flex;
@@ -84,412 +292,574 @@
   flex: none;
   background: currentColor;
 }
+/* A PLACA DE PLATAFORMA: o número em mono claro, o nome da seção em lilás.
+   Primeiro onde você está, depois o que tem aqui.
+
+   Sem separador entre os dois de propósito — o salto de cor e de família já
+   separa, e um ponto no meio de uma linha de 11px vira sujeira. O respiro
+   vem do `gap` de 12px que a própria `.tag` já tem. */
+.page #recursos .rec-head .rec-estacao {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--paper);
+}
+/* UMA LINHA SÓ, e sem `max-width` em ch — era um teto de 14ch aqui que
+   quebrava a frase em três, não falta de espaço.
+
+   Medido a 1536×695: o texto ocupa 729px na tela contra 1121px de
+   cabeçalho — 35% de folga. Os dois números estão no MESMO espaço de
+   coordenadas de propósito: o palco roda sob `zoom: 0.92` nessa altura de
+   janela, então em px de CSS os mesmos valores são 792 e 1218. Comparar um
+   com o outro é o erro fácil aqui.
+
+   E a folga não some nas telas menores porque as duas pontas encolhem
+   juntas — entre 1024 e 1333px de janela o cabeçalho vale 0,9 da largura e
+   o texto 0,595, e a razão fica presa em ~66%. Acima de 1333px a fonte
+   trava em 40px e o cabeçalho no teto do mundo, e a razão só melhora.
+
+   Sem `white-space: nowrap` de propósito: com essa folga o fluxo normal já
+   resolve, e se um dia a fonte cair para a de sistema, mais larga, o pior
+   caso vira uma quebra em duas linhas em vez de texto vazando.
+
+   Houve uma versão em DUAS linhas declaradas, com um `.rec-titulo__linha`
+   por linha, de quando o cabeçalho dividia a tela com um 2×2 de cards e
+   tinha ~435px. Saiu junto com aquele arranjo.
+
+   No celular o bloco de `max-width: 1023px` devolve um teto de 16ch e o
+   título volta a empilhar, que é o certo lá. */
 .page #recursos .rec-head h2 {
   margin: 14px 0 0;
-  max-width: 14ch;
   font-size: clamp(30px, 3vw, 40px);
-  line-height: 0.98;
+  line-height: 1.02;
   letter-spacing: -0.042em;
+  text-wrap: balance;
 }
 .page #recursos .rec-head h2 em {
   font-style: normal;
   color: var(--lilac);
 }
 
-/* ---------- Bento ----------
-   Área comunica peso. CRIA ocupa quatro vezes a área das células
-   pequenas porque é a dor que faz a pessoa comprar. */
-.page #recursos .bento {
+/* ---------- Os quatro cards, em fileira ----------
+   `minmax(0, 1fr)` e não `1fr`: sem o mínimo zerado uma coluna se recusa a
+   encolher abaixo do conteúdo mais largo que tiver dentro — a linha do
+   calendário, por exemplo — e as quatro deixam de ter a mesma largura, que
+   é a única coisa que este grid promete.
+
+   O `gap` é a FRONTEIRA, não o respiro (ver a nota do topo). Sem borda e
+   sem fundo, é a única coisa que separa um card do outro, e é por isso que
+   ele é largo. Encolhê-lo para ganhar espaço não aperta o respiro: funde
+   os quatro num bloco só, que foi o defeito da primeira versão desta
+   fileira. */
+.page #recursos .quads {
   position: relative;
-  z-index: 2;
   width: 100%;
-  max-width: var(--world-max);
-  margin-inline: auto;
-  min-height: 0;
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  /* Linhas por conteúdo, não `1fr`. Com `1fr` as linhas assumem todas a
-     altura da mais alta, e o excedente vira vão dentro das outras.
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
-     A medição que fixou isto foi feita quando o card do DNA existia: ele
-     precisava de ~260px e arrastava PLANEJA, que precisa de 166, junto —
-     94px desperdiçados, o suficiente para a seção estourar a tela. O card
-     saiu, o princípio fica: as células daqui não têm altura parecida, e
-     `auto` é o que impede a mais alta de ditar as outras. */
-  grid-template-rows: auto auto auto;
-  gap: 12px;
+  /* O vão ganhou nome porque deixou de ser só o `gap`: as cinco marcas do
+     trilho saem dele (meio vão para fora de cada borda de coluna). Os dois
+     PRECISAM sair do mesmo valor — se o vão mudar e as marcas não, elas
+     deixam de cair no meio dele e a régua sai do lugar. */
+  --vao: clamp(26px, 2.8vw, 44px);
+  gap: var(--vao);
 }
 
-/* ---------- Tamanho dos cards ----------
-   Um dial só: encolhe o BENTO inteiro, não cada célula. O cabeçalho da seção
-   fica do tamanho que estava, porque o pedido era sobre os cards.
+/* JÁ FOI TENTADO E VOLTOU ATRÁS: um recuo de 20px no conteúdo da fileira,
+   para o cabeçalho ficar na margem e os cards entrarem um degrau à direita.
+   O recuo saía do espaço das colunas, então o `gap` devolvia `recuo/3` por
+   vão para a largura da coluna não mudar. Funcionava, e a fileira voltou ao
+   lugar por decisão de quem desenha.
 
-   POR QUE `zoom` E NÃO `max-width`. Mexer só na largura não encolhe o card,
-   ESPREME: o texto rebobina em menos colunas e a célula fica mais ALTA.
-   Medido nesta página — levando o bento a 1000px de largura, a altura subiu
-   de 462 para 467, e o card grande passou de 557×369 para 456×372. Vira uma
-   coluna estreita e alta, que é o contrário de um card menor.
+   O QUE FICA DA TENTATIVA é a medida que a motivou, porque ela limita
+   qualquer mexida futura neste grid: "Carrossel", no calendário do PLANEJA,
+   ocupa 59,2px numa célula de 61,9px. São 2,7px de folga na fileira inteira.
+   Tirar largura das colunas — por recuo, por borda, por padding — quebra
+   essa palavra em duas linhas e desalinha o calendário dos outros três. */
 
-   `zoom` age no LAYOUT e leva junto padding, gaps e tipografia, então a
-   célula encolhe como OBJETO, com as proporções intactas: 557×369 vira
-   515×325. É a mesma ferramenta, e pelo mesmo motivo, que os degraus de tela
-   baixa mais abaixo usam.
+/* ---- O TRILHO DE ALINHAMENTO ----
+   Um fio atravessando a largura do conteúdo, logo acima da fileira. Lê como
+   régua de instrumento — e faz um segundo trabalho: amarra o cabeçalho aos
+   quatro cards sem dar caixa a nenhum deles.
 
-   Detalhe que faz o dial funcionar: com `width: 100%` o bento preenche o pai
-   e o zoom sozinho não mudaria a largura — o percentual se resolve no espaço
-   já escalado. Quem faz a largura acompanhar é o `max-width: --world-max`,
-   que passa a ser o limite ativo em vez da largura do pai.
-
-   MULTIPLICA com os degraus de `zoom` do palco em tela baixa (0,92 e 0,82).
-   É intencional: lá o motivo é caber, aqui é tamanho aparente, e os dois
-   devem valer ao mesmo tempo.
-
-   Só no desktop. Abaixo de 1024px o bento vira carrossel e as células têm
-   largura de viewport (`flex: 0 0 min(84vw, 340px)`); encolher aquilo é
-   outra decisão, não esta.
-
-   O CABEÇALHO ACOMPANHA A LARGURA, mas não o zoom. Encolher o bento sozinho
-   desalinhou a borda esquerda do título da borda dos cards em 63px — o
-   cabeçalho continuava com a largura cheia. Alinhar é obrigatório: a tarja
-   do Repertório e o título dividem a mesma coluna, e 63px de degrau entre
-   eles se lê como erro.
-
-   O conserto NÃO é `zoom` no cabeçalho também. Isso levaria a etiqueta de
-   11px para 9,7px, pequena demais para um rótulo em caixa alta. Só o
-   `max-width` dele é multiplicado — e a razão é contraintuitiva o bastante
-   para valer a nota abaixo, porque eu errei aqui antes de medir.
-
-   `zoom` NÃO ESTREITA O BENTO. O navegador divide o bloco recipiente pelo
-   fator antes de resolver o percentual, então `width: 100%` vira `pai ÷
-   0,88` em unidades locais e volta a render exatamente a largura do pai.
-   Medido: pai 1117px, `width` computado 1269,32px, retângulo 1117px. O que
-   encolhe são só os conteúdos — células, gaps e tipografia.
-
-   Quem estreita o bento é o `max-width: --world-max`, quando o pai é largo
-   o bastante para a conta local passar de 1280. Ou seja, a largura dele é
-   `min(pai, --world-max × fator)` — as duas pontas do `min` já com o fator
-   embutido, uma pela divisão e outra pelo teto.
-
-   Daí a regra do cabeçalho: `width` fica em 100% e só o `max-width` leva o
-   fator. Confere nos dois regimes:
-     pai 1117 (estreito) → cabeçalho min(1117, 1126) = 1117 · bento 1117
-     pai 1218 (largo)    → cabeçalho min(1218, 1126) = 1126 · bento 1126
-   Multiplicar o `width` também, que foi a minha primeira tentativa, encolhe
-   o cabeçalho DUAS vezes e desalinha para o outro lado: 983 contra 1117. */
-.page #recursos {
-  /* O fator vive aqui para os dois lugares não poderem divergir. */
-  --cards: 0.88;
-}
-@media (min-width: 1024px) {
-  .page #recursos .bento {
-    zoom: var(--cards);
-  }
-  .page #recursos .rec-head {
-    max-width: calc(var(--world-max) * var(--cards));
-  }
-
-  /* O TÍTULO EM UMA LINHA SÓ, a pedido.
-     Quem o quebrava em três era o `max-width: 14ch` da regra base — não
-     falta de espaço. Sobra bastante.
-
-     A frase inteira em uma linha mede 793px com a fonte no teto de 40px, e
-     o cabeçalho oferece 1126. Trinta por cento de folga.
-
-     E a folga NÃO SOME nas telas menores, porque as duas pontas encolhem
-     juntas. Entre 1024 e 1280px de janela o padding lateral é `--gutter`
-     dos dois lados, com `--gutter: 5vw`, então o cabeçalho vale 0,9 da
-     janela; e a fonte é `clamp(30px, 3vw, 40px)`, então o texto vale
-     0,595 da janela. A razão fica presa em ~66% em toda a faixa. Acima de
-     1333px a fonte trava em 40px e o cabeçalho no teto de 1126, e a razão
-     só melhora. Medido quebrando em duas linhas apenas abaixo de 800px de
-     cabeçalho, largura que o desktop não alcança.
-
-     Sem `white-space: nowrap` de propósito. Com essa folga o fluxo normal
-     já resolve; e se um dia a fonte cair para a de sistema, mais larga, o
-     pior caso vira uma quebra em duas linhas em vez de texto vazando.
-
-     No celular nada disso vale: o bloco de `max-width: 1023px` mais abaixo
-     mantém o `max-width: 16ch`, e o título continua empilhado. */
-  .page #recursos .rec-head h2 {
-    max-width: none;
-  }
+   `position: absolute` tira o pseudo-elemento do fluxo do grid. Sem isso
+   ele viraria um ITEM da grade e ocuparia a primeira coluna, empurrando os
+   quatro cards. */
+.page #recursos .quads::before {
+  content: '';
+  position: absolute;
+  /* ACOMPANHA AS MARCAS. Elas saíram meio vão para fora das bordas da
+     fileira, e o trilho vai junto: uma régua cuja primeira e última marca
+     ficam de fora dela não fecha nada — era exatamente o defeito que a
+     quinta marca tinha vindo corrigir.
+     O `- 1px` à direita é a largura da própria marca, para o trilho
+     terminar rente a ela em vez de 1px antes. */
+  left: calc(-1 * var(--vao) / 2);
+  right: calc(-1 * var(--vao) / 2 - 1px);
+  /* NO MEIO EXATO do vão, porque o vão vale 2×`--folga` (ver a nota do
+     `.rec-head`). É esta linha que faz o cabeçalho e a fileira lerem como
+     duas caixas com a mesma margem nos quatro lados. Um valor fixo aqui
+     empurra o trilho para um dos lados e descentraliza as duas. */
+  top: calc(-1 * var(--folga));
+  height: 1px;
+  /* `--fio` e não `--fio-forte`: o trilho é o mais discreto dos três, um
+     degrau abaixo da moldura e das marcas. Ver a tabela de contraste na
+     declaração dos dois, em `.rec-layout`. */
+  background: var(--fio);
+  opacity: var(--trava);
 }
 
-/* ---------- Cor das células ----------
-   A rampa vem do símbolo da marca. Amostrando os pixels de
-   assets/simbolo.png, ele não é uma cor só: é um gradiente de #5010ff a
-   #b070ff, com #9040ff dominante. Duas células percorrem essa rampa e duas
-   ficam claras — eco do título do hero, que é branco na primeira linha e vai
-   do roxo ao azul na segunda.
+/* SEM `aspect-ratio`, e isso é conserto, não desistência.
 
-   Eram três na rampa enquanto existia o card do DNA. Com ele fora, PLANEJA e
-   CALCULA dividem entre si o mesmo percurso de cor.
+   Os cards foram quadrados por duas versões, e o quadrado se mostrou uma
+   promessa que o conteúdo não deixa cumprir: quando o artefato quebrava em
+   mais uma linha — o que acontece a cada largura de janela diferente — a
+   altura vencia a proporção e os quatro deixavam de ser quadrados. Duas
+   vezes eu medi 270×280 em vez de 270×270. Uma proporção que só vale em
+   algumas larguras não é uma proporção.
 
-   Teto de #8a3aff: o tom dominante da logo (#9040ff) dá 4,33:1 com texto
-   branco e reprova na WCAG. Acima disso o texto dentro do card some.
+   O que garante o alinhamento não era o `aspect-ratio` de qualquer jeito:
+   é o item de grid esticar até a altura da linha, o que dá aos quatro
+   exatamente a mesma altura seja qual for o conteúdo, mais o slot de
+   altura travada do artefato logo abaixo. Isso continua valendo, e agora
+   sem uma regra que quebra em silêncio.
 
-   Claras e escuras redefinem os tokens de cor localmente em vez de
-   reescrever cada regra — assim tudo que já usa var(--paper-56) e
-   companhia continua valendo, só troca de lado. */
-.page #recursos .rec-cell {
+   Sem `overflow: hidden` de propósito. Se um dia o conteúdo passar da
+   altura, a régua desta folha manda a seção crescer — e o vazamento
+   visível é o aviso de que isso aconteceu. Escondê-lo transformaria um bug
+   de conteúdo em informação perdida em silêncio. */
+.page #recursos .quad {
+  position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  padding: 18px;
-  border-radius: 18px;
-
-  /* Base clara: tinta escura sobre papel. */
-  --paper: #14101c;
-  --paper-80: rgba(20, 16, 28, 0.84);
-  --paper-56: rgba(20, 16, 28, 0.68);
-  --paper-38: rgba(20, 16, 28, 0.58);
-  --lilac: var(--violet);
-  --rule: rgba(20, 16, 28, 0.13);
-  --rule-hi: rgba(20, 16, 28, 0.22);
-
-  border: 1px solid var(--rule);
-  color: var(--paper);
-  background: #efeaf7;
-  box-shadow:
-    0 2px 3px -1px rgba(0, 0, 0, 0.4),
-    0 26px 60px -46px rgba(124, 43, 255, 0.5);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  /* Sem fundo, sem borda, sem sombra, sem raio: é o pedido da
+     reestruturação e o que define a composição. */
 }
 
-/* As duas células da rampa: fundo saturado, texto claro. */
-.page #recursos .rec-cell--planeja,
-.page #recursos .rec-cell--calcula {
-  --paper: var(--color-paper);
-  --paper-80: rgba(248, 240, 255, 0.93);
-  --paper-56: rgba(248, 240, 255, 0.84);
-  --paper-38: rgba(248, 240, 255, 0.76);
-  --lilac: var(--color-paper);
-  --rule: rgba(248, 240, 255, 0.24);
-  --rule-hi: rgba(248, 240, 255, 0.36);
-}
-.page #recursos .rec-cell--planeja {
-  background: linear-gradient(152deg, #4500f9, #5010ff);
-}
-/* CALCULA herdou o FIM da rampa quando o card do DNA saiu: ia até #7c2bff e
-   agora fecha em #8a3aff, que era o destino da terceira célula. Duas células
-   passam a percorrer o mesmo trecho que três percorriam.
+/* A marca de tique de cada coluna, pendurada no trilho.
 
-   Não é capricho: parar em #7c2bff deixaria o roxo claro do símbolo sem
-   representação nenhuma na seção, e a rampa existe justamente para trazer o
-   gradiente da logo para dentro do bento. O teto de #8a3aff continua sendo o
-   limite de contraste explicado acima, não uma escolha de gosto. */
-.page #recursos .rec-cell--calcula {
-  background: linear-gradient(152deg, #5010ff, #8a3aff);
+   Mora no CARD e não no trilho de propósito, e a razão é aritmética: as
+   quatro colunas têm largura `(W - 3 × gap) / 4` com um `gap` em `clamp`,
+   que não é proporcional à largura. Não há como escrever as quatro posições
+   em porcentagem. Pendurada no card, cada marca cai exatamente na borda da
+   sua coluna sem conta nenhuma.
+
+   AQUI DIZIA que a marca "chega voando com o card e encontra o trilho
+   parado no fim da viagem". Não acontece, e a conta mostra por quê: elas
+   acendem com `--trava`, que só sai do zero em `--chegada` 0.78, e o último
+   card (o CALCULA) assenta em ~0.74 — nessa altura o `--t` dele já vale 1 e
+   o `transform` é identidade. As marcas aparecem sobre cards parados.
+
+   Fica registrado para ninguém tentar "restaurar" um efeito que nunca
+   existiu. Para ele existir de verdade, `--trava` teria de começar ANTES do
+   fim da cascata dos cards — e aí a moldura deixaria de ser a última coisa
+   a acontecer, que é o ponto da atracação. */
+.page #recursos .quad::before {
+  content: '';
+  position: absolute;
+  /* Mesma altura do trilho: a marca mora SOBRE ele, não perto dele. Os dois
+     precisam sair do mesmo valor, senão a marca descola da linha que ela
+     existe para marcar. */
+  top: calc(-1 * var(--folga));
+  /* MEIO VÃO À ESQUERDA da borda da coluna, e o número não é gosto.
+
+     Antes a marca ficava na borda: as quatro caíam no INÍCIO de cada
+     coluna, então o passo entre elas era coluna + vão, enquanto o passo da
+     quarta para a quinta — que marca o FIM da fileira — era só a coluna.
+     O último intervalo saía 14% mais curto que os outros três.
+
+     Recuando meio vão, cada marca passa a cair no MEIO do vão que separa
+     dois cards, e não na borda de um deles. Deixa de marcar "onde a coluna
+     começa" e passa a marcar "onde um card acaba e o outro começa" — que é
+     o que uma régua de quatro cards tem: cinco fronteiras, igualmente
+     espaçadas. Os cinco intervalos ficam idênticos, em coluna + vão. */
+  left: calc(-1 * var(--vao) / 2);
+  width: 1px;
+  /* ---- DE MARCA A CONDUÍTE ----
+     Era um tique de 9px pendurado no trilho. Agora desce do trilho até o
+     PISO DO PAINEL: `--folga` para vencer o vão entre o trilho e o topo do
+     card, mais a altura do slot do artefato.
+
+     É o que faz os quatro lerem como instrumentos de um console e não como
+     quatro listas soltas — cada painel é alimentado por um conduíte que vem
+     da mesma barra. A marca deixa de apontar para a coluna e passa a servi-la.
+
+     E ELE VIVE NA CALHA, não na coluna: `left` é meio vão NEGATIVO, ou seja,
+     o conduíte cai no vazio entre dois cards. Custo em largura de conteúdo:
+     zero. Era a condição para isto caber — "Carrossel" tem 2,7px de folga na
+     célula do calendário e não há de onde tirar (ver a nota do `.quads`).
+
+     Um efeito de graça: como a sobra dentro do slot varia de 3 a 80px entre
+     os quatro, o vazio do PLANEJA lia como buraco. Com o conduíte
+     atravessando a altura inteira, aquele vazio passa a ser o interior do
+     painel, com estrutura visível dentro. O buraco continua lá, medido; o
+     que mudou é que agora ele tem função.
+
+     `100%` E NÃO `--slot`: era `--folga + --slot` de quando o artefato ficava
+     no topo do card e o conduíte precisava cobrir só ele. Com o texto em
+     cima, o conduíte tem de vencer o cabeçalho também, e somar `--cabeca` à
+     conta seria mais um número para manter em sincronia. `100%` é a altura do
+     card, que é o que ele realmente precisa percorrer — e continua batendo
+     com o piso, que está na base do card, sem depender de valor nenhum. */
+  height: calc(var(--folga) + 100%);
+  background: var(--fio-forte);
+  opacity: var(--trava);
 }
 
-.page #recursos .verb {
-  display: block;
-  margin: 0 0 9px;
+/* A QUINTA MARCA — o fim do trilho.
+
+   As outras quatro dizem onde cada coluna COMEÇA. Esta diz onde a fileira
+   acaba, e sem ela o trilho corria 250px além do último tique: régua com
+   quatro marcas e cinco bordas, com o último intervalo em aberto.
+
+   MORA NO `.quads`, não no card do CALCULA, ainda que os dois tenham a
+   mesma borda direita. Duas razões: ela fecha o TRILHO, que é o `::before`
+   deste mesmo elemento, e `right: 0` acerta a posição sem conta nenhuma —
+   no dia em que a fileira deixar de ter quatro colunas, ela continua certa.
+   (A regra oposta vale para as outras quatro, e pelo mesmo motivo
+   aritmético: ver a nota do `.quad::before` acima.)
+
+   `position: absolute` é obrigatório e não estético: sem isso o
+   pseudo-elemento vira um ITEM desta grade e abre uma quinta coluna,
+   empurrando os quatro cards. Mesma armadilha do trilho. */
+.page #recursos .quads::after {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--folga));
+  /* `left: 100% + meio vão` e não `right: -meio vão`, e a diferença importa
+     para o intervalo ficar EXATO. As outras quatro são posicionadas pela
+     borda esquerda; medida de borda esquerda a borda esquerda, `right`
+     deixaria esta 1px mais perto da anterior — a largura da própria marca.
+     Ancorando as cinco pela mesma borda, o passo é coluna + vão nas quatro
+     vezes, sem sobra. */
+  left: calc(100% + var(--vao) / 2);
+  width: 1px;
+  /* Mesma altura dos outros quatro: ela virou conduíte junto com eles. Se
+     ficasse nos 9px de tique, o console teria quatro colunas descendo e uma
+     parada no alto — a única assimetria que a quinta marca existe para não
+     ter (ver a nota dela acima).
+
+     Aqui o `100%` é a altura do `.quads`, ou seja, a da linha do grid — que é
+     a mesma dos quatro cards, porque a linha os iguala. Bate com os outros
+     quatro sem precisar repetir a conta deles. */
+  height: calc(var(--folga) + 100%);
+  background: var(--fio-forte);
+  opacity: var(--trava);
+}
+
+/* ---------- O slot do artefato ----------
+   ALTURA TRAVADA, e é a peça central do conserto de 21/08.
+
+   Antes o artefato tinha `margin-top: auto` e colava na base do quadrado,
+   com o texto em cima. Como calendário, ficha, roteiro e calculadora têm
+   alturas bem diferentes, o vão entre o texto e o artefato variava de ~10px
+   a ~90px entre os quatro — o buraco que se via no PLANEJA. Quatro objetos
+   com respiros diferentes e sem caixa que os contenha lêem como peças
+   soltas, não como uma grade.
+
+   `min-height` e não `height`: travar a altura de verdade recortaria o
+   artefato mais alto se alguém acrescentasse uma linha, e esta folha não
+   esconde conteúdo com overflow. Como o valor é o do artefato mais alto (a
+   estrutura do roteiro, com quatro passos), na prática os quatro medem
+   exatamente isto e alinham. Se um passar do teto, ele cresce e o
+   desalinhamento aparece — que é o aviso de que este número precisa subir.
+
+   `align-items: start` para o artefato mais baixo (o calendário, com duas
+   fileiras) encostar no topo do slot em vez de centralizar: o alinhamento
+   que importa é o de cima, onde todos começam. */
+.page #recursos .quad__saida {
+  /* Tem de caber o artefato MAIS ALTO — a estrutura do roteiro, com quatro
+     passos. A primeira tentativa foi 140px e três dos quatro passaram do
+     teto, cada um com uma altura própria, que é justamente o que este slot
+     existe para impedir.
+
+     Sem `aspect-ratio` prendendo a altura do card, este número já não
+     disputa espaço com o texto: o card cresce se precisar, e os quatro
+     crescem juntos porque a linha do grid os iguala.
+
+     Caiu de 190 para 166 quando os valores da ficha e do roteiro foram
+     encurtados: o roteiro deixou de ocupar duas linhas por passo e parou de
+     ser o mais alto. Quem define o piso agora é a CALCULADORA, que tem
+     números, controle deslizante e nota — medida em 162px.
+
+     Passei por 150 no caminho e três dos quatro slots ficaram no piso
+     enquanto a calculadora sozinha media 149 na tela. Se este número voltar
+     a ficar abaixo do artefato mais alto, o sintoma é esse: um slot
+     diferente dos outros três. */
+  /* O respiro entra como PADDING e o `min-height` cresce junto, para
+     `--slot` continuar significando "espaço útil para o artefato" e não
+     "altura da caixa". Com `box-sizing: border-box`, o padding sai de dentro
+     do `min-height` — sem somar os dois aqui, o artefato mais alto perderia
+     30px de espaço e o slot deixaria de caber nele. */
+  padding-block: var(--respiro);
+  min-height: calc(var(--slot) + var(--respiro) * 2);
+  display: flex;
+  align-items: flex-start;
+  /* Âncora do piso do painel, abaixo. */
+  position: relative;
+}
+.page #recursos .quad__saida > * {
+  width: 100%;
+}
+
+/* ---- O PISO DO PAINEL ----
+   O filete que fecha o instrumento por baixo e o separa da legenda.
+
+   Faz três trabalhos de uma vez, e é por isso que vale um pseudo-elemento:
+
+   1. FECHA O CONDUÍTE. Ele desce do trilho e para exatamente aqui — sem o
+      piso, a linha morre no ar no meio do card.
+   2. ALINHA OS QUATRO. Está na base do slot, que tem altura travada em
+      `--slot`, então cai na MESMA linha nos quatro cards. É a segunda linha
+      horizontal que a fileira ganha, depois do trilho, e ela amarra os
+      quatro instrumentos como o trilho amarra as quatro colunas.
+   3. DÁ BORDA AO VAZIO. A sobra dentro do slot varia de 3 a 80px entre os
+      quatro (medido). Sem contorno, os 80px do PLANEJA liam como buraco;
+      com o piso e o conduíte, lêem como o interior do painel.
+
+   Começa no CONDUÍTE (`left` em meio vão negativo) e não na borda da coluna:
+   o painel se apoia na linha que o alimenta. À direita para na coluna, e o
+   vão até o conduíte seguinte é a calha entre um instrumento e o outro.
+
+   NÃO É `border-bottom` no slot de propósito: a borda somaria 1px à altura e
+   `--slot` deixaria de casar com a altura do conduíte, que sai do mesmo
+   valor. Absoluto, não empurra nada. */
+.page #recursos .quad__saida::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--vao) / 2);
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--fio);
+  opacity: var(--trava);
+}
+/* O último painel fecha no quinto conduíte, e não na borda da coluna: é ele
+   que termina o console do lado direito. Sem isto o console fecharia com uma
+   calha aberta na ponta — o mesmo defeito que a quinta marca corrigiu no
+   trilho, um andar abaixo. */
+.page #recursos .quad--calcula .quad__saida::after {
+  right: calc(-1 * var(--vao) / 2);
+}
+
+/* ---- O CABEÇALHO DO PAINEL ----
+   Nome do card, título e subtítulo, ACIMA do artefato. É a hierarquia de
+   painel de instrumento: a placa diz o que o instrumento é, a leitura vem
+   embaixo dela.
+
+   Já esteve na base, com `margin-top: auto`, e voltou para cima quando o
+   console ganhou conduíte e piso — o porquê completo está no docblock de
+   components/sections/WhatItDoes.tsx.
+
+   `min-height` e não `height`: se a copy crescer, o bloco cresce e o
+   desalinhamento aparece, em vez de o texto ser recortado em silêncio. Mesma
+   regra do slot. */
+.page #recursos .quad__texto {
+  min-height: var(--cabeca);
+  padding-bottom: 14px;
+  /* Âncora do filete que separa a placa da leitura, abaixo. */
+  position: relative;
+}
+
+/* O filete entre a placa e a leitura. É ele que torna a hierarquia VISÍVEL:
+   sem ele o bloco de texto e o artefato lêem como um fluxo só, e o card
+   volta a ser uma lista com um parágrafo em cima.
+
+   Fica em `--fio-fraco`, o degrau mais baixo das linhas: é interno ao
+   instrumento e não pode competir com o conduíte que o alimenta nem com o
+   piso que o fecha. Alinha nos quatro cards porque `--cabeca` trava a altura
+   do bloco acima dele.
+
+   Começa no conduíte, como o piso, para o painel inteiro se apoiar na mesma
+   linha vertical. */
+.page #recursos .quad__texto::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--vao) / 2);
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--fio-fraco);
+  opacity: var(--trava);
+}
+.page #recursos .quad--calcula .quad__texto::after {
+  right: calc(-1 * var(--vao) / 2);
+}
+
+/* O filete acima do verbo é o que marca onde a legenda de cada quadrado
+   começa, agora que não há borda. Ecoa de propósito o `.tag::before` do
+   cabeçalho da seção: mesma marca, uma hierarquia abaixo. */
+.page #recursos .quad .verb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
-  font-weight: 500;
   font-size: 11px;
-  letter-spacing: 0.17em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--lilac);
 }
-.page #recursos .rec-cell h3 {
-  margin: 0;
-  max-width: 17ch;
-  font-size: clamp(18px, 1.55vw, 21px);
-  font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-}
-
-.page #recursos .rec-cell--cria {
-  grid-column: 1 / 3;
-  grid-row: 1 / 3;
-  padding: 22px;
-  border-color: var(--rule-hi);
-}
-.page #recursos .rec-cell--cria h3 {
-  max-width: 14ch;
-  font-size: clamp(23px, 2.1vw, 30px);
-}
-.page #recursos .rec-cell__lede {
-  margin: 9px 0 0;
-  max-width: 46ch;
-  color: var(--paper-56);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.page #recursos .rec-cell--planeja { grid-column: 3 / 5; grid-row: 1; }
-/* CALCULA passou a ocupar a LARGURA TODA da direita quando o DNA saiu da
-   coluna 4. Manter `grid-column: 3` deixaria um buraco de uma célula ao lado
-   dela: o preenchimento automático não tapa o vão porque REPERTÓRIO tem
-   linha fixa (3) e não sobe para a 2.
-
-   Com isso a direita fica em duas faixas cheias, PLANEJA sobre CALCULA, e a
-   composição volta a ser dois blocos e uma tarja — a mesma leitura de antes,
-   só sem a divisão da linha de baixo. */
-.page #recursos .rec-cell--calcula { grid-column: 3 / 5; grid-row: 2; }
-.page #recursos .rec-cell--repertorio {
-  grid-column: 1 / 5;
-  grid-row: 3;
-  flex-direction: row;
-  align-items: center;
-  gap: 26px;
-  padding: 13px 20px;
-}
-
-/* Superfície de saída — o produto, não um ícone. */
-.page #recursos .rec-out {
-  margin-top: auto;
-  padding-top: 12px;
-  min-height: 0;
-}
-
-/* Na célula dominante o card preenche a altura, em vez de ser
-   empurrado para a base e deixar um vão no meio. */
-.page #recursos .rec-cell--cria .rec-out {
-  flex: 1;
-  display: flex;
-  margin-top: 16px;
-  padding-top: 0;
-}
-
-/* ---------- Post gerado (CRIA) ---------- */
-.page #recursos .post {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  border: 1px solid var(--rule);
-  border-radius: 12px;
-  background: rgba(20, 16, 28, 0.045);
-  overflow: hidden;
-}
-.page #recursos .post__bar {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 13px;
-  border-bottom: 1px solid var(--rule);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: var(--paper-38);
-}
-.page #recursos .post__bar b {
-  font-weight: 500;
-  color: var(--paper-80);
-}
-.page #recursos .post__dot {
-  width: 6px;
-  height: 6px;
+.page #recursos .quad .verb::before {
+  content: '';
+  width: 22px;
+  height: 1px;
   flex: none;
-  border-radius: 50%;
-  background: var(--lilac);
-  box-shadow: 0 0 9px var(--lilac);
+  background: currentColor;
 }
-.page #recursos .post__body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 14px 15px;
+.page #recursos .quad h3 {
+  margin: 12px 0 0;
+  font-size: clamp(15px, 1.35vw, 18px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  text-wrap: balance;
 }
-.page #recursos .post__caption {
-  margin: 0;
-  /* Três linhas reservadas. As legendas das variações têm comprimentos
-     diferentes: sem piso, trocar de chip faria o card pular de altura a
-     cada clique — e num bento de uma tela isso empurra a linha de baixo. */
-  min-height: 4.5em;
-  color: var(--paper-80);
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-.page #recursos .post__caption i {
-  font-style: normal;
-  color: var(--lilac);
-}
-.page #recursos .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 13px 0 0;
-  padding: 0;
-  list-style: none;
-}
-/* O chip é botão de verdade: clicar troca a legenda do post. Antes era
-   um <li> inerte com aparência de controle, que é a pior combinação —
-   quem clica e não recebe resposta passa a duvidar do resto da página.
-   Altura final de 27px, acima do mínimo de 24 da WCAG 2.2 para alvo. */
-.page #recursos .chips button {
-  display: block;
-  /* Media 27px de altura; 10px de padding levam a 34px, o mínimo do
-     Material. Os 44px do iOS deformariam o post — e estes chips são
-     controle secundário dentro de um card, não CTA. */
-  padding: 10px 13px;
-  min-height: 34px;
-  border: 1px solid var(--rule-hi);
-  border-radius: 999px;
-  background: none;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.2;
-  color: var(--paper-80);
-  cursor: pointer;
-  transition:
-    border-color 0.22s var(--ease),
-    background-color 0.22s var(--ease),
-    color 0.22s var(--ease);
-}
-.page #recursos .chips button:hover {
-  border-color: var(--paper-56);
-}
-/* O chip escolhido inverte contra o card claro que o abriga. */
-.page #recursos .chips button[data-ativa] {
-  border-color: var(--violet);
-  background: var(--violet);
-  color: var(--color-paper);
-}
-.page #recursos .chips button:focus-visible {
-  outline: 2px solid var(--violet);
-  outline-offset: 2px;
+.page #recursos .quad__lede {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--paper-56);
 }
 
-/* ---------- Calendário (PLANEJA) ---------- */
+
+/* ---------- Calendário (PLANEJA) ----------
+   QUATRO COLUNAS, não sete. Sete cabiam na célula larga do bento antigo;
+   num quadrado de ~270px dariam ~38px por dia, e "Carrossel" não entra em
+   38px sem descer de 11px, que esta folha não permite. Duas fileiras de
+   quatro (a última com três) mantêm o dia legível e ainda parecem semana. */
 .page #recursos .calendario {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 8px;
   margin: 0;
   padding: 0;
   list-style: none;
-}
-.page #recursos .calendario li {
-  padding: 8px 7px;
 }
 .page #recursos .calendario b {
   display: block;
   font-family: var(--font-mono);
   font-weight: 400;
   font-size: 11px;
-  color: var(--paper-38);
+  color: var(--paper-56);
   font-variant-numeric: tabular-nums;
 }
 .page #recursos .calendario span {
   display: block;
-  margin-top: 5px;
+  margin-top: 3px;
   font-family: var(--font-mono);
   font-size: 11px;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--lilac);
 }
+/* Os dias leves — story em vez de peça produzida — recuam um tom. É a
+   única hierarquia dentro do calendário e ela diz que o mês tem ritmo, não
+   sete peças pesadas seguidas. */
 .page #recursos .calendario li[data-leve] span {
   color: var(--paper-56);
 }
 
-/* ---------- Números (CALCULA) ---------- */
+/* ---------- Ficha da peça (CRIA) ----------
+   ERA UM POST FICTÍCIO. Aqui moravam `.post`, `.post__caption` e `.chips`,
+   que desenhavam a publicação de uma pizzaria inventada com quatro
+   variações trocáveis por botão. Saiu inteiro: a página não inventa mais
+   negócio nenhum (ver a regra no bloco de features em content/landing.ts).
+
+   Junto foram os chips, que eram o único controle deste card. Sem exemplo
+   não existe legenda para trocar, e botão que não muda nada é exatamente o
+   defeito que aqueles chips tinham sido criados para corrigir. A única
+   interação da seção passou a ser o controle de ROI do CALCULA.
+
+   A ficha também perdeu a moldura que tinha (borda, fundo, raio): ela
+   existia para separar o post do card claro que o abrigava, e não há mais
+   card. */
+.page #recursos .peca {
+  display: flex;
+  flex-direction: column;
+}
+.page #recursos .peca__campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px 16px;
+  margin: 0;
+}
+/* --lilac e NÃO --violet. O violeta puro (#4500F9) rotulava estes campos
+   quando eles viviam dentro de um card claro; sobre o preto ele desaparece
+   — reprova com folga na WCAG. */
+.page #recursos .peca__campos dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--lilac);
+}
+.page #recursos .peca__campos dd {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--paper-80);
+}
+/* Havia aqui um `.peca__nota`, o filete com "Nenhuma peça chega como ideia
+   solta" fechando a ficha. Saiu porque custava 28px e era exatamente o que
+   tirava o CRIA do quadrado — o item mais alto de uma linha de grid estica
+   os outros três junto. O porquê completo está em content/landing.ts. */
+
+/* ---------- Estrutura do roteiro (ROTEIRIZA) ----------
+   Lista ORDENADA e numerada à vista, ao contrário da ficha do CRIA: um
+   roteiro é ordem no tempo, e o número carrega informação de verdade — o
+   gancho vem antes da fala porque perder os primeiros segundos perde o
+   vídeo. Numerar a ficha do CRIA seria decoração; aqui é conteúdo. */
+/* 8px e não 10: é o artefato mais alto dos quatro e é ele que define o
+   `min-height` do slot. Cada ponto que ele economiza aqui vira respiro para
+   o bloco de texto embaixo, dentro de um quadrado de altura fixa. */
+.page #recursos .roteiro {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* UMA LINHA POR PASSO. Eram duas — rótulo em cima, explicação embaixo — e
+   isso fazia deste o artefato mais alto dos quatro, o que definia a altura
+   do slot de todos. Com os valores encurtados em content/landing.ts, os três
+   pedaços cabem lado a lado e a fileira inteira ficou mais baixa.
+
+   Três colunas de largura automática e um `1fr` no fim: número e rótulo têm
+   largura própria, a explicação toma o que sobra. Se um valor crescer a
+   ponto de não caber, ele quebra dentro da terceira coluna em vez de
+   empurrar as outras duas. */
+.page #recursos .roteiro li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+.page #recursos .roteiro em {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 11px;
+  color: var(--paper-56);
+  font-variant-numeric: tabular-nums;
+}
+.page #recursos .roteiro b {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--lilac);
+}
+.page #recursos .roteiro span {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--paper-80);
+}
+
+/* ---------- Números e simulação (CALCULA) ---------- */
 .page #recursos .numeros {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   margin: 0;
 }
 .page #recursos .numeros > div {
@@ -497,8 +867,11 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 9px;
-  border-bottom: 1px solid var(--rule);
+  padding-bottom: 8px;
+  /* `--fio-fraco` e não o `--rule` global: este é o único filete INTERNO a
+     um instrumento hoje, e ficara em 1,19:1 quando as três linhas de
+     estrutura subiram — visivelmente mais apagado que tudo à volta. */
+  border-bottom: 1px solid var(--fio-fraco);
 }
 .page #recursos .numeros > div:last-child {
   padding-bottom: 0;
@@ -506,13 +879,13 @@
 }
 .page #recursos .numeros dt {
   color: var(--paper-56);
-  font-size: 12.5px;
+  font-size: 11.5px;
 }
 .page #recursos .numeros dd {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(17px, 1.5vw, 20px);
+  font-size: clamp(16px, 1.4vw, 19px);
   letter-spacing: -0.03em;
   color: var(--paper);
   font-variant-numeric: tabular-nums;
@@ -521,28 +894,31 @@
   color: var(--lilac);
 }
 
-/* Simulação: o investimento é arrastado por quem lê. */
+/* Simulação: o investimento é arrastado por quem lê. É a única coisa
+   clicável da seção inteira desde que os chips do post saíram. */
 .page #recursos .calc {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .page #recursos .calc__controle {
   width: 100%;
   margin: 0;
-  /* `accent-color` pinta trilho e marcador na cor do card sem
-     reconstruir o controle peça por peça — e preserva o comportamento
-     nativo de teclado, que reconstrução artesanal costuma perder. */
-  accent-color: var(--paper);
+  /* `accent-color` pinta trilho e marcador sem reconstruir o controle peça
+     por peça — e preserva o comportamento nativo de teclado, que
+     reconstrução artesanal costuma perder. Era `--paper` quando o controle
+     morava num card violeta; sobre o preto o lilás marca melhor onde está
+     o polegar sem virar um traço branco duro. */
+  accent-color: var(--lilac);
   cursor: ew-resize;
   /* O elemento media 16px de altura — a espessura do trilho. O dedo mira o
      marcador, mas quem recebe o toque é a caixa, e 16px é alvo pequeno
      demais para um controle que é o ponto da calculadora. O trilho continua
      fino; o que cresce é a área tocável. */
-  min-height: 36px;
+  min-height: 34px;
 }
 .page #recursos .calc__controle:focus-visible {
-  outline: 2px solid var(--paper);
+  outline: 2px solid var(--lilac);
   outline-offset: 3px;
 }
 /* Diz que se arrasta e que o número é projeção. Controle sem sinal de
@@ -553,166 +929,105 @@
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.35;
-  color: var(--paper-38);
+  color: var(--paper-56);
 }
 
-/* Havia aqui um bloco `.campos`, a superfície de saída do card do DNA. Saiu
-   junto com o card: era o único lugar da folha que usava aquelas regras, e
-   CSS que não casa com nenhum elemento não é inofensivo — é armadilha para
-   quem vier procurar onde um estilo é aplicado. A ficha da seção do DNA tem
-   estilos próprios, em styles/dna.css. */
-
-/* ---------- Prateleira de aulas (REPERTÓRIO) ---------- */
-.page #recursos .repertorio__head {
-  flex: none;
-  max-width: 28ch;
-}
-.page #recursos .repertorio__head h3 {
-  max-width: none;
-  font-size: clamp(17px, 1.4vw, 19px);
-}
-.page #recursos .repertorio__head p {
-  margin: 4px 0 0;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lilac);
-}
-.page #recursos .aulas {
-  display: flex;
-  flex: 1;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.page #recursos .aulas li {
-  flex: 1;
-  padding: 8px 11px;
-  color: var(--paper-80);
-  font-size: 12px;
-  line-height: 1.35;
-}
-.page #recursos .aulas em {
-  display: block;
-  margin-bottom: 3px;
-  font-family: var(--font-mono);
-  font-style: normal;
-  font-size: 11px;
-  color: var(--paper-38);
-  font-variant-numeric: tabular-nums;
-}
+/* Já moraram nesta folha `.campos` (a saída do card do DNA) e `.aulas` com
+   `.repertorio__head` (a prateleira de aulas). As duas seguiram os blocos
+   que estilizavam: o DNA para styles/dna.css e o Repertório para
+   styles/repertorio.css, ambos com seção própria agora. CSS que não casa
+   com elemento nenhum não é inofensivo — é armadilha para quem vier
+   procurar onde um estilo é aplicado. */
 
 /* ---------- Entrada no scroll ----------
-   REMOVIDA. Esta seção virou estação (components/layout/Estacoes.tsx), e
-   quem revela as células agora é a CHEGADA: cada uma tem uma janela de
-   `--chegada` em styles/estacao.css e nasce na sua vez ao longo da viagem.
+   NÃO EXISTE, e já foram duas que passaram por aqui.
 
-   O que havia aqui era uma entrada por RELÓGIO: `Reveal.tsx` adicionava
-   `.in` quando o bento cruzava a viewport e as cinco células corriam
-   percursos de 1,4s a 2,7s, cada uma de uma direção, com atrasos
-   escalonados. Era bonito e não sobreviveria à convivência: são dois
-   relógios para o mesmo conteúdo, um em segundos e outro em pixels de
-   rolagem, disputando `opacity` e `transform` na mesma célula. A nota em
-   ApproachSection.tsx registra a mesma decisão quando "Veja funcionando"
-   virou estação.
+   Os quadrados NÃO nascem um a um. A seção chega como corpo único: o
+   conteúdo já está inteiro desde que a estação é um ponto no fundo, e o
+   que muda com a distância é o foco. A regra está em styles/estacao.css,
+   sob "O QUE ELA FAZ — a chegada sem cascata", e o porquê também.
 
-   As DIREÇÕES sobreviveram à mudança e moram agora em styles/estacao.css,
-   sob "Direções do bento": CRIA pela esquerda, PLANEJA do topo, CALCULA de
-   baixo, DNA pela direita, Repertório fechando por baixo. O que mudou é o
-   que as move — antes um `transition` em segundos, agora o `--chegada` da
-   viagem. O `--vem` que dimensiona o percurso também foi para lá, junto
-   das direções, para não ficar um valor órfão aqui sem ninguém que o use. */
-/* As transições de elevação e borda ficaram aqui porque são do estado
-   TÁTIL, não da entrada: elas continuam valendo com a cascata dirigindo
-   opacidade e transform. `transform` fica de fora da lista de propósito —
-   ele pertence à cascata agora, e transicioná-lo faria o card perseguir a
-   rolagem com atraso próprio, brigando com o `scrub` da estação. */
-.page #recursos .bento .rec-cell {
-  transition:
-    translate 0.24s var(--ease),
-    box-shadow 0.24s var(--ease),
-    border-color 0.24s var(--ease);
-}
+   A PRIMEIRA que saiu era por RELÓGIO: `Reveal.tsx` adicionava `.in`
+   quando o bento cruzava a viewport e as células corriam percursos de 1,4s
+   a 2,7s, cada uma de uma direção. Não sobreviveu a esta seção virar
+   estação — dois relógios para o mesmo conteúdo, um em segundos e outro em
+   pixels de rolagem, disputando `opacity` e `transform` no mesmo elemento.
+
+   A SEGUNDA era a cascata da chegada: seis janelas de `--chegada`, uma por
+   bloco, com os quadrados entrando em leque. Saiu em 21/08 por não caber
+   no que a seção precisa parecer — estação espacial não se monta peça por
+   peça enquanto a nave se aproxima.
+
+   O que era do leque (`--vem`, `--vem-x`, `--sobe`, `--encolhe`) foi junto
+   e não sobrou valor órfão aqui nem lá. */
 
 /* ---------- Estado tátil ----------
-   Elevação de 5px e sombra mais funda, nos 240ms de praxe. Serve para o
-   card responder ao ponteiro, não para prometer navegação: nada de
-   `cursor: pointer`, porque o card não leva a lugar nenhum. Quem é
-   clicável de fato — os chips e o controle deslizante — tem cursor,
-   foco visível e estado próprio.
+   Sem caixa não há o que elevar: a sombra e o deslocamento de 5px que os
+   cards tinham dependiam de existir uma superfície para descolar do fundo.
+   O que responde ao ponteiro agora é o TEXTO, e de leve — o quadrado que
+   não está sob o cursor recua um tom.
 
-   A elevação usa `translate`, não `transform`: `transform` está ocupado
-   pela cascata da chegada, e as duas brigariam pela mesma propriedade. */
+   Nada de `cursor: pointer`: o quadrado não leva a lugar nenhum. Quem é
+   clicável de fato — só o controle deslizante do ROI — tem cursor, foco
+   visível e estado próprio.
+
+   `transform` fica fora de qualquer transição daqui de propósito: ele
+   pertence à cascata da chegada, e transicioná-lo faria o quadrado
+   perseguir a rolagem com atraso próprio, brigando com o `scrub`. */
 @media (hover: hover) and (pointer: fine) {
-  .page #recursos .bento .rec-cell:hover {
-    translate: 0 -5px;
-    border-color: var(--rule-hi);
-    box-shadow:
-      0 6px 11px -4px rgba(0, 0, 0, 0.45),
-      0 34px 72px -44px rgba(124, 43, 255, 0.62);
+  .page #recursos .quads:hover .quad {
+    transition: opacity 0.3s var(--ease);
+    opacity: 0.55;
+  }
+  .page #recursos .quads .quad:hover {
+    opacity: 1;
   }
 }
-/* Os `transition-delay` que escalonavam as cinco células (0,16s / 0,32s /
-   0,48s / 0,66s) saíram junto com a entrada por relógio. O escalonamento
-   agora é espacial, não temporal: vive nos `--de` de cada célula em
-   styles/estacao.css. */
 
 /* ============================================================
-   Telas baixas — a seção cresce em vez de espremer.
-   Abaixo de 760px de altura não existe "uma tela" honesta para
-   este conteúdo; forçar produziria texto ilegível.
+   Telas baixas — a composição cede antes de cortar.
+
+   A faixa começa em 880px e não em 759px: a composição pede ~810px com os
+   paddings, então tudo entre 760 e ~810px de janela cortava conteúdo em
+   silêncio. Medido em 1440×768 na versão anterior: 9px do card de baixo
+   ficavam fora.
+
+   Os quadrados folgaram esse aperto: a composição nova é mais baixa que o
+   bento (um quadrado de ~270px contra 462px de bento em três linhas), mas
+   os degraus ficam — a altura de um quadrado cresce com a LARGURA da
+   janela, e numa tela larga e baixa ele volta a apertar.
    ============================================================ */
-/* Telas baixas — a composição ENCOLHE para caber em uma tela.
-
-   Antes esta regra fazia o contrário: `min-height: auto`, deixando a seção
-   crescer além da viewport. Isso funcionava enquanto a seção era uma faixa
-   que se rolava. Virando estação ela é PRESA, e uma seção presa mais alta
-   que a tela é pior que cortada: o que passa da dobra fica inalcançável,
-   porque a página não rola enquanto o pin segura.
-
-   A faixa também estava errada. Só agia abaixo de 759px, e o corte começa
-   bem antes: a composição pede ~810px com os paddings, então tudo entre
-   760px e ~810px de janela cortava o Repertório em silêncio. Medido em
-   1440×768: 9px do card de baixo ficavam fora. Por isso 880px, com folga
-   acima do ponto real de aperto. */
 @media (min-width: 1024px) and (max-height: 880px) {
   .page #recursos {
     /* O topo cede pouco: 78px é a barra flutuante e ela não pode cobrir o
-       eyebrow. O que sobra vem do rodapé da seção, da folga do cabeçalho e
-       do respiro entre as células. */
+       eyebrow. O que sobra vem do rodapé da seção e da folga do cabeçalho. */
     padding-block: clamp(82px, 9vh, 96px) clamp(12px, 1.6vh, 24px);
   }
-  .page #recursos .rec-head {
-    margin-bottom: clamp(10px, 1.4vh, 18px);
-  }
-  .page #recursos .bento {
-    gap: 8px;
-  }
-  .page #recursos .rec-cell {
-    padding: clamp(14px, 1.8vh, 20px) clamp(16px, 1.3vw, 22px);
-  }
+  /* AQUI MORAVA um teto próprio para o `margin-bottom` do cabeçalho
+     (`clamp(18px, 4.4vh, 44px)`), para reclamar altura em tela baixa.
+
+     Saiu porque o vão passou a ser 2×`--folga` e o trilho a cair no meio
+     dele: um teto independente aqui devolvia o defeito que a mudança
+     corrige — cabeçalho e fileira descentrados dentro das suas caixas,
+     agora só nas janelas baixas, que são a maioria dos notebooks.
+
+     Quem reclama altura quando ela falta é a própria `--folga`, no degrau
+     de 680px mais abaixo. Uma medida só, e as três linhas andam com ela. */
 }
 
-/* Abaixo de ~760px os paddings já deram tudo que tinham e o conteúdo tem
+/* Abaixo de ~790px os paddings já deram tudo que tinham e o conteúdo tem
    piso próprio: a composição não cabe mais por ajuste de respiro. Aqui ela
    é REDUZIDA inteira.
 
    `zoom` e não `transform: scale()`, e a diferença é o que faz isto
    funcionar: `zoom` age no LAYOUT — a altura real do palco encolhe, que é
-   justamente o que precisa acontecer para o card de baixo caber. Um
-   `scale` encolheria só o desenho, deixando a caixa do mesmo tamanho, e
-   ainda disputaria a propriedade `transform`, que pertence ao JS da
-   estação (Estacoes.tsx a reescreve a cada quadro).
+   justamente o que precisa acontecer. Um `scale` encolheria só o desenho,
+   deixando a caixa do mesmo tamanho, e ainda disputaria a propriedade
+   `transform`, que pertence ao JS da estação (Estacoes.tsx a reescreve a
+   cada quadro).
 
    Os degraus são fixos porque CSS não sabe dividir comprimento por
-   comprimento: não há como escrever "encolha o quanto faltar". Cobrem até
-   ~600px de janela em desktop; abaixo disso o corte volta. É um caso
-   remoto — abaixo de 1024px de LARGURA a seção já empilha e deixa de ser
-   uma tela só —, mas está escrito aqui para não ser descoberto de novo do
-   zero. A solução definitiva seria a seção deixar de ser estação quando
-   não couber, e isso é decisão de desenho, não de CSS. */
+   comprimento: não há como escrever "encolha o quanto faltar". */
 @media (min-width: 1024px) and (max-height: 790px) {
   .page #recursos .estacao-palco {
     zoom: 0.92;
@@ -723,33 +1038,71 @@
   .page #recursos .estacao-palco {
     zoom: 0.82;
   }
+
+  /* A `--folga` CEDE JUNTO, e é ela quem reclama altura agora que o vão
+     entre cabeçalho e fileira é 2×folga: apertar a moldura encurta o vão na
+     mesma proporção, e as duas caixas continuam centradas.
+
+     Um teto próprio no `margin-bottom` do cabeçalho faria a mesma economia
+     e descentralizaria as duas — era assim antes, e é o que este degrau
+     substitui.
+
+     Por que 38px de teto: numa janela de 1536×500 (o piso realista de
+     desktop deitado), a moldura fecha em 91px do topo contra os 89px da
+     barra flutuante, e o braço de baixo para 21px antes do recorte da
+     seção. Com a folga anterior de 56px a moldura vazava 4px embaixo. */
+  .page #recursos .rec-layout {
+    --folga: clamp(24px, 2.4vw, 38px);
+  }
 }
 
 /* ============================================================
-   Tablet e celular — empilha. "Uma tela" é meta de desktop.
+   Tablet e celular — desliza. "Uma tela" é meta de desktop.
    ============================================================ */
 @media (max-width: 1023px) {
   /* PRESA em uma tela, como as outras estações. `min-height: auto` +
      `display: block` eram de quando a seção rolava solta — mesma família
      do bug da FAQ, da Demo e dos 72svh da "+15 anos". Presa, tudo que
      passa da tela fica INALCANÇÁVEL: o pin segura a seção parada e rolar
-     só avança a animação até ela partir. Medido antes, em 390×844:
-     1.763px de conteúdo numa tela de 844 — CALCULA, DNA e Repertório (a
-     calculadora de ROI e o bônus incluso nos planos) nunca apareciam. */
+     só avança a animação até ela partir. */
   .page #recursos {
     min-height: 100svh;
     padding: clamp(64px, 9vh, 104px) 0 clamp(96px, 13vh, 116px);
     display: grid;
     /* `minmax(0, 1fr)` e não a coluna implícita: sem isto o grid dimensiona
-       a coluna pelo MAX-CONTENT do carrossel — os cinco cards lado a lado,
-       1.734px — e o `.bento` nasce com 1.280px (o `--world-max`) dentro de
-       uma seção de 375. O snap passaria a centralizar numa janela de 1.280
-       que ninguém vê, e o `overflow: hidden` da seção é que estaria
-       recortando. Medido antes: `bento.clientWidth` 1280 contra 375 de
-       seção. */
+       a coluna pelo MAX-CONTENT do carrossel — os quadrados lado a lado — e
+       o `.quads` nasce com 1.280px (o `--world-max`) dentro de uma seção de
+       375. O snap passaria a centralizar numa janela que ninguém vê, e o
+       `overflow: hidden` da seção é que estaria recortando. */
     grid-template-columns: minmax(0, 1fr);
     align-content: center;
     overflow: hidden;
+  }
+  .page #recursos .rec-layout {
+    display: block;
+  }
+  /* A MOLDURA, O TRILHO E AS MARCAS SÃO TRATAMENTO DE DESKTOP, por ora.
+     No celular a fileira vira carrossel: o trilho rolaria junto com os
+     slides e as marcas sairiam da tela com eles, e uma moldura em volta de
+     um conteúdo que desliza lateralmente lê como recorte, não como
+     atracação. O equivalente móvel é outra decisão de desenho — quando as
+     seis estações ganharem o tratamento, é aqui que ela entra. */
+  .page #recursos .rec-layout::before,
+  .page #recursos .quads::before,
+  .page #recursos .quads::after,
+  .page #recursos .quad::before,
+  /* O piso do painel vai junto com o conduíte: ele existe para FECHAR o
+     conduíte por baixo e para alinhar os quatro slots. No carrossel não há
+     conduíte para fechar e o slot solta a altura travada (`min-height: 0`,
+     mais abaixo), então não há o que alinhar — sobraria um filete solto
+     debaixo de cada artefato, em altura diferente a cada slide. */
+  .page #recursos .quad__saida::after,
+  /* O filete entre a placa e a leitura vai junto, e por um motivo próprio:
+     ele começa em meio `--vao` NEGATIVO, e `--vao` continua valendo o do
+     desktop aqui (o carrossel troca o `gap` direto, não a variável). Ele
+     sairia 13 a 22px para fora da borda do slide, na área de rolagem. */
+  .page #recursos .quad__texto::after {
+    display: none;
   }
   .page #recursos .rec-head {
     margin: 0 var(--gutter) 20px;
@@ -759,25 +1112,23 @@
     font-size: clamp(28px, 5.8vw, 40px);
   }
 
-  /* CARROSSEL: os cinco cards em deslize lateral, um por tela, com snap.
+  /* CARROSSEL: os quatro quadrados em deslize lateral, um por tela, com
+     snap.
 
-     Horizontal e não "mais curto" porque o conteúdo dos cards É o
-     argumento — o post real, o calendário, a calculadora. Encolher os
-     cards até caberem empilhados mataria justamente a prova. O deslize é
-     o único formato que preserva os cinco inteiros dentro de uma tela
-     presa.
+     Horizontal e não "mais curto" porque o conteúdo dos quadrados É o
+     argumento — o calendário, a ficha, a estrutura do roteiro, a
+     calculadora. Encolher até caberem empilhados mataria justamente a
+     prova. O deslize é o único formato que preserva os quatro inteiros
+     dentro de uma tela presa.
 
-     `84vw` de largura deixa uma fatia do próximo card aparecendo na
-     borda: é ela que anuncia que há mais, sem precisar de setas nem de
-     pontinhos. */
-  .page #recursos .bento {
+     `84vw` de largura deixa uma fatia do próximo aparecendo na borda: é ela
+     que anuncia que há mais, sem precisar de setas nem de pontinhos. */
+  .page #recursos .quads {
     display: flex;
-    /* O `--world-max` da regra base é largura de desktop; aqui a janela do
-       carrossel tem de ser exatamente a da tela, senão o snap centraliza
-       fora do que se vê. */
+    /* A janela do carrossel tem de ser exatamente a da tela, senão o snap
+       centraliza fora do que se vê. */
     max-width: 100%;
     grid-template-columns: none;
-    grid-template-rows: none;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
@@ -788,26 +1139,48 @@
     overscroll-behavior-x: contain;
     --vem: 34px;
   }
-  .page #recursos .bento::-webkit-scrollbar {
+  .page #recursos .quads::-webkit-scrollbar {
     display: none;
   }
-  .page #recursos .rec-cell,
-  .page #recursos .rec-cell--cria,
-  .page #recursos .rec-cell--planeja,
-  .page #recursos .rec-cell--calcula,
-  .page #recursos .rec-cell--repertorio {
-    grid-column: auto;
-    grid-row: auto;
+  /* No carrossel a largura é a da tela e a altura, a do conteúdo. Sem grid
+     não há linha para igualar os quatro — e nem precisa, porque só um
+     aparece por vez. */
+  .page #recursos .quad {
     flex: 0 0 min(84vw, 340px);
     scroll-snap-align: center;
     min-height: 0;
   }
-  /* Os gestos de chegada laterais empurrariam os cards contra o eixo do
-     deslize — no carrossel todos chegam de baixo. Sobrou só CRIA na lista:
-     o DNA era o outro card com entrada lateral, e saiu. */
-  .page #recursos .rec-cell--cria {
-    --vem-x: 0px;
-    --sobe: 34px;
+  /* O slot solta a altura travada junto com o `aspect-ratio`: ele existe para
+     alinhar quatro quadrados lado a lado, e no carrossel só há um por vez. */
+  /* O respiro do painel sai junto com o painel: sem filete em cima nem piso
+     embaixo, ele não separa nada de nada — só somaria 15px ao `padding-bottom`
+     do cabeçalho, que já dá o respiro entre a placa e a leitura no slide. */
+  .page #recursos .quad__saida {
+    min-height: 0;
+    padding-block: 0;
+  }
+  /* O cabeçalho solta a altura travada pelo mesmo motivo do slot: `--cabeca`
+     existe para os quatro artefatos começarem na mesma linha lado a lado, e
+     no carrossel só há um card por vez. O respiro passa para BAIXO do texto,
+     porque a ordem agora é placa em cima e leitura embaixo. */
+  .page #recursos .quad__texto {
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 18px;
+  }
+  /* Sete dias voltam a caber: a largura do slide é maior que a da coluna do
+     desktop. Duas fileiras continuariam certas, mas a semana inteira em uma
+     linha lê melhor quando há espaço. */
+  .page #recursos .calendario {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+  }
+  /* Uma coluna: duas colunas de ficha em largura de celular deixariam cada
+     valor com ~90px, e "post, carrossel, reels ou story" quebraria em
+     quatro linhas. Aqui não há disputa por altura — o carrossel rola. */
+  .page #recursos .peca__campos {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
   /* O slider de ROI é um arrasto HORIZONTAL dentro de um carrossel
      horizontal. Sem isto, tentar mexer no controle desliza o carrossel e
@@ -816,53 +1189,36 @@
   .page #recursos .calc__controle {
     touch-action: none;
   }
-  .page #recursos .rec-cell--cria .rec-out {
-    flex: none;
-    margin-top: 18px;
-  }
-  .page #recursos .post {
-    flex: none;
-  }
-  .page #recursos .post__body {
-    display: block;
-  }
-
-  /* A prateleira de aulas vira empilhamento: quatro colunas em
-     largura de celular deixariam cada aula com ~60px. */
-  .page #recursos .rec-cell--repertorio {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 22px;
-  }
-  .page #recursos .repertorio__head {
-    max-width: none;
-  }
-  .page #recursos .aulas {
-    flex-direction: column;
+  /* O recuo por hover não faz sentido onde não há ponteiro, e a media query
+     de hover já o isola — mas o carrossel também não deve herdar opacidade
+     de estado nenhum. */
+  .page #recursos .quads .quad {
+    opacity: 1;
   }
 }
 
 /* Paisagem: o cabeçalho vai para o LADO do carrossel, como na FAQ e na
    demo — deitado sobra largura e falta altura. Empilhar título e cards em
-   390px não cabe; lado a lado, a altura passa a ser só a do card.
-
-   O que sobra depois disso é resolvido por `zoom`, a mesma ferramenta que
-   o bloco de desktop baixo acima usa, e pelo mesmo motivo: `zoom` age no
-   LAYOUT, então a altura real do palco encolhe. Um `transform: scale()`
-   encolheria só o desenho e ainda disputaria a propriedade `transform`,
-   que pertence ao JS da estação. */
+   390px não cabe; lado a lado, a altura passa a ser só a do card. */
 @media (max-width: 1023px) and (max-height: 480px) and (orientation: landscape) {
   .page #recursos {
     padding: 20px 0 62px;
   }
 
   .page #recursos .estacao-palco {
+    zoom: 0.86;
+  }
+
+  /* Quem vira grid de duas colunas aqui é o `.rec-layout`, não o palco: o
+     palco passou a ter um filho só desde que o cabeçalho e os quadrados
+     ganharam um invólucro comum. A proporção é outra que a do desktop —
+     deitado o carrossel quer quase toda a largura, e o título cabe em
+     190px porque a fonte também encolhe neste bloco. */
+  .page #recursos .rec-layout {
     display: grid;
     grid-template-columns: minmax(190px, 0.3fr) minmax(0, 0.7fr);
     align-items: center;
     gap: 18px;
-    zoom: 0.86;
   }
 
   .page #recursos .rec-head {
@@ -873,13 +1229,12 @@
     font-size: clamp(20px, 2.8vw, 28px);
   }
 
-  .page #recursos .bento {
+  .page #recursos .quads {
     padding-inline: 0 var(--gutter);
   }
 
-  .page #recursos .rec-cell {
+  .page #recursos .quad {
     flex-basis: min(46vw, 300px);
-    padding: 14px;
   }
 }
 
@@ -899,16 +1254,25 @@
   .page #recursos .rec-head h2 {
     font-size: clamp(26px, 7.6vw, 36px);
   }
-  /* Sete colunas em 320px dariam ~38px por dia. Duas linhas de
+  /* Sete colunas em 320px dariam ~38px por dia. Duas fileiras de
      quatro mantêm o dia legível. */
   .page #recursos .calendario {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px 8px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page #recursos .bento.rv .rec-cell {
-    opacity: 1;
-    transform: none;
+  /* AQUI HAVIA um `.quad { opacity: 1; transform: none }`, para desligar a
+     cascata. Saiu junto com ela: sem janelas por bloco, os quadrados já
+     nascem opacos e sem transform, e a regra não casava com nada.
+
+     O borrão de foco é zerado em styles/estacao.css, no bloco de movimento
+     reduzido de lá, junto com o das outras estações. */
+
+  /* A moldura, o trilho e as marcas nascem TRAVADOS. Quem pede menos
+     movimento não perde a estrutura — perde só a animação de atracar. */
+  .page #recursos .rec-layout {
+    --trava: 1;
   }
 }

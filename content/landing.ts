@@ -36,66 +36,66 @@ export const LANDING = {
    * O que ela faz.
    *
    * Cada célula mostra o que SAI do produto, não o que ele promete — a tela é o
-   * argumento. Os exemplos são fictícios de propósito: nome de cliente real não
-   * vai a uma página pública sem autorização por escrito.
+   * argumento.
+   *
+   * SEM EXEMPLO FICTÍCIO, em nenhuma célula. Havia aqui uma "Pizzaria Bella"
+   * com legendas inventadas, e ela era o último negócio de mentira da página:
+   * a seção Demo sempre usou descritor de segmento ("uma joalheria de bairro")
+   * e o DNA Estratégico perdeu a marca de exemplo em 20/08. O bento estava
+   * sozinho na exceção.
+   *
+   * A saída disso não é abstrair a copy — texto abstrato não demonstra nada. É
+   * mostrar a ANATOMIA do que a ferramenta produz: os campos que cada peça
+   * carrega. Concreto, verificável, e sobre nenhum negócio em particular.
+   *
+   * Cliente real continua possível, e seria mais forte que tudo isto — mas só
+   * com autorização por escrito, e nunca inventado.
+   *
+   * QUEM LÊ ESTA SEÇÃO é um empresário que não tem tempo — não é um social
+   * media procurando ferramenta. Ele não senta no domingo para montar
+   * calendário e não tem ideia pronta de post na segunda. Por isso cada
+   * quadrado abre com o que DESAPARECE da rotina dele, no mesmo ritmo
+   * ("Você não..."), e só depois mostra o artefato. O paralelismo é
+   * proposital: quatro vezes a mesma construção lê como lista de tempo
+   * devolvido, não como lista de funcionalidade.
    *
    * Antes de anunciar um módulo aqui, confirme que ele roda no dia do
    * lançamento. Módulo prometido e não entregue queima o posicionamento.
    */
   features: {
+    /**
+     * O número da parada na rota.
+     *
+     * A página tem SEIS estações, nesta ordem: Veja funcionando (01), O que
+     * ela faz (02), Como funciona (03), DNA Estratégico (04), Quem está por
+     * trás (05) e Perguntas (06). Numerar é o que transforma "seções que
+     * rolam" em paradas de um trajeto — a metáfora da estação hoje vive
+     * inteira no movimento e some no instante em que ele acaba.
+     *
+     * PILOTO: por enquanto só esta seção tem número, para validar o
+     * tratamento. Ou as seis passam a ter, ou nenhuma — uma estação
+     * numerada no meio de cinco sem número lê como erro, não como sistema.
+     */
+    estacao: '02',
     eyebrow: 'O que ela faz',
+    /* UMA LINHA SÓ.
+       Chegou a ser quebrada em duas ("O método da DigiThree," / "agora na
+       sua mão.") enquanto o cabeçalho dividia a tela com um 2×2 de cards à
+       direita e tinha ~435px de largura — a frase inteira não cabia.
+
+       Com os cards de volta em fileira, o cabeçalho recuperou a largura
+       cheia e a quebra perdeu a razão de existir: medido, o texto ocupa
+       793px com a fonte no teto de 40px contra 1121px de cabeçalho. */
     title: `O método da ${SITE.organizacaoMae}, agora`,
     titleHighlight: 'na sua mão.',
 
-    cria: {
-      verb: 'Cria',
-      title: 'Saia com a campanha pronta',
-      description: 'Ela aprende como sua marca fala uma vez e mantém o tom do post ao roteiro.',
-      exemplo: {
-        marca: 'Pizzaria Bella',
-        contexto: '· Instagram · 8 set',
-        /**
-         * Cada variação carrega a própria legenda porque os chips são
-         * controles de verdade: clicar troca o post. Antes eram rótulos
-         * inertes — aparência de controle sem a função, que é o pior
-         * dos dois mundos.
-         *
-         * A primeira entra selecionada. Ao acrescentar variação nova,
-         * manter a legenda em até três linhas: a altura do post está
-         * reservada para isso (ver .post__caption em recursos.css).
-         */
-        variacoes: [
-          {
-            rotulo: 'Versão aprovada',
-            legenda:
-              'Segunda também merece massa fresca. Hoje o rodízio vai até 23h — e a primeira taça é por nossa conta.',
-            marcadores: '#pizzariabella #massafresca #angradosreis',
-          },
-          {
-            rotulo: 'B — foco em preço',
-            legenda:
-              'Rodízio de segunda a quinta por R$ 59,90. Massa feita no dia, forno a lenha, e a mesa é sua até fechar.',
-            marcadores: '#pizzariabella #rodiziodepizza #angradosreis',
-          },
-          {
-            rotulo: 'C — happy hour',
-            legenda:
-              'Das 18h às 20h o chope sai pela metade e a pizza vai do forno direto para a mesa. Saiu do trabalho, vem.',
-            marcadores: '#pizzariabella #happyhour #angradosreis',
-          },
-          {
-            rotulo: 'Story 1080×1920',
-            legenda:
-              'Massa fresca saindo do forno agora. Rodízio até as 23h. Arrasta pra cima e garante a sua mesa.',
-            marcadores: '#pizzariabella #angradosreis',
-          },
-        ],
-      },
-    },
-
+    /* PRIMEIRO QUADRADO, e a ordem não é decorativa: a dor que o dono do
+       produto nomeia primeiro é a de não ter tempo de planejar o mês. Quem
+       lê reconhece a própria semana antes de saber o que a ferramenta faz. */
     planeja: {
       verb: 'Planeja',
       title: 'Monte o mês inteiro',
+      beneficio: 'Você não perde o domingo decidindo o que postar na semana.',
       dias: [
         { dia: 'seg 07', formato: 'Carrossel', leve: false },
         { dia: 'ter 08', formato: 'Reels', leve: false },
@@ -107,6 +107,106 @@ export const LANDING = {
       ],
     },
 
+    cria: {
+      verb: 'Cria',
+      title: 'Saia com a campanha pronta',
+      beneficio: 'Você não encara a página em branco procurando o que dizer.',
+      /**
+       * A anatomia da peça pronta — o que substituiu o post fictício.
+       *
+       * Os seis campos NÃO foram escolhidos por estética: são os que a tela
+       * do produto mostra quando um plano é gerado. Se a interface passar a
+       * entregar campo diferente, é aqui que se corrige — a página não pode
+       * descrever uma tela que não existe (regra do lançamento: módulo
+       * mostrado e não entregue queima o posicionamento).
+       *
+       * SÃO SAÍDA, NÃO MÉTODO, e é isso que os torna publicáveis. Os campos
+       * do DNA Estratégico continuam trancados em LANDING.dna porque são a
+       * CAUSA; estes são o EFEITO, e qualquer concorrente já supõe que uma
+       * peça de conteúdo tem data, canal e formato. Não se copia nada daqui.
+       *
+       * Cada `valor` é rastreável a algo que a página já afirma: "melhor
+       * horário" vem de LANDING.demo, os formatos vêm do calendário do card
+       * PLANEJA, e "na voz da sua marca" vem da hero. Nenhum é novo.
+       */
+      /* SEM TÍTULO INTERNO. A ficha tinha um ("O que vem em cada peça") de
+         quando morava num card largo. No quadrado ele custa uma linha e não
+         paga por ela: o h3 e a linha de benefício logo acima já dizem que o
+         que vem abaixo é a peça pronta. Vale para a estrutura do roteiro
+         também, e pelo mesmo motivo. */
+      /* OS VALORES SÃO CURTOS DE PROPÓSITO, e ficaram mais curtos em 21/08.
+         Nenhum campo saiu — os seis continuam sendo os que a tela do produto
+         mostra. O que encolheu foi a explicação de cada um.
+
+         O motivo é de composição: numa fileira de quatro cards sem caixa, o
+         que separa um card do outro é só o vazio. Valor que quebra em duas
+         linhas estica o bloco até a borda da coluna e cola visualmente no
+         vizinho. "post, carrossel, reels ou story" era o pior caso; virou
+         "post, reels, story" e o bloco passou a caber em uma linha por campo.
+
+         A régua para acrescentar campo novo aqui: se o valor não couber em
+         uma linha na largura da coluna, encurte o VALOR — não a lista. */
+      saida: {
+        campos: [
+          { rotulo: 'Data', valor: 'dia e horário' },
+          { rotulo: 'Canal', valor: 'onde publicar' },
+          { rotulo: 'Formato', valor: 'post, reels, story' },
+          { rotulo: 'Objetivo', valor: 'o que precisa fazer' },
+          { rotulo: 'Copy', valor: 'na voz da sua marca' },
+          { rotulo: 'CTA', valor: 'a chamada' },
+        ],
+        /* HAVIA UMA NOTA AQUI: "Nenhuma peça chega como ideia solta." Saiu na
+           reestruturação em quadrados, por dois motivos que se somam.
+
+           Media 28px com o filete, e era exatamente o que impedia o CRIA de
+           ser quadrado: ele fechava em 260×280 e, num grid, o item mais alto
+           estica a linha — os outros três viravam 260×280 junto. Um quadrado
+           que não é quadrado é a única coisa que esta composição não pode
+           ter.
+
+           E ela tinha virado redundante de qualquer jeito: dizia o que a
+           própria ficha de seis campos demonstra, e a linha de benefício
+           acima já carrega o argumento do quadrado. Era também a única nota
+           sob um artefato entre os quatro — assimetria sem função. */
+      },
+    },
+
+    /**
+     * ROTEIRIZA — o quadrado novo, entrou na reestruturação de 21/08.
+     *
+     * CONFIRMAR ANTES DE PUBLICAR: "Roteirista" é módulo do plano Pro para
+     * cima, e a regra 7 do plano de lançamento é explícita — só entra na
+     * comunicação o módulo que estiver rodando em 14/09. Se ele escorregar,
+     * este quadrado sai; não vira "em breve".
+     *
+     * O artefato é a ESTRUTURA do roteiro, não um roteiro. Mesma solução da
+     * ficha do CRIA e pelo mesmo motivo: um roteiro concreto seria sobre
+     * algum negócio, e a página não inventa negócio. "Gancho" é vocabulário
+     * da própria casa, não jargão importado.
+     *
+     * SEQUÊNCIA, e por isso numerada: um roteiro é ordem no tempo — o gancho
+     * vem antes da fala porque perder os primeiros segundos perde o vídeo.
+     * A ficha do CRIA é conjunto e não leva número; esta leva.
+     */
+    roteiriza: {
+      verb: 'Roteiriza',
+      title: 'Grave sem improvisar',
+      beneficio: 'Você não trava na câmera sem saber por onde começar.',
+      /* Valores encurtados pelo mesmo motivo da ficha do CRIA, e aqui o
+         ganho foi maior: cada passo ocupava DUAS linhas (rótulo em cima,
+         explicação embaixo) e este era o artefato mais alto dos quatro, o
+         que definia a altura do slot inteiro. Em uma linha por passo, ele
+         encolheu pela metade e a fileira toda ficou mais baixa. */
+      roteiro: {
+        passos: [
+          { ordem: '01', rotulo: 'Gancho', valor: 'a primeira linha' },
+          { ordem: '02', rotulo: 'Cena', valor: 'o que aparece' },
+          { ordem: '03', rotulo: 'Fala', valor: 'a fala, escrita' },
+          { ordem: '04', rotulo: 'Fecho', valor: 'a chamada' },
+        ],
+      },
+    },
+
     /**
      * O investimento é do visitante: arrastar põe o número dele na tela,
      * e é aí que ele para de avaliar um exemplo e passa a avaliar o
@@ -116,10 +216,19 @@ export const LANDING = {
      * ilustrativa — inventei os extremos para o controle ter o que
      * mostrar. Trocar por números que a DigiThree consiga sustentar se
      * um cliente perguntar de onde saíram.
+     *
+     * SEGUNDA ATENÇÃO, levantada em 21/08 e mantida por decisão do dono do
+     * produto: na tabela de planos de julho, "Analytics e ROI" é exclusivo
+     * do plano Agência — o mais caro. Este quadrado o apresenta com o mesmo
+     * peso dos outros três, para um público que a própria página define como
+     * comércio, restaurante e clínica, que compra os planos de baixo. Ou o
+     * módulo desce de degrau, ou a promessa ganha ressalva em algum lugar.
+     * A hero, que está congelada, promete o mesmo ("calcula o retorno").
      */
     calcula: {
       verb: 'Calcula',
       title: 'Saiba o custo antes',
+      beneficio: 'Você não descobre quanto gastou depois do dinheiro sair.',
       investimento: {
         rotulo: 'Investimento',
         etiqueta: 'Investimento em mídia, em reais',
@@ -140,31 +249,21 @@ export const LANDING = {
       },
     },
 
-    /* Havia aqui um quinto card, `dna`, com "Tom de voz" e "Público". Saiu
-       quando o DNA Estratégico ganhou seção própria: os dois campos eram os
-       MESMOS dois que a ficha de lá abre, com o mesmo texto, e o bento os
-       mostrava primeiro e menor. Repetir o argumento na versão fraca antes
-       da forte é o pior dos dois mundos.
+    /* JÁ MORARAM AQUI dois blocos que hoje têm seção própria.
 
-       Se alguém precisar de um card de DNA aqui de novo, o problema não é
-       recriá-lo — é que ele vai brigar com `LANDING.dna`. Resolva lá
-       primeiro. */
-    repertorio: {
-      /* Era "10 aulas que ensinam a pedir", e contradizia a FAQ, que promete
-         "não existe técnica de prompt para aprender". Os títulos das aulas
-         resolvem a discussão: "Post solto x plano de conteúdo" e "Ler o
-         resultado sem se enganar" ensinam estratégia, não prompt. O título
-         agora diz o que elas são de verdade — e de quebra reforça a mesma
-         autoridade que a seção "+15 anos" sustenta. */
-      title: '10 aulas de quem faz isso há 15 anos',
-      selo: 'Repertório · incluso em todos os planos',
-      aulas: [
-        { codigo: 'R01', titulo: 'Post solto x plano de conteúdo' },
-        { codigo: 'R04', titulo: 'Como descrever o seu público' },
-        { codigo: 'R06', titulo: 'Campanha x post isolado' },
-        { codigo: 'R09', titulo: 'Ler o resultado sem se enganar' },
-      ],
-    },
+       O card `dna` ("Tom de voz" e "Público") saiu em 20/08: os dois campos
+       eram os MESMOS que a ficha de LANDING.dna abre, e o bento os mostrava
+       primeiro e menor. Repetir o argumento na versão fraca antes da forte é
+       o pior dos dois mundos.
+
+       A faixa `repertorio` saiu em 21/08, na reestruturação para quadrados, e
+       virou LANDING.repertorio. O motivo é de definição: esta seção passou a
+       ser "o que a IA cria", e as aulas não são criação da IA — são gravadas
+       por gente. Faixa de outro assunto no rodapé da composição diluía as
+       duas coisas.
+
+       Se alguém precisar de um dos dois de volta aqui, o problema não é
+       recriá-lo: é que ele vai brigar com a seção que já existe. */
   },
   demo: {
     eyebrow: 'Como funciona',
@@ -381,6 +480,43 @@ export const LANDING = {
       { value: '120+', label: 'clientes atendidos' },
       { value: '9', label: 'segmentos' },
     ],
+  },
+  /**
+   * Repertório — as aulas, agora em seção própria.
+   *
+   * Era uma faixa no rodapé do bento de "O que ela faz" e saiu de lá em
+   * 21/08: aquela seção passou a mostrar só o que a IA cria, e aula gravada
+   * por gente não é criação da IA.
+   *
+   * POSIÇÃO: depois da credibilidade, antes da FAQ. A costura é o "15 anos":
+   * a seção anterior fecha com "A IA é nova. O método não." e esta abre
+   * dizendo de quem são as aulas. Trocada de lugar, vira bônus solto.
+   *
+   * A LINHA QUE NÃO PODE MUDAR SOZINHA: a FAQ promete "não existe técnica de
+   * prompt para aprender — se souber explicar a campanha, sabe usar". Se esta
+   * seção vender "aulas de como pedir para a IA", a página passa a se
+   * contradizer a duas seções de distância. Por isso `description` diz o
+   * oposto com as mesmas palavras da FAQ, de propósito: as aulas são de
+   * marketing, não de ferramenta.
+   *
+   * SÓ QUATRO TÍTULOS, e são os quatro que existem de verdade. As outras seis
+   * aulas não estão escritas em lugar nenhum — inventar título de aula é a
+   * mesma mentira que a marca de exemplo que acabou de sair da página. Quando
+   * as dez estiverem definidas, é aqui que entram e a `nota` sai.
+   */
+  repertorio: {
+    eyebrow: 'Repertório',
+    title: '10 aulas de quem faz isso há 15 anos',
+    description:
+      'Não são aulas de como usar a ferramenta — se você sabe explicar a campanha, já sabe usar. São as decisões de marketing que a gente aprendeu tomando por cliente, uma a uma, desde 2010.',
+    selo: 'Incluso em todos os planos',
+    aulas: [
+      { codigo: 'R01', titulo: 'Post solto x plano de conteúdo' },
+      { codigo: 'R04', titulo: 'Como descrever o seu público' },
+      { codigo: 'R06', titulo: 'Campanha x post isolado' },
+      { codigo: 'R09', titulo: 'Ler o resultado sem se enganar' },
+    ],
+    nota: 'e mais seis, na biblioteca que abre com a sua conta.',
   },
   faq: {
     eyebrow: 'Perguntas',

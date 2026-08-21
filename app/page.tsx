@@ -9,6 +9,7 @@ import { Demo } from '@/components/sections/Demo'
 import { DnaEstrategico } from '@/components/sections/DnaEstrategico'
 import { Offer } from '@/components/sections/Offer'
 import { Credibility } from '@/components/sections/Credibility'
+import { Repertorio } from '@/components/sections/Repertorio'
 import { Faq } from '@/components/sections/Faq'
 import { Fecho } from '@/components/sections/Fecho'
 import { SiteFooter } from '@/components/sections/SiteFooter'
@@ -28,6 +29,20 @@ import { LANDING } from '@/content/landing'
  * "+15 anos" deixa de ser um selo solto e vira a história de origem do DNA: o
  * fecho da seção entrega o bastão, e a credibilidade responde com "A IA é
  * nova. O método não.". Separar os dois desfaz as duas costuras de uma vez.
+ *
+ * O Repertório vem LOGO DEPOIS da credibilidade pela mesma lógica de bastão: a
+ * seção anterior acaba de estabelecer os 15 anos, e esta abre dizendo de quem
+ * são as aulas. Em qualquer outro lugar da página ela lê como bônus solto.
+ *
+ * SEIS seções são estações e prendem a rolagem por ~2,2 telas cada: Approach,
+ * WhatItDoes, Demo, Dna, Credibility e Faq. O Repertório entrou como seção
+ * COMUM de propósito — mais uma estação cobraria duas telas de rolagem por um
+ * argumento só (ver Repertorio.tsx).
+ *
+ * Ele fica ENTRE duas estações, e isso é caso previsto, não descuido:
+ * `caudaAcima` em components/layout/Estacoes.tsx devolve 0 quando o vizinho
+ * de cima não é uma estação presa. Na prática o Repertório passa a ser a
+ * separação natural entre a cauda da credibilidade e a chegada das perguntas.
  */
 export default function Home() {
   return (
@@ -47,6 +62,7 @@ export default function Home() {
           <Demo />
           <DnaEstrategico />
           <Credibility />
+          <Repertorio />
           <Faq />
           <Fecho>
             <Offer />

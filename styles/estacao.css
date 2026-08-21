@@ -34,20 +34,21 @@
 /* Um bloco de cada vez, na ordem da leitura: onde estamos, o que é, o
    que faz, e por último a demonstração.
 
-   Os três blocos de TEXTO têm folga entre si: 1,50 tela de rolagem em
-   que nada se move, entre o kicker e o título e entre o título e o
-   texto. O VÍDEO não — ele parte encostado, no quadro em que o texto
-   assenta, porque é o fecho e afastá-lo soltaria o último bloco da
-   composição.
+   Os três blocos de TEXTO têm folga entre si: trechos de rolagem em que
+   nada se move, entre o rótulo e o título e entre o título e o texto. O
+   VÍDEO parte quase encostado no texto, porque é o fecho e afastá-lo
+   soltaria o último bloco da composição.
 
-   A folga vale o DOBRO da chegada do título (1,50 contra 0,75): o
-   silêncio entre os blocos é agora o material principal da seção, e o
-   movimento é o acento. Se mesmo assim as chegadas não se lerem como
-   eventos separados, a distância não é o gargalo — é a amplitude
-   abaixo. Um deslocamento de 54px num palco ainda reduzido chega à
-   tela como ~15px, e 15px lê como "apareceu", não como "chegou".
-   Subir os 54px e os 0.12 de escala é o ajuste que separa os quatro
-   sem custar mais rolagem.
+   O SILÊNCIO É O MATERIAL principal da seção e o movimento é o acento —
+   ele continua valendo mais que a chegada de cada bloco (184 e 130px de
+   silêncio contra ~60 e ~66 de movimento). Mas ele já foi excessivo: as
+   folgas eram de 242 e 188px e a seção lia como demorada. Encolheram em
+   21/08, e só elas — os `--dur` não mudaram.
+
+   Se as chegadas não se lerem como eventos separados, a distância não é o
+   gargalo: é a amplitude. Um deslocamento de 54px num palco ainda reduzido
+   chega à tela como ~15px, e 15px lê como "apareceu", não como "chegou".
+   Subir os 54px e os 0.12 de escala separa os quatro sem custar rolagem.
 
    Chegou-se aqui por etapas: ~70% de avanço entre um bloco e o outro,
    depois ~85%, depois encostado, e agora com folga no texto. Os `--de`
@@ -86,14 +87,25 @@
    chegada. Estes 173 não têm dial próprio, mas encolhem junto com
    TRAVESSIA, por serem uma fração do pin.
 
-   ATENÇÃO aos números abaixo: eles são telas de rolagem MEDIDAS contra as
-   constantes atuais de Estacoes.tsx (TRAVESSIA 5,5 · CHEGOU 0,7, ou seja
-   uma chegada de 3,85 telas). Já estiveram escritos aqui os valores de uma
-   calibragem anterior — TRAVESSIA 9,89 e chegada de 8,60 telas — e ficaram
-   para trás quando as constantes encolheram, dizendo o dobro do real. Se
-   TRAVESSIA ou CHEGOU mudarem de novo, TODOS os pares abaixo reescalam
-   junto e precisam ser remedidos; as proporções entre os quatro é que são
-   fixas, não os números. */
+   ATENÇÃO aos números abaixo, e esta armadilha JÁ PEGOU DUAS VEZES.
+
+   Eles são telas de rolagem medidas contra as constantes de Estacoes.tsx, e
+   ficam obsoletos em silêncio quando as constantes mudam — o `--de` continua
+   valendo, o comentário é que passa a mentir.
+
+   Primeiro incidente: os números eram de TRAVESSIA 9,89 e ficaram para trás
+   quando ela caiu, dizendo o dobro do real. Segundo: foram reescritos para
+   TRAVESSIA 5,5 · CHEGOU 0,7 (chegada de 3,85 telas) e ficaram para trás de
+   novo quando ela caiu para 2,2.
+
+   HOJE: TRAVESSIA 2,2 · CHEGOU 0,614 — a chegada dura 1,35 tela, ou 938px
+   numa janela de 695. Se qualquer uma das duas mudar, TODOS os pares abaixo
+   reescalam junto e os números em px precisam ser remedidos; as proporções
+   entre os quatro é que são fixas.
+
+   A conta para remedir: `t = 0,5 − sen(asen(1−2v)/3)` inverte o smoothstep,
+   e `t × CHEGOU × TRAVESSIA × altura` dá a rolagem. O bloco é REALMENTE
+   visto entre u 0,1354 e 0,8646 da sua janela, não entre 0 e 1. */
 
 /* 0,00 → 0,55 tela · 0,55 tela */
 .page .approach-kicker {
@@ -122,32 +134,58 @@
   --de: 0;
   --dur: 0.0993;
 }
-/* folga de 0,64 tela */
-/* 1,19 → 1,44 tela · 0,24 tela */
+/* ---- OS TRÊS BLOCOS SEGUINTES FORAM ANTECIPADOS, e os números aqui foram
+       REMEDIDOS contra as constantes de hoje.
+
+       Os comentários anteriores diziam "folga de 0,64 tela", "1,19 → 1,44
+       tela" e afins. Estavam errados por um fator de 2,5: eram telas medidas
+       com TRAVESSIA 5,5, e o arquivo roda em 2,2 desde então. É exatamente a
+       armadilha que o bloco de aviso lá em cima descreve — e ela já tinha
+       pegado uma vez.
+
+       Medido agora (CHEGOU 0,614, TRAVESSIA 2,2, janela de 695px; a chegada
+       inteira dura 938px de rolagem), tomando a faixa em que o bloco é
+       REALMENTE visto (smoothstep local entre 0,05 e 0,95):
+
+                    antes            agora
+         rótulo      64 → 169px       64 → 169px   (não mexeu)
+         título     411 → 470        353 → 414
+         texto      658 → 740        544 → 610
+         vídeo      772 → 875        675 → 753
+
+         silêncio entre rótulo e título   242 → 184px
+         silêncio entre título e texto    188 → 130px
+         sequência inteira                875 → 753px  (-14%)
+
+       O QUE ENCOLHEU FOI O SILÊNCIO, não a duração dos blocos: os `--dur`
+       do título e do texto estão intactos. O tempo morto era o que fazia a
+       seção parecer longa, e é o que a nota do `--de` do rótulo já apontava
+       como "muito tempo no preto".
+
+       O vídeo deixou de fechar exatamente junto com a chegada — agora ele
+       assenta em 753 de 938. O trecho final não fica morto: a estação segue
+       crescendo até o fim. Ele ganhou `--dur` maior (0,125) para não fechar
+       cedo demais junto com o resto. ---- */
 .page .approach-title {
-  --de: 0.3889;
+  --de: 0.3;
   --dur: 0.1299;
 }
-/* folga de 0,48 tela */
-/* 1,92 → 2,26 tela · 0,34 tela */
 .page .approach-description {
-  --de: 0.7673;
-  --dur: 0.1360;
+  --de: 0.6;
+  --dur: 0.136;
 }
-/* 2,26 → 2,80 tela · 0,54 tela — encostado no texto, e fecha junto com a
-   chegada */
 .page .approach-media {
-  --de: 0.9033;
-  --dur: 0.0967;
+  --de: 0.79;
+  --dur: 0.125;
 }
 
 .page .approach-kicker,
 .page .approach-title,
 .page .approach-description,
 .page .approach-media,
-.page #recursos .rec-head .tag,
-.page #recursos .rec-head h2,
-.page #recursos .rec-cell,
+/* O #recursos SAIU desta lista em 21/08 e não deve voltar: aquela seção
+   chega como corpo único, sem cascata. Ver "O QUE ELA FAZ — a chegada sem
+   cascata", mais abaixo. */
 .page #demo .demo-lado,
 .page #demo .demo-head .tag,
 .page #demo .demo-head h2,
@@ -174,8 +212,13 @@
 
      `--vem-x` existe para o bloco poder chegar de LADO, e não só de baixo.
      O padrão é 0: quase todo bloco de texto sobe, que é o sentido dos
-     grãos da poeira. Quem usa o eixo horizontal são os cards do bento —
-     ver a nota de direções mais abaixo. */
+     grãos da poeira.
+
+     HOJE SÓ O DNA usa o eixo horizontal, e lá ele é convergência para o
+     ponto de fuga. Os quadrados do #recursos usavam — chegavam em leque,
+     as pontas derivando para fora — e deixaram de usar quando a seção
+     perdeu a cascata. Se este comentário voltar a citar o #recursos,
+     alguém reintroduziu lá algo que a seção não tem mais. */
   --sobe: 32px;
   --vem-x: 0px;
   --encolhe: 0.08;
@@ -209,14 +252,20 @@
 
 /* Os corpos pesados vêm de mais longe e crescem mais que o texto, para a
    chegada deles FECHAR a viagem em vez de só completar a lista: o vídeo
-   da estação, os cards do bento, a janela da demo e o retrato.
+   da estação, a janela da demo e o retrato.
 
-   O cartão do DNA saiu desta lista — não porque deixou de ser pesado, mas
-   porque a seção inteira passou a viajar por PROFUNDIDADE, e lá o "vem de
-   mais longe" se escreve em `--longe`, não em `--encolhe`. Ver o bloco a
-   seguir. */
+   DOIS SAÍRAM desta lista, por motivos diferentes e nenhum deles "deixou
+   de ser pesado":
+
+   O cartão do DNA, porque a seção inteira passou a viajar por
+   PROFUNDIDADE, e lá o "vem de mais longe" se escreve em `--longe`, não
+   em `--encolhe`.
+
+   Os quadrados do #recursos, porque aquela seção deixou de ter cascata:
+   sem `--t` por bloco, `--encolhe` e `--sobe` não são lidos por ninguém
+   ali. Eram valores órfãos e valor órfão é armadilha para quem vier
+   procurar por que um ajuste não faz nada. */
 .page .approach-media,
-.page #recursos .rec-cell,
 .page #demo .demo,
 .page #demo .demo-lado {
   --sobe: 64px;
@@ -290,9 +339,10 @@
      por isso o sinal dele é o contrário. Os dois convergem para o mesmo
      ponto no fundo, e é a convergência que diz "vieram do mesmo lugar".
 
-     Isto INVERTE a convenção do bento logo acima, onde a direção aponta
-     para fora do centro. Lá as células voltam para o lugar vindas da borda;
-     aqui os blocos vêm do fundo, e o que vem do fundo entra pelo meio. */
+     Isto INVERTIA a convenção dos quadrados do #recursos, que chegavam em
+     leque apontando para fora do centro. Aquele leque saiu junto com a
+     cascata daquela seção, então hoje esta é a única convenção lateral que
+     existe na página: o que vem do fundo entra pelo meio. */
   --vem-x: calc(var(--fuga) * 0.55);
   transform: perspective(var(--lente))
     translate3d(
@@ -325,8 +375,8 @@
 
    Risco de verdade, e medido: aqui os blocos perdem o `max-width` e ocupam a
    largura inteira, e nem `#dna` nem o palco recortam — os dois são
-   `overflow: visible`. O comentário do bento, logo acima, diz que "a seção é
-   `overflow: hidden`"; aquilo vale para o `#recursos`, não para esta.
+   `overflow: visible`. O comentário dos quadrados, mais abaixo, diz que "a
+   seção é `overflow: hidden`"; aquilo vale para o `#recursos`, não para esta.
 
    A profundidade continua fazendo o trabalho sozinha, que é o gesto que
    importa. */
@@ -341,39 +391,242 @@
   }
 }
 
-/* ---------- Direções do bento ----------
-   Cada célula chega de um lado, e a direção aponta para FORA do centro do
-   grid — é o caminho que ela faria voltando para o lugar. CRIA entra pela
-   esquerda, PLANEJA desce do topo, CALCULA sobe e a faixa do Repertório
-   fecha a composição por baixo, de mais longe.
+/* ------------------------------------------------------------
+   O QUE ELA FAZ — a chegada sem cascata
 
-   Havia uma quinta, o DNA, que vinha da direita. Saiu com o card. Com ela
-   fora, CALCULA cresceu para a largura toda da direita e a única entrada
-   lateral que resta é a de CRIA — que é por isso que a regra do carrossel em
-   recursos.css passou a listar só ela.
+   ESTA SEÇÃO É A ÚNICA SEM CASCATA. Nas outras cinco o conteúdo nasce
+   bloco a bloco ao longo da viagem; aqui ele já está inteiro desde que a
+   estação é um ponto no fundo.
 
-   Isto reconstrói, em espaço, a coreografia que a entrada por relógio
-   tinha em styles/recursos.css antes de a seção virar estação. Aquela
-   versão morreu junto com o `Reveal`, e a primeira versão desta cascata
-   subia as cinco do mesmo jeito — o que achatava a composição, porque o
-   bento é um grid e não uma lista.
+   O motivo é o que a seção precisa PARECER: uma estação espacial da qual a
+   gente se aproxima. Estação não se monta peça por peça enquanto a nave
+   chega — ela já está lá, inteira, desde longe. O que a distância muda não
+   é a EXISTÊNCIA das partes, é a capacidade de resolvê-las. Seis blocos
+   nascendo em sequência é interface montando, e era isso que a cascata
+   dizia sem querer.
 
-   Nada vaza para os lados: a seção é `overflow: hidden`. */
-.page #recursos .bento {
-  --vem: clamp(52px, 5.4vw, 88px);
-}
-.page #recursos .rec-cell--cria {
-  --vem-x: calc(var(--vem) * -1);
-  --sobe: 0px;
-}
-.page #recursos .rec-cell--planeja {
-  --sobe: calc(var(--vem) * -1);
-}
-.page #recursos .rec-cell--calcula {
-  --sobe: var(--vem);
-}
-.page #recursos .rec-cell--repertorio {
-  --sobe: calc(var(--vem) * 1.35);
+   O GESTO JÁ EXISTIA E ESTAVA SENDO ABAFADO. Estacoes.tsx move o palco por
+   1/distância a partir de ESCALA_LONGE (0,16) e OPACIDADE_LONGE (0,1): a
+   seção inteira já cresce e clareia como corpo que se aproxima de verdade,
+   com a curva certa — quase parada enquanto está longe, depressa no fim.
+   A cascata competia com esse gesto e o escondia. Tirá-la não custou
+   animação nova; custou parar de atrapalhar a que já estava lá.
+
+   O QUE ENTROU NO LUGAR é só o FOCO. Sem borrão, um corpo distante é um
+   corpo pequeno e nítido, e o olho lê miniatura, não distância. Com ele, o
+   corpo chega RESOLVENDO — que é como as coisas chegam de longe. Mesmo
+   argumento do `--borrao` do DNA, aqui aplicado ao bloco inteiro de uma
+   vez, porque o bloco inteiro é um corpo só.
+
+   E O BORRÃO VIVE NO ESPAÇO LOCAL do palco, que o GSAP escala por fora —
+   é daí que a curva certa sai de graça, sem `calc` nenhum: os 34px locais
+   chegam à tela como ~5,4px enquanto a estação está a 0,16, e vão a zero
+   no fim. Quase constante enquanto está longe, resolvendo depressa na
+   chegada. É o comportamento de um foco, não o de um fade.
+
+   TERMINA EM 0,88, e a moldura atraca de 0,78 a 1 (styles/recursos.css).
+   A sobreposição é de desenho: o conteúdo acaba de resolver enquanto as
+   cantoneiras fecham, e o último evento da viagem continua sendo a
+   atracação.
+
+   O QUE SAIU DAQUI, para quem for procurar: um bloco "Direções dos
+   quadrados" que mandava cada card chegar de um lado, em leque — as pontas
+   derivando para fora, o meio subindo mais. Ele dependia de `--vem-x` e
+   `--sobe`, que só existem dentro da cascata. Sem cascata não há de onde
+   chegar: os quatro já estão no lugar desde o começo da viagem.
+   ------------------------------------------------------------ */
+.page #recursos .rec-layout {
+  --borrao: clamp(18px, 2.4vw, 34px);
+  --nitidez: clamp(0, var(--chegada) / 0.88, 1);
+  filter: blur(calc((1 - var(--nitidez)) * var(--borrao)));
+
+  /* ---- ÓRBITA E ROTAÇÃO PRÓPRIA ----
+     A estação chega girando: percorre um arco em volta do ponto onde vai
+     atracar, como satélite em torno de um corpo maior, e ao mesmo tempo gira
+     sobre o próprio eixo. Os dois movimentos são independentes e compostos
+     em UMA lista de transformações.
+
+     A ARITMÉTICA, que é o pulo do gato:
+
+       rotate(θ) translateX(R) rotate(φ − θ)
+
+     A lista é aplicada da direita para a esquerda no espaço local. O último
+     `rotate` gira o painel sobre si; o `translateX` o afasta R do centro; o
+     primeiro `rotate` leva esse conjunto para o ângulo θ da órbita.
+
+     O resultado separa as duas coisas: a POSIÇÃO fica em (R·cosθ, R·senθ) —
+     um ponto da órbita — e a ORIENTAÇÃO fica em (φ−θ)+θ = φ, ou seja,
+     exatamente a rotação própria, sem contaminação do ângulo orbital. Sem o
+     `−θ` do último termo, o painel ficaria travado de frente para o centro
+     como a Lua, que é órbita síncrona e não é o que se pediu.
+
+     `transform-origin` fica no padrão (centro): as duas rotações têm de ser
+     em torno do centro do painel, senão o giro próprio vira balanço de
+     pêndulo pendurado por um canto.
+
+     R E θ VÃO A ZERO JUNTOS, então a órbita é uma espiral que fecha: o
+     painel não dá voltas em torno do ponto, ele CAI nele. Órbita que não
+     decai não atraca.
+
+     O RELÓGIO SÓ COMEÇA EM 0,7, e este é o número que mais custou.
+
+     A primeira tentativa mapeou o giro na viagem inteira (`--chegada / 0,82`),
+     como o borrão. Ficou invisível, e a razão é a curva da aproximação: o
+     tamanho é 1/distância, então a estação passa quase toda a viagem como um
+     ponto e só fica grande nos últimos 15%. Medido — em `--chegada` 0,6 ela
+     está a 32% do tamanho; em 0,8, a 44%; em 0,9, a 66%. Com o giro se
+     desfazendo desde o começo, os ângulos grandes aconteciam justamente
+     enquanto o painel era um borrão pequeno demais para se ver girar, e o que
+     sobrava para a parte visível eram 2 ou 3 graus.
+
+     Diferente do deslocamento e do borrão, ÂNGULO NÃO ENCOLHE COM A ESCALA:
+     14 graus são 14 graus a 16% ou a 100%. O que muda é se há painel
+     suficiente para lê-los. Por isso o giro fica TRAVADO no valor cheio
+     durante os primeiros 70% — o satélite vem em órbita, com a atitude que
+     tem — e só se estabiliza na aproximação final, entre 39% e 100% de
+     tamanho, que é a janela em que o olho acompanha.
+
+     Fecha em 0,96 e não em 1: os últimos 4% ficam só para a atracação. A
+     ordem dos três eventos é o roteiro da chegada — para de girar, entra em
+     foco (0,88), atraca (0,78 a 1). Se o giro terminasse junto com a
+     atracação, as cantoneiras fechariam sobre um painel ainda em movimento.
+
+     O `suave` no `--pousa` não é enfeite: com a rampa crua o giro pararia com
+     um canto, no meio da viagem, do jeito que o comentário lá em cima
+     descreve para os blocos da cascata. Derivada zero nas duas pontas.
+
+     ESCALA: `--raio` vive no espaço local do palco, que o GSAP encolhe por
+     fora. Enquanto a estação está a 0,16, os 380px locais chegam à tela como
+     ~61px — o arco é discreto de longe e ganha corpo conforme ela cresce,
+     que é como um desvio de trajetória se lê de verdade.
+
+     NÃO VAZA: medido, a maior extensão em tela acontece por volta da metade
+     da viagem e fica em ~200px do centro, contra 768 de meia-tela. A seção é
+     `overflow: hidden` e o recorte nunca chega a agir. */
+  /* Órbita POSITIVA leva o painel para baixo e para a direita, o mesmo lado
+     de onde o palco já o traz (`SOBE_CHEGADA`, 36vh abaixo do eixo). Com o
+     sinal negativo os dois se contradiziam: a órbita puxava para cima
+     enquanto a estação subia.
+
+     O giro próprio vai no sentido CONTRÁRIO ao da órbita de propósito. É o
+     que separa visualmente os dois movimentos — no mesmo sentido eles somam
+     e lêem como um gesto só. */
+  /* ---- O GIRO SAIU DO PLANO ----
+     A primeira versão girava só em Z: um cartão rodando na tela. Subir aquele
+     ângulo não resolve — passa de "cartão girando" a "cartão girando muito",
+     e num painel de texto largo o exagero em Z lê como gimmick, não como
+     corpo.
+
+     O que dá SENSAÇÃO de rotação é o eixo em profundidade. Com `rotateY` o
+     painel mostra o flanco: uma borda se aproxima e a outra recua, e é o
+     encurtamento entre as duas que o olho lê como volume girando. `rotateX`
+     acrescenta a arfagem, e os três eixos juntos entregam um corpo em
+     tombamento em vez de uma figura plana.
+
+     `perspective()` como FUNÇÃO e não como propriedade do pai, pelo mesmo
+     motivo documentado no DNA: na propriedade ela só alcança os filhos
+     diretos, e chegar ao conteúdo exigiria `preserve-3d` em contêineres
+     intermediários — que qualquer `overflow`, `filter` ou `opacity` futuro
+     desligaria em silêncio. Aqui a projeção é local e nada de fora a quebra.
+     Ela vem PRIMEIRO na lista porque só projeta o que vem depois dela.
+
+     LENTE LONGA (1700px) de propósito. Lente curta exagera o encurtamento e
+     a borda próxima cresce demais, o que num painel de texto vira distorção
+     de anúncio. Longa, o giro se lê e a tipografia aguenta.
+
+     A DECOMPOSIÇÃO CONTINUA VALENDO com os eixos novos. A matriz é
+     P·Rz(θ)·T(R)·Rz(φ−θ)·Ry(ψ)·Rx(ω): as três rotações próprias acontecem em
+     torno da origem antes do `translate`, então a POSIÇÃO segue sendo
+     (R·cosθ, R·senθ) — o ponto da órbita — e a ATITUDE vira Rz(φ)·Ry(ψ)·Rx(ω),
+     limpa do ângulo orbital. Acrescentar eixo não contamina a órbita. */
+  --lente: 1700px;
+  /* ÓRBITA ACIMA DO EIXO (sinal negativo), e o motivo é orçamento de altura,
+     não estética.
+
+     Ela já foi positiva, abaixo do eixo, acompanhando o lado de onde o palco
+     traz a estação (`SOBE_CHEGADA`, 36vh abaixo). Com o giro em -24° aquilo
+     cabia. Com -45° não cabe: girar um painel de 1218×481 em 45° quase
+     triplica a altura da caixa projetada, e somada ao empurrão do palco a
+     base saía da seção. MEDIDO no navegador antes de mexer: painel terminando
+     em 823px contra 696 de seção — 127px cortados embaixo, e nem era o pior
+     ponto da viagem.
+
+     Com o sinal negativo a órbita LEVANTA o painel enquanto o palco o empurra
+     para baixo, e os dois se compensam. É o que paga os 45°.
+
+     Inverter a órbita NÃO mexe em quanto o painel está girado: o termo
+     `(--giro − --orbita)` cancela o ângulo orbital na atitude (ver a
+     decomposição acima). Muda só onde ele está.
+
+     SUBIU DE -46 PARA -62 quando o giro passou de 45° para 58°. Quanto mais
+     perto de -90°, mais a órbita vira levantamento puro e menos deslocamento
+     lateral — e é exatamente essa a troca que o orçamento pede: sobram 550 a
+     663px de folga nas laterais e só 32px embaixo. Trocar lateral por altura
+     sai de graça. */
+  --orbita: -70deg;
+  /* O RAIO CRESCEU JUNTO com o ângulo, e é o segundo jeito de comprar altura:
+     a órbita levanta `R·sen(70°)` = 0,94·R, então esticar R é levantamento
+     quase puro. Medido com o giro em -58° e o raio anterior, o ponto mais
+     apertado da viagem tinha só 13px de folga embaixo — uma pancada de
+     rolagem de distância do recorte.
+
+     O que ele cobra é lateral (`R·cos(70°)` = 0,34·R), e lateral é o que
+     sobra: 477 a 660px livres nos dois lados contra os 13 embaixo. */
+  --raio: clamp(300px, 32vw, 540px);
+  /* -45° é o pedido do dono do produto, e termina em 0 pela própria estrutura:
+     o ângulo é `--resta × --giro`, e `--resta` fecha em zero na atracação.
+
+     A meia-diagonal cresce muito neste ângulo: em 45° a caixa projetada do
+     painel passa a medir (L/2)·cos45 + (A/2)·sen45 nos DOIS eixos, o que
+     joga a extensão vertical de ~240px locais para ~600px. Quem segura isso
+     é a escala do palco — o giro cheio só acontece enquanto a estação está
+     pequena, e some antes de ela crescer. Ver a medição na nota do relógio. */
+  --giro: -58deg;
+  /* OS EIXOS 3D SUBIRAM JUNTO, e eles são a parte barata do aumento: girar
+     mais em Z ALARGA a caixa projetada, enquanto `rotateY` a ENCURTA — o
+     painel mostra o flanco e ocupa menos largura. Subir os dois juntos dá
+     mais sensação de rotação sem cobrar tudo em espaço. */
+  --guinada: 38deg;
+  --arfagem: -18deg;
+  /* A JANELA DO GIRO, e é ela quem dita se a chegada é rápida ou lenta.
+
+     NÃO LEIA ESTES NÚMEROS COMO ROLAGEM. `--chegada` é um smoothstep do
+     progresso do pin, então a mesma diferença rende distâncias bem diferentes
+     conforme onde cai na faixa. Para converter, inverta o smoothstep
+     (`t = 0,5 − sen(asen(1−2v)/3)`) e multiplique pelo trecho de chegada
+     (CHEGOU 0,614) e pelo pin (TRAVESSIA 2,2 telas). Medido assim, a 695px
+     de altura:
+
+       0,70 → 0,96   0,328 tela   228px    começa a assentar com 39% do tamanho
+       0,62 → 0,99   0,487 tela   338px    33%
+       0,56 → 0,995  0,565 tela   393px    30%   ← atual
+       0,50 → 1      0,675 tela   469px    28%
+       0,44 → 1      0,730 tela   507px    25%
+
+     (A versão anterior deste comentário trazia 205px e 379px para as duas
+     primeiras linhas. Estavam errados — eram conta de cabeça, não medição.)
+
+     Alargar a janela não custa rolagem nova à página: muda só onde o giro se
+     distribui dentro da viagem que já existe.
+
+     O QUE LIMITA descer mais o piso é a coluna da direita. Quanto mais cedo o
+     giro começa a se desfazer, menor a estação quando isso acontece — e
+     abaixo de ~25% o gesto volta a acontecer num painel pequeno demais para
+     se ver girar, que foi o defeito da primeira versão. Mais lento do que a
+     tabela permite tem de vir de TRAVESSIA, em Estacoes.tsx, e aí desacelera
+     as seis estações de uma vez.
+
+     O FIM EM 0,995 e não em 1 preserva a ordem dos três eventos: o giro
+     acaba, o foco fecha em 0,88, e a moldura atraca por último, de 0,78 a 1. */
+  --orbe: clamp(0, (var(--chegada) - 0.56) / 0.435, 1);
+  --pousa: calc(var(--orbe) * var(--orbe) * (3 - 2 * var(--orbe)));
+  --resta: calc(1 - var(--pousa));
+  transform: perspective(var(--lente))
+    rotate(calc(var(--resta) * var(--orbita)))
+    translateX(calc(var(--resta) * var(--raio)))
+    rotate(calc(var(--resta) * (var(--giro) - var(--orbita))))
+    rotateY(calc(var(--resta) * var(--guinada)))
+    rotateX(calc(var(--resta) * var(--arfagem)));
 }
 
 /* ============================================================
@@ -395,25 +648,17 @@
    Hero, #oferta e o rodapé não aparecem aqui e não devem aparecer.
    ============================================================ */
 
-/* --- O que ela faz — 6 degraus: rótulo, título e as quatro células.
-       A ordem das células é a da leitura do bento, não a do DOM.
+/* --- O que ela faz — SEM JANELAS, e é a única assim.
 
-       Eram 7 enquanto existia o card do DNA, que ocupava `--de: 0.60`.
-       Tirá-lo sem mais nada deixaria um vão de 0,26 entre CALCULA e a faixa
-       — mais que o dobro do intervalo normal, e um buraco parado no meio da
-       cascata. O REPERTÓRIO subiu de 0,74 para 0,62 para fechar esse vão.
+       A seção não tem cascata: o conteúdo chega inteiro, como corpo único.
+       As seis linhas de `--de`/`--dur` que moravam aqui — rótulo, título e
+       os quatro quadrados, em passos de 0,12 — saíram em 21/08 junto com
+       ela.
 
-       O passo de 0,12 entre as células e o acréscimo antes da faixa são os
-       MESMOS de antes: a cascata ficou mais curta, não mais rápida. --- */
-.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
-.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
-.page #recursos .rec-cell--cria { --de: 0.24; --dur: 0.14; }
-.page #recursos .rec-cell--planeja { --de: 0.36; --dur: 0.14; }
-.page #recursos .rec-cell--calcula { --de: 0.48; --dur: 0.14; }
-/* Intervalo um pouco maior antes da faixa: ela é o fecho, não mais um
-   card — mesma intenção do `transition-delay` de 0,66s que existia na
-   entrada por relógio, agora escrita em espaço. */
-.page #recursos .rec-cell--repertorio { --de: 0.62; --dur: 0.16; }
+       QUEM REINTRODUZIR JANELAS AQUI vai ver que elas não fazem nada: os
+       seletores do #recursos também saíram da lista que define `--u`,
+       `--t`, `opacity` e `transform`, lá em cima. Uma coisa não funciona
+       sem a outra. Ver "O QUE ELA FAZ — a chegada sem cascata". --- */
 
 /* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
        rosto que emerge e ela é a prova, o corpo mais pesado. --- */
@@ -541,9 +786,10 @@
   .page .approach-title,
   .page .approach-description,
   .page .approach-media,
-  .page #recursos .rec-head .tag,
-  .page #recursos .rec-head h2,
-  .page #recursos .rec-cell,
+  /* O #recursos entra pelo INVÓLUCRO e não pelos blocos: lá não há cascata
+     para desligar, só o borrão de foco no `.rec-layout`. Quem pede menos
+     movimento recebe o conteúdo nítido desde o começo da viagem. */
+  .page #recursos .rec-layout,
   .page #demo .demo-lado,
   .page #demo .demo-head .tag,
   .page #demo .demo-head h2,
