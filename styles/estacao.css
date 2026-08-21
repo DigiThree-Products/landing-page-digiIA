@@ -134,8 +134,8 @@
   --de: 0;
   --dur: 0.0993;
 }
-/* ---- OS TRÊS BLOCOS SEGUINTES FORAM ANTECIPADOS, e os números aqui foram
-       REMEDIDOS contra as constantes de hoje.
+/* ---- OS TRÊS BLOCOS SEGUINTES FORAM ESPAÇADOS ATÉ O LIMITE, e os números
+       aqui foram REMEDIDOS contra as constantes de hoje.
 
        Os comentários anteriores diziam "folga de 0,64 tela", "1,19 → 1,44
        tela" e afins. Estavam errados por um fator de 2,5: eram telas medidas
@@ -147,36 +147,45 @@
        inteira dura 938px de rolagem), tomando a faixa em que o bloco é
        REALMENTE visto (smoothstep local entre 0,05 e 0,95):
 
-                    antes            agora
-         rótulo      64 → 169px       64 → 169px   (não mexeu)
-         título     411 → 470        353 → 414
-         texto      658 → 740        544 → 610
-         vídeo      772 → 875        675 → 753
+                    original    encurtado    agora
+         rótulo      64 → 169px  64 → 169px   64 → 169px  (nunca mexeu)
+         título     411 → 470   353 → 414    442 → 505
+         texto      658 → 740   544 → 610    692 → 780
+         vídeo      772 → 875   675 → 753    804 → 938
 
-         silêncio entre rótulo e título   242 → 184px
-         silêncio entre título e texto    188 → 130px
-         sequência inteira                875 → 753px  (-14%)
+         silêncio rótulo→título   242px  184px  261px
+         silêncio título→texto    188px  130px  194px
+         sequência inteira        811px  689px  874px
 
-       O QUE ENCOLHEU FOI O SILÊNCIO, não a duração dos blocos: os `--dur`
-       do título e do texto estão intactos. O tempo morto era o que fazia a
-       seção parecer longa, e é o que a nota do `--de` do rótulo já apontava
-       como "muito tempo no preto".
+       HOUVE UM VAI E VEM AQUI, e vale registrar para ninguém repetir: a
+       coluna do meio foi uma leitura errada de um pedido ("diminuir a
+       chegada" lido como encurtar, quando era desacelerar). Encurtou 14% e
+       voltou no sentido oposto.
 
-       O vídeo deixou de fechar exatamente junto com a chegada — agora ele
-       assenta em 753 de 938. O trecho final não fica morto: a estação segue
-       crescendo até o fim. Ele ganhou `--dur` maior (0,125) para não fechar
-       cedo demais junto com o resto. ---- */
+       O QUE MUDA É O SILÊNCIO, não a duração dos blocos: os `--dur` do
+       título e do texto nunca foram tocados nas duas mexidas. O silêncio é
+       o material principal desta seção — o movimento é só o acento.
+
+       ESTE É O TETO. O vídeo agora assenta em 938px, que é exatamente onde a
+       chegada termina, e o rótulo já nasce quase colado no início. Não sobra
+       caminho para espaçar mais: a cascata ocupa a chegada inteira. Mais
+       lento do que isto só aumentando TRAVESSIA em Estacoes.tsx — e aí as
+       SEIS estações desaceleram junto, e a página inteira fica mais longa. ---- */
 .page .approach-title {
-  --de: 0.3;
+  --de: 0.42;
   --dur: 0.1299;
 }
 .page .approach-description {
-  --de: 0.6;
+  --de: 0.8;
   --dur: 0.136;
 }
+/* O `--dur` voltou aos 0,0967 originais. Ele tinha subido para 0,125 na
+   versão encurtada, para o vídeo não fechar cedo demais junto com o texto —
+   com a cascata espaçada de novo, aquele reforço perdeu a função e só
+   comeria o pouco que sobra até o fim da chegada. */
 .page .approach-media {
-  --de: 0.79;
-  --dur: 0.125;
+  --de: 0.925;
+  --dur: 0.0967;
 }
 
 .page .approach-kicker,
@@ -601,7 +610,8 @@
        0,62 → 0,99   0,487 tela   338px    33%
        0,56 → 0,995  0,565 tela   393px    30%   ← atual
        0,50 → 1      0,675 tela   469px    28%
-       0,44 → 1      0,730 tela   507px    25%
+       0,46 → 1      0,710 tela   494px    26%   ← atual, e é o teto útil
+       0,40 → 1      0,765 tela   532px    24%
 
      (A versão anterior deste comentário trazia 205px e 379px para as duas
      primeiras linhas. Estavam errados — eram conta de cabeça, não medição.)
@@ -616,9 +626,13 @@
      tabela permite tem de vir de TRAVESSIA, em Estacoes.tsx, e aí desacelera
      as seis estações de uma vez.
 
-     O FIM EM 0,995 e não em 1 preserva a ordem dos três eventos: o giro
-     acaba, o foco fecha em 0,88, e a moldura atraca por último, de 0,78 a 1. */
-  --orbe: clamp(0, (var(--chegada) - 0.56) / 0.435, 1);
+     O FIM SUBIU DE 0,995 PARA 1 para comprar os últimos pixels de lentidão.
+     Custa a folga que separava o fim do giro da atracação: agora os dois
+     terminam juntos, e o painel para de girar no mesmo quadro em que as
+     cantoneiras fecham. O foco continua fechando antes, em 0,88, então a
+     sequência ainda tem duas batidas e não uma. Se a atracação passar a
+     parecer atropelada, é este 1 que volta para 0,99. */
+  --orbe: clamp(0, (var(--chegada) - 0.46) / 0.54, 1);
   --pousa: calc(var(--orbe) * var(--orbe) * (3 - 2 * var(--orbe)));
   --resta: calc(1 - var(--pousa));
   transform: perspective(var(--lente))
