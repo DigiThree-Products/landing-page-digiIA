@@ -764,16 +764,18 @@
 /* O corpo pesado, que fecha a chegada. `--de + --dur` = 1 exato. */
 .page #dna .dna-ficha { --de: 0.9520; --dur: 0.0480; }
 
-/* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
+/* --- Perguntas — 10 degraus. As oito perguntas entram uma a uma; ver a
        ressalva sobre clique em components/sections/Faq.tsx. --- */
 .page #faq .sec-head .tag { --de: 0; --dur: 0.12; }
 .page #faq .sec-head h2 { --de: 0.08; --dur: 0.16; }
-.page #faq details:nth-of-type(1) { --de: 0.26; --dur: 0.14; }
-.page #faq details:nth-of-type(2) { --de: 0.35; --dur: 0.14; }
-.page #faq details:nth-of-type(3) { --de: 0.44; --dur: 0.14; }
-.page #faq details:nth-of-type(4) { --de: 0.53; --dur: 0.14; }
-.page #faq details:nth-of-type(5) { --de: 0.62; --dur: 0.14; }
-.page #faq details:nth-of-type(6) { --de: 0.71; --dur: 0.14; }
+.page #faq details[data-faq-item='1'] { --de: 0.24; --dur: 0.12; }
+.page #faq details[data-faq-item='2'] { --de: 0.33; --dur: 0.12; }
+.page #faq details[data-faq-item='3'] { --de: 0.42; --dur: 0.12; }
+.page #faq details[data-faq-item='4'] { --de: 0.51; --dur: 0.12; }
+.page #faq details[data-faq-item='5'] { --de: 0.60; --dur: 0.12; }
+.page #faq details[data-faq-item='6'] { --de: 0.69; --dur: 0.12; }
+.page #faq details[data-faq-item='7'] { --de: 0.78; --dur: 0.12; }
+.page #faq details[data-faq-item='8'] { --de: 0.87; --dur: 0.12; }
 
 @media (prefers-reduced-motion: reduce) {
   .page .approach-kicker,

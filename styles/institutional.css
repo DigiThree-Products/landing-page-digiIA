@@ -764,7 +764,7 @@ body::after {
   width: 100%;
   min-height: 100svh;
   margin: 0;
-  padding: clamp(84px, 11vh, 130px) var(--world-edge);
+  padding: clamp(64px, 8vh, 96px) var(--world-edge);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -773,58 +773,57 @@ body::after {
      poeira, sem o véu violeta que ficava no canto superior esquerdo. */
 }
 
-/* Mesma troca de #demo: o filho direto agora é o palco da estação. */
-/* O GRID DAS DUAS COLUNAS VIVE AQUI, não na seção — e isto não é
-   preferência de organização, é o conserto de uma regressão real.
-
-   A seção era o grid e tinha dois filhos: o cabeçalho à esquerda e a lista
-   à direita, lado a lado, de modo que a altura da seção era a da lista
-   sozinha. Quando o FAQ virou estação, o `.estacao-palco` entrou entre os
-   dois e passou a ser o ÚNICO filho do grid: as duas colunas colapsaram em
-   uma e o conteúdo empilhou. Medido: a seção foi de ~900px para 1376px
-   numa janela de 900px, e com o pin segurando, as perguntas 4, 5 e 6
-   ficavam abaixo da dobra e inalcançáveis — a página não rola enquanto a
-   estação está presa.
-
-   Com o grid no palco, as colunas voltam e a altura volta a ser a da lista. */
+/* O título abre a leitura em uma faixa própria. Abaixo, as oito perguntas
+   se dividem em duas colunas de quatro: a seção ganha uma hierarquia clara
+   e a lista deixa de ultrapassar a altura disponível enquanto está presa. */
 .page #faq>.estacao-palco {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: var(--world-max);
   display: grid;
-  grid-template-columns: minmax(260px, 0.74fr) minmax(0, 1.26fr);
-  align-items: center;
-  gap: clamp(40px, 6vw, 110px);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  gap: clamp(28px, 4vh, 44px);
 }
 
-/* Sem `sticky`. Ele existia para o cabeçalho acompanhar a rolagem da
-   lista; numa estação PRESA não há rolagem interna para acompanhar — o
-   painel inteiro fica parado enquanto o pin segura, e um sticky dentro de
-   um ancestral transformado se ancora nele, não na janela. Era código sem
-   efeito. Quem centraliza agora é o `align-items` do palco. */
+/* Sem `sticky`: numa estação presa não há rolagem interna para acompanhar.
+   O palco centraliza o conjunto inteiro e mantém título e lista no mesmo
+   ritmo da chegada. */
 .page #faq .sec-head {
-  max-width: 520px;
+  max-width: 940px;
   margin: 0;
 }
 
 .page #faq .sec-head h2 {
-  font-size: clamp(48px, 5.4vw, 78px);
-  line-height: 0.96;
+  max-width: 18ch;
+  font-size: clamp(42px, 4.5vw, 64px);
+  line-height: 0.98;
 }
 
 .page #faq .faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(32px, 4vw, 72px);
   max-width: none;
+}
+
+.page #faq .faq-coluna {
+  min-width: 0;
 }
 
 .page #faq .faq details {
   border-color: rgba(248, 240, 255, 0.16);
 }
 
+.page #faq .faq-coluna details:first-child {
+  border-top: 1px solid rgba(248, 240, 255, 0.16);
+}
+
 .page #faq .faq summary {
-  padding-block: 28px;
-  font-size: clamp(18px, 1.6vw, 23px);
-  gap: 16px;
+  padding-block: clamp(14px, 1.8vh, 20px);
+  font-size: clamp(16px, 1.25vw, 19px);
+  gap: 14px;
 }
 
 /* A pergunta é quem estica; o índice e o sinal ficam nas pontas. Sem isto o
@@ -839,7 +838,7 @@ body::after {
    É o que amarra a lista de perguntas ao resto da viagem sem precisar de
    ornamento — a página já trata número miúdo como leitura de instrumento.
    Acende no lilás quando a resposta abre, então o índice também informa
-   qual das seis está aberta, coisa que o sinal de + sozinho não diz à
+   qual das oito está aberta, coisa que o sinal de + sozinho não diz à
    distância. */
 .page #faq .faq-indice {
   flex: none;
@@ -857,6 +856,14 @@ body::after {
 
 .page #faq .faq-body p {
   color: var(--paper-56);
+  padding-bottom: 18px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.page #faq details[open] .faq-body {
+  max-height: min(20svh, 180px);
+  overflow-y: auto;
 }
 
 /* ============================================================
@@ -1076,8 +1083,26 @@ body::after {
      Medido antes disto, em 390×844: 1.324px de conteúdo numa tela de 844. */
   .page #faq > .estacao-palco {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .page #faq .faq {
+    grid-template-columns: 1fr;
+    gap: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(205, 130, 255, 0.45) transparent;
+    padding-right: 4px;
+  }
+
+  .page #faq .faq-coluna + .faq-coluna details:first-child {
+    border-top: 0;
   }
 
   .page #faq .sec-head {
@@ -1094,13 +1119,12 @@ body::after {
     font-size: 16px;
   }
 
-  /* Abrir uma resposta cresce a seção, e numa seção presa crescer é sumir
-     com o resto. O `name="faq"` da marcação já garante UMA aberta por vez;
-     o teto aqui garante que essa uma não empurre as outras cinco para fora
-     da tela — a resposta rola por dentro. */
-  .page #faq .faq-body {
-    max-height: 30svh;
-    overflow-y: auto;
+  /* Abrir uma resposta não pode aumentar o palco além da tela. O acordeão
+     continua inteiro e quem rola, se necessário, é a lista — uma área só,
+     sem criar uma segunda rolagem dentro da própria resposta. */
+  .page #faq details[open] .faq-body {
+    max-height: none;
+    overflow-y: visible;
   }
 
   .page .site-footer .foot-links {
@@ -1311,17 +1335,18 @@ body::after {
 }
 
 /* ============================================================
-   AS PERGUNTAS NO MOBILE — seis numa tela
+   AS PERGUNTAS NO MOBILE — oito numa tela
 
    Vem DEPOIS do bloco de 620px de propósito: aquele bloco devolve
    `padding-block: 96px 118px` e um h2 de até 56px para todas as seções
    institucionais de uma vez, e a FAQ presa não tem esse orçamento — são
-   214px de respiro mais seis perguntas numa tela travada em 100svh.
+   214px de respiro mais oito perguntas numa tela travada em 100svh.
    Mesma especificidade, então quem decide é a ordem.
    ============================================================ */
 @media (max-width: 1023px) {
   .page #faq {
-    padding-block: clamp(56px, 8vh, 96px);
+    padding-block: clamp(80px, 10vh, 92px) clamp(20px, 3vh, 32px);
+    place-items: stretch center;
   }
 
   .page #faq .sec-head h2 {
@@ -1331,7 +1356,7 @@ body::after {
 
 @media (max-width: 1023px) and (max-height: 820px) {
   .page #faq {
-    padding-block: clamp(48px, 6.5vh, 76px);
+    padding-block: clamp(76px, 10vh, 84px) clamp(16px, 2.5vh, 24px);
   }
 
   .page #faq > .estacao-palco {
@@ -1347,9 +1372,6 @@ body::after {
     font-size: 15px;
   }
 
-  .page #faq .faq-body {
-    max-height: 26svh;
-  }
 }
 
 /* A DEMO no mobile — mesma razão de ordem da FAQ: o bloco de 620px
@@ -1493,7 +1515,7 @@ body::after {
 }
 
 /* Paisagem: as DUAS COLUNAS voltam, como na hero e pelo mesmo motivo —
-   deitado sobra largura e falta altura, o oposto do retrato. Empilhar seis
+   deitado sobra largura e falta altura, o oposto do retrato. Empilhar oito
    perguntas mais o cabeçalho em 390px de altura não cabe de jeito nenhum;
    lado a lado, a altura passa a ser só a da lista.
    O `padding-bottom` reserva o dock, que é fixed e cobriria a última. */
@@ -1504,8 +1526,18 @@ body::after {
 
   .page #faq > .estacao-palco {
     grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.3fr);
+    grid-template-rows: minmax(0, 1fr);
     gap: 28px;
     align-items: center;
+  }
+
+  .page #faq .faq {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+  }
+
+  .page #faq .faq-coluna + .faq-coluna details:first-child {
+    border-top: 1px solid rgba(248, 240, 255, 0.16);
   }
 
   .page #faq .sec-head h2 {
@@ -1517,9 +1549,6 @@ body::after {
     font-size: 14px;
   }
 
-  .page #faq .faq-body {
-    max-height: 22svh;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

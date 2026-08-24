@@ -19,12 +19,22 @@ export function MobileNav() {
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
-    const footer = document.querySelector('footer')
-    if (!footer) return
-    const observer = new IntersectionObserver(([entry]) => setHidden(Boolean(entry?.isIntersecting)), {
+    const targets = [document.querySelector('#faq'), document.querySelector('footer')]
+      .filter((target): target is Element => target instanceof Element)
+    if (!targets.length) return
+
+    const visible = new Set<Element>()
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visible.add(entry.target)
+        else visible.delete(entry.target)
+      })
+      setHidden(visible.size > 0)
+    }, {
       rootMargin: '0px 0px -8% 0px',
     })
-    observer.observe(footer)
+
+    targets.forEach((target) => observer.observe(target))
     return () => observer.disconnect()
   }, [])
 
