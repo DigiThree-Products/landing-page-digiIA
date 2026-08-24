@@ -451,20 +451,6 @@ export const LANDING = {
      */
     punch: 'A IA é nova. O método não.',
     /**
-     * A escassez mora AQUI porque a seção da oferta está congelada por decisão
-     * do dono do produto — e escassez sem lugar nenhum é escassez perdida.
-     *
-     * Diz o número e o MOTIVO, nessa ordem. Motivo verdadeiro é o que separa
-     * escassez que converte de urgência que queima confiança: "restam poucas
-     * vagas" sem causa lê como marketing; "é montado à mão, por isso acaba" é
-     * verificável. E o motivo é o mesmo argumento da seção de DNA, o que faz as
-     * duas se sustentarem em vez de competirem.
-     *
-     * O número vem de SITE.turma — provisório até o painel de admin. Ver a nota
-     * lá antes de publicar.
-     */
-    escassez: `Cada conta é montada à mão pela nossa equipe. É por isso que a primeira turma tem ${SITE.turma.vagas} vagas, e não mil.`,
-    /**
      * Números fornecidos pelo dono do produto (ago/2026) e publicados como
      * FATOS. O "9" é exato de propósito — sem "+": número redondo lê como
      * marketing, número exato lê como medido. Atualizar aqui quando os dados

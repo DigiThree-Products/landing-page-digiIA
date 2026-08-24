@@ -9,7 +9,7 @@ import { LANDING } from '@/content/landing'
  * `Reveal` roda por tempo enquanto o da estação roda por rolagem.
  *
  * A composição tem três andares, e a ordem é a do argumento: quem somos
- * (kicker + título), por que isso importa para o produto (o manifesto, com o
+ * (kicker), por que isso importa para o produto (título + manifesto, com o
  * soco em branco cheio no fim) e a prova dura (o trilho na base).
  *
  * `stats[0]` é a ESTRELA — fica monumental ao lado do manifesto. As outras
@@ -29,12 +29,6 @@ export function Credibility() {
         <div className="cred">
           <header className="cred-head">
             <p className="tag">{credibility.kicker}</p>
-            <h2 id="cred-titulo">
-              <span className="cred-titulo-linha">{credibility.title}</span>
-              <span className="cred-titulo-linha cred-titulo-linha--eco">
-                {credibility.titleLineTwo}
-              </span>
-            </h2>
           </header>
 
           <div className="cred-corpo">
@@ -42,17 +36,18 @@ export function Credibility() {
               <b>{estrela.value}</b>
               <i>{estrela.label}</i>
             </p>
-            <p className="cred-manifesto">
-              {credibility.description} <strong>{credibility.punch}</strong>
-            </p>
+            <div className="cred-copy">
+              <h2 id="cred-titulo">
+                <span className="cred-titulo-linha">{credibility.title}</span>
+                <span className="cred-titulo-linha cred-titulo-linha--eco">
+                  {credibility.titleLineTwo}
+                </span>
+              </h2>
+              <p className="cred-manifesto">
+                {credibility.description} <strong>{credibility.punch}</strong>
+              </p>
+            </div>
           </div>
-
-          {/* A escassez vive aqui porque a seção da oferta está congelada — e
-              escassez sem lugar nenhum é escassez perdida. Ela cabe nesta
-              seção por mérito, não por sobra: o motivo do teto (a conta é
-              montada à mão) é a mesma prova de autoridade que o resto do
-              bloco sustenta. */}
-          <p className="cred-escassez">{credibility.escassez}</p>
 
           <ul className="cred-trilho">
             {provas.map((prova) => (

@@ -198,9 +198,8 @@
 .page #dna .dna-pilares li,
 .page #dna .dna-fecho,
 .page .credibility-section .cred-head .tag,
-.page .credibility-section .cred-head h2,
+.page .credibility-section .cred-copy h2,
 .page .credibility-section .cred-manifesto,
-.page .credibility-section .cred-escassez,
 .page .credibility-section .stat b,
 .page .credibility-section .stat i,
 .page .credibility-section .cred-trilho li,
@@ -682,18 +681,13 @@
        folga de leitura das cinco — ver a tabela na nota de CHEGOU em
        Estacoes.tsx: 0,25 da chegada já montada, mais os 0,40 da travada. --- */
 .page .credibility-section .cred-head .tag { --de: 0; --dur: 0.12; }
-.page .credibility-section .cred-head h2 { --de: 0.10; --dur: 0.16; }
+.page .credibility-section .cred-copy h2 { --de: 0.10; --dur: 0.16; }
 .page .credibility-section .cred-manifesto { --de: 0.24; --dur: 0.16; }
 .page .credibility-section .stat b { --de: 0.38; --dur: 0.20; }
 .page .credibility-section .stat i { --de: 0.50; --dur: 0.10; }
 .page .credibility-section .cred-trilho li:nth-child(1) { --de: 0.52; --dur: 0.12; }
 .page .credibility-section .cred-trilho li:nth-child(2) { --de: 0.58; --dur: 0.12; }
 .page .credibility-section .cred-trilho li:nth-child(3) { --de: 0.63; --dur: 0.12; }
-/* A escassez chega DEPOIS do trilho de provas, e essa ordem é o argumento:
-   primeiro os números que sustentam a autoridade, só então o motivo de a
-   turma ter fim. Invertido, o teto soa a pressão de venda antes de haver
-   razão para acreditar nele. */
-.page .credibility-section .cred-escassez { --de: 0.72; --dur: 0.14; }
 
 /* ------------------------------------------------------------
    DNA ESTRATÉGICO — oito chegadas, uma de cada vez
@@ -796,12 +790,11 @@
   .page #demo .demo-head__sub,
   .page #demo .demo,
   .page .credibility-section .cred-head .tag,
-  .page .credibility-section .cred-head h2,
+  .page .credibility-section .cred-copy h2,
   .page .credibility-section .cred-manifesto,
   .page .credibility-section .stat b,
   .page .credibility-section .stat i,
   .page .credibility-section .cred-trilho li,
-  .page .credibility-section .cred-escassez,
   .page #dna .dna-head .tag,
   .page #dna .dna-head h2,
   .page #dna .dna-head__sub,
