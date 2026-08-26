@@ -31,6 +31,28 @@
   initial-value: 1;
 }
 
+/* O RELÓGIO DA TRAVADA — 0 quando a estação acaba de atracar, 1 quando ela
+   começa a partir. Publicada pelo mesmo `onUpdate` que a `--chegada`, em
+   components/layout/Estacoes.tsx, onde está a nota longa do porquê.
+
+   Ela existe porque `--chegada` satura em 1 no instante da atracação e não
+   tem como descrever nada que aconteça DEPOIS dela. Quem precisa disso hoje
+   é o texto do #recursos, que fica escondido a viagem inteira e só nasce com
+   o painel já parado em 1:1.
+
+   Ao contrário da `--chegada`, é LINEAR: não tem `suave` embutido, então
+   `--de` e `--dur` são frações diretas da travada e cada bloco põe o próprio
+   freio no `--t`. A armadilha que o aviso em maiúsculas descreve para a
+   cascata da chegada — "`--dur` NÃO é a duração do bloco" — não vale aqui.
+
+   `initial-value: 1` pelo mesmo motivo da irmã: sem script, movimento
+   reduzido ou antes de o JS montar, o conteúdo tem de aparecer pronto. */
+@property --pousado {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 /* Um bloco de cada vez, na ordem da leitura: onde estamos, o que é, o
    que faz, e por último a demonstração.
 
@@ -557,21 +579,53 @@
      `(--giro − --orbita)` cancela o ângulo orbital na atitude (ver a
      decomposição acima). Muda só onde ele está.
 
-     SUBIU DE -46 PARA -62 quando o giro passou de 45° para 58°. Quanto mais
-     perto de -90°, mais a órbita vira levantamento puro e menos deslocamento
-     lateral — e é exatamente essa a troca que o orçamento pede: sobram 550 a
-     663px de folga nas laterais e só 32px embaixo. Trocar lateral por altura
-     sai de graça. */
-  --orbita: -70deg;
-  /* O RAIO CRESCEU JUNTO com o ângulo, e é o segundo jeito de comprar altura:
-     a órbita levanta `R·sen(70°)` = 0,94·R, então esticar R é levantamento
-     quase puro. Medido com o giro em -58° e o raio anterior, o ponto mais
-     apertado da viagem tinha só 13px de folga embaixo — uma pancada de
-     rolagem de distância do recorte.
+     ABRIU PARA -180° (era -70°, e antes disso -46 e -62) quando o pedido
+     passou a ser explícito: a estação devia orbitar EM VOLTA DA PÁGINA, e
+     não só girar em torno do próprio eixo.
 
-     O que ele cobra é lateral (`R·cos(70°)` = 0,34·R), e lateral é o que
-     sobra: 477 a 660px livres nos dois lados contra os 13 embaixo. */
-  --raio: clamp(300px, 32vw, 540px);
+     O QUE ESTE ÂNGULO É, e foi o que eu tinha entendido errado: ele não
+     regula a largura do arco, e sim QUANTO DE VOLTA o painel dá. O termo
+     `--resta × --orbita` faz θ varrer de `--orbita` até 0, então o ângulo
+     é o tamanho da volta e o `--raio` é o tamanho dela. Mexer só no raio
+     — que foi a primeira tentativa, -70° → -45° com raio maior — deixa o
+     painel dando o mesmo arco curto, só que mais largo: medido, o centro
+     percorria 111px de tela na chegada inteira, contra 533px de agora.
+     Num quadro de 1440 isso é a diferença entre inclinar e atravessar.
+
+     -180° É MEIA VOLTA, e é o teto: o painel nasce do lado diametralmente
+     oposto e vem contornando até atracar. Passar disso não compra volta,
+     compra recorte — a seção é `overflow: hidden` e uma volta maior joga o
+     painel pelos extremos VERTICAIS, onde só há ~370px de folga contra os
+     ~500px que o painel mede em plena chegada. Medido, com a fração da
+     área do painel que fica fora da seção:
+
+       -180°  0%    ← atual
+       -200°  18%
+       -220°  31%
+       -270°  painel some do quadro no meio da chegada
+
+     Ou seja, a volta COMPLETA que a leitura literal do pedido sugere é
+     geometricamente incompatível com não recortar. Meia volta é o máximo
+     que cabe, e ela já lê como órbita. */
+  --orbita: -180deg;
+  /* O RAIO É EM ESPAÇO LOCAL, e é por isso que ele parece absurdo para um
+     quadro de 1440: o GSAP encolhe o palco por fora, e durante a órbita a
+     estação está entre 0,16 e ~0,5 do tamanho final. O deslocamento que
+     chega à tela é `--resta × --raio × escala do palco`, então os 1238px
+     que 86vw rende no desktop chegam como ~200 a 380px — que é o arco que
+     se vê. Medido no pico, o centro do painel varre 533px de tela.
+
+     O MÍNIMO DO CLAMP É O DIAL DO CELULAR, e ele não pode subir junto com
+     o resto. Num quadro de 390px o `86vw` vale 335px e cai dentro da
+     faixa; se o mínimo subir para 760px (que foi o valor que eu tinha
+     escolhido olhando só para o desktop), o celular passa a orbitar com um
+     raio maior que a própria tela e 73% do painel sai do quadro — medido.
+     Com 300px de piso, sobram 2%.
+
+     O TETO DE 86vw também é medido, e quem o dita é o celular: a 110vw o
+     mobile já perde 19% do painel para fora, e a 140vw perde 40%. No
+     desktop qualquer um dos três caberia; é o quadro estreito que manda. */
+  --raio: clamp(300px, 86vw, 1380px);
   /* -45° é o pedido do dono do produto, e termina em 0 pela própria estrutura:
      o ângulo é `--resta × --giro`, e `--resta` fecha em zero na atracação.
 
@@ -626,6 +680,144 @@
     rotate(calc(var(--resta) * (var(--giro) - var(--orbita))))
     rotateY(calc(var(--resta) * var(--guinada)))
     rotateX(calc(var(--resta) * var(--arfagem)));
+}
+
+/* ------------------------------------------------------------
+   O TEXTO NASCE COM A ESTAÇÃO JÁ PARADA
+
+   A seção continua SEM CASCATA NA CHEGADA — o bloco acima segue valendo
+   inteiro, e o painel continua chegando como corpo único. O que muda é que
+   o TEXTO não vem junto: ele fica invisível a viagem toda e só nasce depois
+   que a estação atraca, no relógio da travada (`--pousado`).
+
+   POR QUE NÃO DAVA PARA FAZER ISSO COM `--chegada`: ela satura em 1 no
+   instante da atracação, então "revelar depois de atracar" só poderia ser
+   escrito como "revelar no finzinho de --chegada" — ou seja, com o painel
+   ainda orbitando e ainda borrado, que é exatamente o que se quis evitar.
+   Daí o segundo relógio.
+
+   O QUE FICA VISÍVEL durante a chegada é SÓ o desenho do console: trilho,
+   conduítes, piso, moldura e o filete interno de cada instrumento. A estação
+   chega como uma máquina desligada, e tudo o que ela mostra — palavras e
+   leituras — acende depois de ela parar.
+
+   OS ARTEFATOS ENTRARAM NESTA LISTA num segundo passo. A primeira versão
+   escondia só os textos e deixava calendário, peça, roteiro e calculadora
+   chegando junto com o painel; o dono do produto pediu que eles também
+   esperassem. Vale saber por que a distinção existia: eles não são texto de
+   leitura, são a superfície de saída de cada instrumento, e havia o
+   argumento de que a máquina chegar com os mostradores acesos dizia
+   "funcionando". Ficou decidido que não.
+
+   E ELES SÃO ANIMADOS PELOS FILHOS (`.quad__saida > *`), nunca pelo próprio
+   `.quad__saida`, e isso não é preferência de seletor: o PISO de cada
+   instrumento é o `::after` dele (ver styles/recursos.css, e a nota de por
+   que ele não é um `border-bottom`). Pseudo-elemento herda a opacidade de
+   quem o carrega, então apagar o `.quad__saida` apagaria o piso junto — e o
+   piso é estrutura do console, justamente o que tem de chegar antes. Pelos
+   filhos, a superfície de saída some e a linha que a sustenta permanece.
+
+   DOIS FILETES VÃO JUNTO COM O TEXTO, e é decisão, não descuido: o traço
+   antes do rótulo (`.tag::before`) e o filete acima de cada verbo
+   (`.verb::before`) são pseudo-elementos DELES, então herdam a opacidade de
+   quem os carrega. Não dá para separar sem duplicar os dois em elementos
+   próprios, e não vale: os dois são marcação da legenda, não estrutura do
+   painel. As linhas que desenham o console são outras — `.quads::before`,
+   `.quad::before`, `.quads::after`, `.quad__texto::after` e a moldura do
+   `.rec-layout` — e nenhuma delas é tocada aqui.
+
+   A ORDEM é a de leitura, de cima para baixo: o rótulo e o título ancoram a
+   seção, e só então os quatro instrumentos falam, da esquerda para a
+   direita — que é a ordem do dia do empresário documentada em
+   WhatItDoes.tsx (planeja, cria, roteiriza, calcula). Trocar a ordem aqui
+   desmonta aquele argumento.
+
+   TERMINA EM 0,78 DA TRAVADA de propósito. A travada inteira vale 0,50 tela
+   de rolagem (ver o orçamento do pin em Estacoes.tsx), então a cascata
+   consome ~0,39 tela e sobram ~0,11 com tudo montado e imóvel antes de a
+   estação começar a partir. Empurrar o fim para perto de 1 elimina essa
+   folga e o último quadrado ainda estaria nascendo quando o painel arranca.
+
+   A tabela do antes e depois desta desaceleração está na nota das janelas
+   dos quadrados, mais abaixo — inclusive o motivo de a travada ter crescido
+   junto, sem o que alargar estes números não desaceleraria coisa alguma.
+
+   Os `--de` são frações DIRETAS da travada, sem smoothstep global — ver a
+   nota do `@property --pousado`. Cada bloco tem o próprio freio no `--t`.
+   ------------------------------------------------------------ */
+.page #recursos .rec-head .tag,
+.page #recursos .rec-head h2,
+.page #recursos .quad .verb,
+.page #recursos .quad h3,
+.page #recursos .quad__lede,
+.page #recursos .quad__saida > * {
+  /* Deslocamento pequeno porque aqui o painel JÁ ESTÁ em escala 1: estes
+     14px chegam à tela como 14px. Os 32 e 64px das outras estações são
+     grandes porque lá o gesto acontece com o palco ainda encolhido, e
+     precisa sobreviver à redução. */
+  --sobe: 14px;
+  --u: clamp(0, (var(--pousado) - var(--de, 0)) / var(--dur, 1), 1);
+  --t: calc(var(--u) * var(--u) * (3 - 2 * var(--u)));
+  opacity: var(--t);
+  transform: translate3d(0, calc((1 - var(--t)) * var(--sobe)), 0);
+}
+
+/* As janelas.
+
+   O QUADRADO GUARDA A DELE em `--quad-de`, e não em `--de` direto, porque
+   dentro dele há dois tempos: a legenda e a superfície de saída. Herdando
+   um valor só, os dois nasceriam juntos; com o apelido, cada um monta o
+   próprio `--de` a partir da mesma origem e a ordem interna sobrevive.
+
+   Continuam sendo QUATRO EVENTOS e não doze: o verbo, o título e o
+   subtítulo de um quadrado compartilham a janela e se leem como um bloco.
+   A travada é curta demais para doze eventos separados. */
+.page #recursos .rec-head .tag { --de: 0; --dur: 0.15; }
+.page #recursos .rec-head h2 { --de: 0.09; --dur: 0.17; }
+.page #recursos .quad--planeja { --quad-de: 0.22; }
+.page #recursos .quad--cria { --quad-de: 0.34; }
+.page #recursos .quad--roteiriza { --quad-de: 0.46; }
+.page #recursos .quad--calcula { --quad-de: 0.58; }
+
+/* A legenda primeiro, a leitura logo atrás. Os 0,05 de atraso são menos da
+   metade da distância entre um quadrado e o vizinho (0,12), então a saída de
+   um instrumento cai bem antes do próximo: perto o bastante para se ler como
+   o mesmo evento em dois tempos, longe o bastante para não virar um piscar
+   só.
+
+   ---- A CALIBRAGEM FICOU MAIS LENTA, e ela foi feita em DOIS lugares ----
+
+   O pedido foi desacelerar a revelação, e só alargar os números daqui não
+   resolvia: eles são frações da travada, então esticá-los dentro de uma
+   travada fixa não desacelera nada — apenas rouba a folga imóvel do fim. A
+   travada cresceu junto, de 0,40 para 0,50 tela (PARTIU, em Estacoes.tsx).
+
+   Medido em telas de rolagem, o antes e o depois:
+
+                        antes                depois
+     travada            0,40 tela            0,50 tela
+     fim da cascata     0,67 → 0,268 tela    0,78 → 0,390 tela
+     folga imóvel       0,33 → 0,132 tela    0,22 → 0,110 tela
+     cada bloco         0,12 → 0,048 tela    0,15 → 0,075 tela
+     entre quadrados    0,10 → 0,040 tela    0,12 → 0,060 tela
+
+   Ou seja: a sequência inteira ficou ~1,46× mais lenta e cada bloco
+   ~1,56×, e a folga imóvel do fim quase não foi cobrada (0,132 → 0,110)
+   porque quem pagou a conta foi a partida, não ela.
+
+   O ÚLTIMO A NASCER fecha em 0,58 + 0,05 + 0,15 = 0,78 da travada. Subir
+   mais os `--quad-de` sem mexer de novo em PARTIU come a folga que sobra, e
+   sem ela o último mostrador ainda estaria acendendo quando o painel
+   arrancasse. */
+.page #recursos .quad .verb,
+.page #recursos .quad h3,
+.page #recursos .quad__lede {
+  --de: var(--quad-de);
+  --dur: 0.15;
+}
+.page #recursos .quad__saida > * {
+  --de: calc(var(--quad-de) + 0.05);
+  --dur: 0.15;
 }
 
 /* ============================================================
@@ -780,10 +972,20 @@
   .page .approach-title,
   .page .approach-description,
   .page .approach-media,
-  /* O #recursos entra pelo INVÓLUCRO e não pelos blocos: lá não há cascata
-     para desligar, só o borrão de foco no `.rec-layout`. Quem pede menos
+  /* O #recursos entra pelo INVÓLUCRO — não há cascata de CHEGADA para
+     desligar, só o borrão de foco no `.rec-layout`. Quem pede menos
      movimento recebe o conteúdo nítido desde o começo da viagem. */
   .page #recursos .rec-layout,
+  /* O texto dele, porém, TEM uma revelação para desligar, e ela é a única
+     da página que roda no relógio da travada em vez do da chegada. Sem
+     estas cinco linhas, quem pede menos movimento ficaria com o texto
+     invisível — e não é "sem animação", é sem conteúdo. */
+  .page #recursos .rec-head .tag,
+  .page #recursos .rec-head h2,
+  .page #recursos .quad .verb,
+  .page #recursos .quad h3,
+  .page #recursos .quad__lede,
+  .page #recursos .quad__saida > *,
   .page #demo .demo-lado,
   .page #demo .demo-head .tag,
   .page #demo .demo-head h2,

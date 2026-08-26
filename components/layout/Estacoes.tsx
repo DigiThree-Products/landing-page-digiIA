@@ -117,13 +117,27 @@ const TRAVESSIA = 2.2
    em 1:1 — a composição inteira montada, imóvel e nítida.
 
    Essa janela NÃO encolheu quando a travessia caiu de 4,0 para 2,2 — pelo
-   contrário, foi crescendo: 0,26 → 0,30 → 0,40 tela de rolagem, sempre
-   tirando o acréscimo da PARTIDA e nunca da chegada, que já estava no
+   contrário, foi crescendo: 0,26 → 0,30 → 0,40 → 0,50 tela de rolagem,
+   sempre tirando o acréscimo da PARTIDA e nunca da chegada, que já estava no
    ponto. É o instante em que os quatro blocos existem juntos, e ele se lê
    como uma travada leve: a página continua rolando e nada se mexe. Longa
    demais, ela deixa de ser o encontro dos blocos e vira uma seção parada
    esperando o usuário; curta demais, os blocos nunca chegam a coexistir e
    o vídeo entra já saindo.
+
+   O ÚLTIMO PASSO (0,40 → 0,50) tem uma razão diferente dos anteriores, e ela
+   é nova: desde que o texto do #recursos passou a nascer DENTRO da travada
+   (ver `--pousado`, mais abaixo, e styles/estacao.css), esta janela deixou
+   de ser só tempo de leitura e virou também o palco de uma coreografia. O
+   pedido foi deixar aquela revelação mais lenta, e ela não tinha para onde
+   crescer: espremida nas 0,40 telas antigas, alongar a cascata só comeria a
+   folga imóvel do fim.
+
+   Vale saber o que isso cobra e o que não cobra. As OUTRAS CINCO estações
+   não animam nada aqui — para elas a travada é tempo parado, então esticá-la
+   só dá mais tempo de leitura, que é ganho. Quem paga é a PARTIDA, comum às
+   seis, que caiu de 0,45 para 0,35 tela: a saída ficou mais curta e mais
+   seca. Se ela passar a ler como tranco, é este o número a devolver.
 
    Mover só PARTIU (e não CHEGOU) é o que isola o ganho na travada: CHEGOU
    continua marcando o mesmo ponto físico de sempre, então a chegada
@@ -140,9 +154,11 @@ const TRAVESSIA = 2.2
 
    O orçamento atual do pin, em telas de 900px:
      chegada   0,614 × 2,2 = 1,35   (era 2,80)
-     travada   0,182 × 2,2 = 0,40   (era 0,30, antes 0,26)
-     partida   0,204 × 2,2 = 0,45   (era 0,55, antes 0,94)
-   Com a hero (2,6) e o vão (0,1), são 4,9 telas até o fim deste pin.
+     travada   0,227 × 2,2 = 0,50   (era 0,40, antes 0,30 e 0,26)
+     partida   0,159 × 2,2 = 0,35   (era 0,45, antes 0,55 e 0,94)
+   Com a hero (2,6) e o vão (0,1), são 4,9 telas até o fim deste pin — o
+   total não mudou, porque travada e partida só trocaram de tamanho entre
+   si.
 
    ATENÇÃO: os números acima e os de styles/estacao.css são MEDIDOS contra
    TRAVESSIA 2,2 e CHEGOU 0,614. Este bloco já carregou por muito tempo os
@@ -170,8 +186,8 @@ const TRAVESSIA = 2.2
      Demo (mockup)         0,78 → 0,30 tela
      Credibility (frase)   0,66 → 0,46 tela
 
-   0,46 tela de folga PRÓPRIA, mais os 0,40 da travada partilhada: a frase
-   de "+15 anos" já fica parada e legível por 0,86 tela antes de partir —
+   0,46 tela de folga PRÓPRIA, mais os 0,50 da travada partilhada: a frase
+   de "+15 anos" já fica parada e legível por 0,96 tela antes de partir —
    mais que o dobro de qualquer outra estação. Ela não precisava de ajuda;
    já era a mais bem servida das cinco. Quem tem MENOS folga própria é o
    Approach (a mídia fecha exatamente junto com a chegada, por desenho:
@@ -179,7 +195,7 @@ const TRAVESSIA = 2.2
    corpo final é o vídeo em loop, não uma frase para ler, então zero de
    folga não é o mesmo problema. */
 const CHEGOU = 0.614
-const PARTIU = 0.7958
+const PARTIU = 0.841
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
@@ -384,6 +400,11 @@ export function Estacoes() {
          enquanto a estação ainda é um ponto, e saltaria para o começo da
          cascata no instante em que o pin engatasse. */
       el.style.setProperty('--chegada', '0')
+      /* Mesma razão do `--chegada` acima: o `@property` nasce em 1 para
+         quem não tem script, então sem zerar aqui o texto do #recursos
+         apareceria montado enquanto a estação ainda é um ponto no fundo —
+         que é justamente o que esconder o texto pretende evitar. */
+      el.style.setProperty('--pousado', '0')
 
       /* O vão do ATRASO precisa ser espaço de verdade no documento, não
          um deslocamento na condição de início do pin: o GSAP prende o
@@ -534,10 +555,38 @@ export function Estacoes() {
           const volta = -SOBE_VOLTA * (1 - perto)
           const sobe = ida + (volta - ida) * re.atual - SOBE_PASSAGEM * passagem
 
+          /* O SEGUNDO RELÓGIO: a travada, de 0 quando a estação acaba de
+             atracar a 1 quando ela começa a partir.
+
+             `--chegada` satura em 1 no fim da viagem (é `p / CHEGOU`
+             limitado), então ela não sabe dizer NADA sobre o que acontece
+             depois da atracação — para ela, atracar e começar a partir são
+             o mesmo instante. Uma coreografia que precise rodar com a
+             estação já parada em 1:1 não tem como se pendurar nela.
+
+             É o caso do texto do #recursos, que fica escondido durante a
+             chegada inteira e só nasce com o painel parado (ver
+             styles/estacao.css). Sem esta variável o único jeito seria
+             espremer a revelação no finzinho de `--chegada`, ou seja, com
+             o painel ainda orbitando — exatamente o que não se quer.
+
+             LINEAR de propósito, e é a diferença dela para `--chegada`.
+             Aquela leva um `suave` embutido, e é por isso que o arquivo de
+             estilo precisa avisar em maiúsculas que `--dur` não é duração:
+             o mesmo intervalo rende rolagens diferentes conforme onde cai
+             na faixa. Aqui não há curva global, então `--de` e `--dur` são
+             frações diretas da travada e cada bloco põe o próprio freio no
+             `--t`. Um relógio a menos para calibrar às cegas.
+
+             As OUTRAS estações também recebem a variável, porque o motor é
+             um só — nenhuma delas a lê hoje, e publicar não custa nada. */
+          const pousado = limita((p - CHEGOU) / (PARTIU - CHEGOU))
+
           el.style.transform = `translate3d(0, ${sobe.toFixed(3)}vh, 0) scale(${escala.toFixed(4)})`
           el.style.opacity = opacidade.toFixed(3)
           el.dataset.escala = String(escala)
           el.style.setProperty('--chegada', viagem.toFixed(4))
+          el.style.setProperty('--pousado', pousado.toFixed(4))
         },
       })
     })
@@ -551,6 +600,7 @@ export function Estacoes() {
         el.style.transform = ''
         el.style.opacity = ''
         el.style.removeProperty('--chegada')
+        el.style.removeProperty('--pousado')
         delete el.dataset.escala
       })
     }
