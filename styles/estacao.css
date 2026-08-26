@@ -696,10 +696,26 @@
    ainda orbitando e ainda borrado, que é exatamente o que se quis evitar.
    Daí o segundo relógio.
 
-   O QUE FICA VISÍVEL durante a chegada é o desenho do console — trilho,
-   conduítes, piso, moldura e o filete interno de cada instrumento — mais os
-   ARTEFATOS (calendário, peça, roteiro e calculadora). A estação chega
-   mostrando a máquina; as palavras entram quando dá para lê-las.
+   O QUE FICA VISÍVEL durante a chegada é SÓ o desenho do console: trilho,
+   conduítes, piso, moldura e o filete interno de cada instrumento. A estação
+   chega como uma máquina desligada, e tudo o que ela mostra — palavras e
+   leituras — acende depois de ela parar.
+
+   OS ARTEFATOS ENTRARAM NESTA LISTA num segundo passo. A primeira versão
+   escondia só os textos e deixava calendário, peça, roteiro e calculadora
+   chegando junto com o painel; o dono do produto pediu que eles também
+   esperassem. Vale saber por que a distinção existia: eles não são texto de
+   leitura, são a superfície de saída de cada instrumento, e havia o
+   argumento de que a máquina chegar com os mostradores acesos dizia
+   "funcionando". Ficou decidido que não.
+
+   E ELES SÃO ANIMADOS PELOS FILHOS (`.quad__saida > *`), nunca pelo próprio
+   `.quad__saida`, e isso não é preferência de seletor: o PISO de cada
+   instrumento é o `::after` dele (ver styles/recursos.css, e a nota de por
+   que ele não é um `border-bottom`). Pseudo-elemento herda a opacidade de
+   quem o carrega, então apagar o `.quad__saida` apagaria o piso junto — e o
+   piso é estrutura do console, justamente o que tem de chegar antes. Pelos
+   filhos, a superfície de saída some e a linha que a sustenta permanece.
 
    DOIS FILETES VÃO JUNTO COM O TEXTO, e é decisão, não descuido: o traço
    antes do rótulo (`.tag::before`) e o filete acima de cada verbo
@@ -729,7 +745,8 @@
 .page #recursos .rec-head h2,
 .page #recursos .quad .verb,
 .page #recursos .quad h3,
-.page #recursos .quad__lede {
+.page #recursos .quad__lede,
+.page #recursos .quad__saida > * {
   /* Deslocamento pequeno porque aqui o painel JÁ ESTÁ em escala 1: estes
      14px chegam à tela como 14px. Os 32 e 64px das outras estações são
      grandes porque lá o gesto acontece com o palco ainda encolhido, e
@@ -741,16 +758,44 @@
   transform: translate3d(0, calc((1 - var(--t)) * var(--sobe)), 0);
 }
 
-/* As janelas. Os quatro quadrados recebem a delas no PRÓPRIO quadrado, e
-   não em cada linha de texto: `--de` e `--dur` são herdáveis, então o verbo,
-   o título e o subtítulo de um quadrado leem o mesmo par e nascem como um
-   bloco só. Quatro eventos, não doze — a travada é curta demais para doze. */
+/* As janelas.
+
+   O QUADRADO GUARDA A DELE em `--quad-de`, e não em `--de` direto, porque
+   dentro dele há dois tempos: a legenda e a superfície de saída. Herdando
+   um valor só, os dois nasceriam juntos; com o apelido, cada um monta o
+   próprio `--de` a partir da mesma origem e a ordem interna sobrevive.
+
+   Continuam sendo QUATRO EVENTOS e não doze: o verbo, o título e o
+   subtítulo de um quadrado compartilham a janela e se leem como um bloco.
+   A travada é curta demais para doze eventos separados. */
 .page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
 .page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
-.page #recursos .quad--planeja { --de: 0.20; --dur: 0.12; }
-.page #recursos .quad--cria { --de: 0.30; --dur: 0.12; }
-.page #recursos .quad--roteiriza { --de: 0.40; --dur: 0.12; }
-.page #recursos .quad--calcula { --de: 0.50; --dur: 0.12; }
+.page #recursos .quad--planeja { --quad-de: 0.20; }
+.page #recursos .quad--cria { --quad-de: 0.30; }
+.page #recursos .quad--roteiriza { --quad-de: 0.40; }
+.page #recursos .quad--calcula { --quad-de: 0.50; }
+
+/* A legenda primeiro, a leitura logo atrás. Os 0,05 de atraso são metade da
+   distância entre um quadrado e o vizinho (0,10), então a saída de um
+   instrumento cai no meio do caminho para o próximo: perto o bastante para
+   se ler como o mesmo evento em dois tempos, longe o bastante para não
+   virar um piscar só.
+
+   O ÚLTIMO A NASCER fecha em 0,50 + 0,05 + 0,12 = 0,67 da travada. Sobram
+   0,33 dela — algo como 0,13 tela de rolagem — com a composição inteira
+   montada e imóvel antes de a estação partir. Subir os `--quad-de` come
+   essa folga, e sem ela o último mostrador ainda estaria acendendo quando
+   o painel arrancasse. */
+.page #recursos .quad .verb,
+.page #recursos .quad h3,
+.page #recursos .quad__lede {
+  --de: var(--quad-de);
+  --dur: 0.12;
+}
+.page #recursos .quad__saida > * {
+  --de: calc(var(--quad-de) + 0.05);
+  --dur: 0.12;
+}
 
 /* ============================================================
    AS OUTRAS QUATRO ESTAÇÕES
@@ -917,6 +962,7 @@
   .page #recursos .quad .verb,
   .page #recursos .quad h3,
   .page #recursos .quad__lede,
+  .page #recursos .quad__saida > *,
   .page #demo .demo-lado,
   .page #demo .demo-head .tag,
   .page #demo .demo-head h2,
