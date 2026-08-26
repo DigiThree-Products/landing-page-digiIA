@@ -198,6 +198,73 @@ const CHEGOU = 0.614
 const PARTIU = 0.841
 
 /**
+ * O RITMO DE CADA ESTAÇÃO — e por que uma delas foge do padrão.
+ *
+ * Cinco das seis têm um ato só: chegam e ficam paradas enquanto se lê. A
+ * Estação 02 passou a ter TRÊS — chega orbitando, expande de um quadrado até
+ * o console deitado, e só então revela o texto. Três atos não cabem no mesmo
+ * orçamento de um, e espremê-los ali significaria desfazer a desaceleração da
+ * revelação, que foi pedida logo antes.
+ *
+ * Por isso o pin dela é MAIOR, e só o dela: 2,8 telas contra 2,2 das outras.
+ *
+ * OS MARCOS SÃO FRAÇÕES DO PIN, e é aí que mora a pegadinha: aumentar a
+ * travessia sem mexer nos marcos esticaria TUDO junto, inclusive a chegada,
+ * que já estava no ponto. Os números do `recursos` estão resolvidos ao
+ * contrário — eu digo quantas telas cada ato deve durar e divido pelo pin:
+ *
+ *   chegada   1,35 tela → 1,35 / 2,8 = 0,482   (igual à das outras cinco)
+ *   expansão  0,60 tela → acumulado 1,95 / 2,8 = 0,696
+ *   revelação 0,50 tela → acumulado 2,45 / 2,8 = 0,875
+ *   partida   0,35 tela → o resto
+ *
+ * A chegada e a partida ficam do mesmo tamanho das outras estações, medidas
+ * em tela de rolagem. O que a Estação 02 cobra a mais são exatamente as 0,60
+ * tela da expansão, e nada além disso.
+ *
+ * `expandiu` IGUAL a `chegou` no padrão é o que desliga o ato do meio para as
+ * outras cinco: a janela da expansão tem comprimento zero, `--expande` nasce
+ * saturada em 1 e a revelação começa no mesmo instante em que a chegada
+ * termina — exatamente o comportamento anterior a esta mudança.
+ */
+type Ritmo = { travessia: number; chegou: number; expandiu: number; partiu: number }
+
+const RITMO_PADRAO: Ritmo = {
+  travessia: TRAVESSIA,
+  chegou: CHEGOU,
+  expandiu: CHEGOU,
+  partiu: PARTIU,
+}
+
+const RITMO_RECURSOS: Ritmo = {
+  travessia: 2.8,
+  chegou: 0.482,
+  expandiu: 0.696,
+  partiu: 0.875,
+}
+
+/**
+ * O ATO DO MEIO NÃO EXISTE NO CELULAR, e cobrar por ele seria cobrar por nada.
+ *
+ * A grade só tem o que comprimir quando o console é mais LARGO que alto: o
+ * quadrado é a largura igualando a altura. No celular a seção é mais alta que
+ * larga, então `--g-min` satura em 1 (o teto está em GradeRecursos.tsx) e a
+ * grade já nasce aberta — não há expansão para ver. Com o ritmo do desktop, o
+ * pin cobraria 0,60 tela de rolagem por um ato que ali não acontece.
+ *
+ * O breakpoint é o mesmo de recursos.css, onde a fileira vira carrossel.
+ *
+ * ENVELHECE NUMA MUDANÇA DE JANELA, até o próximo mount: o ritmo é lido uma
+ * vez, na criação do gatilho. É o mesmo preço que `vaoDaEstacao` já paga e
+ * pela mesma razão — e, como lá, o caso real (girar o telefone) é raro o
+ * bastante para não valer um observador só para isto.
+ */
+const ritmoDa = (secao: HTMLElement): Ritmo => {
+  if (secao.id !== 'recursos') return RITMO_PADRAO
+  return window.matchMedia('(max-width: 1023px)').matches ? RITMO_PADRAO : RITMO_RECURSOS
+}
+
+/**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
  * branco depois que o mergulho da Hero termina. Sem isso a chegada começa
  * assim que o topo da seção toca o topo da tela, o que é ainda enquanto o
@@ -388,6 +455,8 @@ export function Estacoes() {
       const el = secao.querySelector<HTMLElement>('.estacao-palco') ?? secao
       paineis.push(el)
 
+      const ritmo = ritmoDa(secao)
+
       /* Estado de repouso pelo JS, não pelo CSS: sem script a seção tem
          que continuar legível em tamanho normal. */
       el.style.transform = `translate3d(0, ${SOBE_CHEGADA}vh, 0) scale(${ESCALA_LONGE})`
@@ -405,6 +474,10 @@ export function Estacoes() {
          apareceria montado enquanto a estação ainda é um ponto no fundo —
          que é justamente o que esconder o texto pretende evitar. */
       el.style.setProperty('--pousado', '0')
+      /* Terceiro relógio, o do ato do meio. Ver `--expande` no `onUpdate`.
+         Nasce em 0 pelo mesmo motivo dos outros dois: `@property` o declara
+         em 1 para quem não tem script. */
+      el.style.setProperty('--expande', '0')
 
       /* O vão do ATRASO precisa ser espaço de verdade no documento, não
          um deslocamento na condição de início do pin: o GSAP prende o
@@ -454,7 +527,7 @@ export function Estacoes() {
       return ScrollTrigger.create({
         trigger: secao,
         start: 'top top',
-        end: () => `+=${window.innerHeight * TRAVESSIA}`,
+        end: () => `+=${window.innerHeight * ritmo.travessia}`,
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
@@ -508,7 +581,7 @@ export function Estacoes() {
              do tamanho de propósito: o tamanho é 1/distância e se
              concentra no fim, então uma cascata pendurada nele
              amontoaria os quatro blocos no último quarto do trajeto. */
-          const viagem = suave(limita(p / CHEGOU))
+          const viagem = suave(limita(p / ritmo.chegou))
 
           /* Quem percorre o caminho é a DISTÂNCIA; o tamanho é 1/dela.
              Interpolar o tamanho direto gasta metade do crescimento na
@@ -538,7 +611,7 @@ export function Estacoes() {
              a partida ficou sem ele até alguém medir. Derivada zero nas
              duas pontas: sai da leitura sem tranco e encosta no fim do
              pin sem tranco. */
-          const passagem = suave(limita((p - PARTIU) / (1 - PARTIU)))
+          const passagem = suave(limita((p - ritmo.partiu) / (1 - ritmo.partiu)))
           const escala = tamanho + (ESCALA_PASSA - 1) * passagem
           const opacidade = limita(OPACIDADE_LONGE + (1 - OPACIDADE_LONGE) * perto - passagem)
           /* Ida e volta por caminhos diferentes — a única coisa na seção
@@ -580,12 +653,30 @@ export function Estacoes() {
 
              As OUTRAS estações também recebem a variável, porque o motor é
              um só — nenhuma delas a lê hoje, e publicar não custa nada. */
-          const pousado = limita((p - CHEGOU) / (PARTIU - CHEGOU))
+          /* O ATO DO MEIO: 0 no instante em que a estação atraca, 1 quando ela
+             acaba de se abrir. É ele que leva o quadrado até o console
+             deitado (ver `.rec-grade` em styles/recursos.css).
+
+             A JANELA DE COMPRIMENTO ZERO é o caso das outras cinco estações,
+             onde `expandiu === chegou`. Dividir por zero daria `Infinity` e,
+             pior, `NaN` no ponto exato em que `p === chegou` — que é
+             justamente o quadro em que elas atracam. O `||` não serve aqui
+             porque `0/0` é `NaN` e `NaN || 1` devolve 1 por acaso, não por
+             desenho; o teste explícito diz o que se quer: sem ato do meio, ele
+             já nasceu terminado. */
+          const janela = ritmo.expandiu - ritmo.chegou
+          const expande = janela > 0 ? suave(limita((p - ritmo.chegou) / janela)) : 1
+
+          /* A revelação do texto começa onde a expansão termina, e não mais
+             onde a chegada termina. Nas cinco estações sem ato do meio os dois
+             pontos são o mesmo, então nada mudou para elas. */
+          const pousado = limita((p - ritmo.expandiu) / (ritmo.partiu - ritmo.expandiu))
 
           el.style.transform = `translate3d(0, ${sobe.toFixed(3)}vh, 0) scale(${escala.toFixed(4)})`
           el.style.opacity = opacidade.toFixed(3)
           el.dataset.escala = String(escala)
           el.style.setProperty('--chegada', viagem.toFixed(4))
+          el.style.setProperty('--expande', expande.toFixed(4))
           el.style.setProperty('--pousado', pousado.toFixed(4))
         },
       })
@@ -601,6 +692,7 @@ export function Estacoes() {
         el.style.opacity = ''
         el.style.removeProperty('--chegada')
         el.style.removeProperty('--pousado')
+        el.style.removeProperty('--expande')
         delete el.dataset.escala
       })
     }

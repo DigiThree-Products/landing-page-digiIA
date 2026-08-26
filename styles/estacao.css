@@ -53,6 +53,23 @@
   initial-value: 1;
 }
 
+/* O RELÓGIO DO ATO DO MEIO — 0 quando a estação atraca, 1 quando ela acaba de
+   se abrir. Só a Estação 02 tem esse ato: ela chega como um quadrado e se
+   expande até o console deitado (ver GradeRecursos.tsx e a grade em
+   styles/recursos.css).
+
+   Nas outras cinco a janela tem comprimento zero, então o motor a publica
+   saturada em 1 e nada na página a sente — inclusive `--pousado`, que começa
+   onde esta termina e portanto continua começando na atracação, como antes.
+
+   `initial-value: 1` pela terceira vez e pelo mesmo motivo: sem script, a
+   grade já nasce aberta e coincidindo com o console. */
+@property --expande {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 /* Um bloco de cada vez, na ordem da leitura: onde estamos, o que é, o
    que faz, e por último a demonstração.
 
