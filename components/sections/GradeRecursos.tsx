@@ -3,19 +3,56 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * A GRADE DA ESTAÇÃO 02 — o quadrado que chega e se abre no console.
+ * O SATÉLITE DA ESTAÇÃO 02 — o que orbita, atraca e se implanta no console.
  *
- * O console já É uma grade de oito células fechadas: cinco conduítes
- * verticais, o trilho em cima, o filete no meio de cada instrumento e o piso
- * embaixo. Cada célula tem as quatro arestas. O que esta camada faz não é
- * inventar um desenho novo — é desenhar ESSA MESMA grade podendo comprimi-la
- * na horizontal, coisa que as linhas do console não conseguem fazer porque
- * cada uma é um pseudo-elemento preso ao seu quadrado no fluxo.
+ * O console já É um satélite visto de frente: quatro colunas por duas
+ * fileiras são OITO CÉLULAS, e oito células são duas asas de painel de
+ * quatro cada. O que esta camada faz não é inventar um desenho novo — é
+ * desenhar ESSA MESMA grade podendo dobrá-la ao meio, coisa que as linhas
+ * do console não conseguem fazer porque cada uma é um pseudo-elemento preso
+ * ao seu quadrado no fluxo.
  *
- * A coreografia, então, é: esta camada chega como um QUADRADO (as mesmas oito
- * células, espremidas), abre até coincidir exatamente com o console, e no fim
- * troca de lugar com ele. Como as duas grades são a mesma nos últimos quadros,
- * a troca não se vê — some só esta camada, e as linhas de verdade ficam.
+ * A coreografia é: as quatro colunas chegam dobradas DUAS DE CADA LADO, com
+ * o corpo do satélite entre elas; as asas se implantam; o corpo é fechado
+ * por elas como um obturador; e no fim esta camada coincide exatamente com
+ * o console e some. Como as duas grades são a mesma nos últimos quadros, a
+ * troca não se vê.
+ *
+ * ---- A DOBRA SÃO DOIS GRUPOS, E NÃO DOZE DESLOCAMENTOS ----
+ *
+ * A primeira ideia era dar a cada linha um deslocamento próprio que se
+ * anulasse na abertura. Doze contas independentes, doze lugares para errar
+ * um sinal, e nenhuma garantia estrutural de que todas terminassem no mesmo
+ * lugar. A conta certa é outra: dobrar 2+2 é escalar cada METADE em torno
+ * da própria borda de fora.
+ *
+ *   asa esquerda   escala em torno de x = 0   (a borda esquerda da grade)
+ *   asa direita    escala em torno de x = G   (a borda direita)
+ *
+ * Com `a` indo de `DOBRA_ASA` (dobrado) a 1 (implantado), o conduíte k da asa
+ * esquerda cai em `k·passo·a` e o da direita em `G − (G − k·passo)·a`. Em
+ * `a = 1` os dois viram `k·passo` — a posição do console, IDÊNTICA, por
+ * álgebra e não por calibragem. É isso que preserva o trabalho de medida do
+ * PR anterior: as verticais batendo a 0px e as horizontais a 0,4px.
+ *
+ * De quebra, escalar o GRUPO encurta as horizontais junto, que é
+ * exatamente o que se quer (as células dobradas são mais estreitas), sem
+ * uma segunda conta para a largura de cada segmento.
+ *
+ * ---- O CONDUÍTE DO MEIO APARECE DUAS VEZES ----
+ *
+ * Quatro colunas em 2+2 pedem SEIS arestas verticais — três por asa — e o
+ * console tem cinco conduítes. A do meio é a mesma linha fazendo dois
+ * trabalhos: aresta interna da asa esquerda e da direita. Enquanto dobrado
+ * são dois lugares diferentes, então são dois elementos; na implantação os
+ * dois convergem para o mesmo x e se empilham.
+ *
+ * ISSO DOBRA O ALFA daquela linha no fim, e é um preço consciente: a
+ * sobreposição só existe nos últimos quadros, quando a camada inteira já
+ * está saindo (`--g-sai`) e as linhas de verdade já estão acesas por baixo.
+ * Se aparecer como um conduíte central mais claro na troca, o conserto é
+ * uma linha — afinar o gêmeo com `calc(1 - var(--expande))`. Não foi feito
+ * às cegas porque um crossfade a mais custa mais do que resolve.
  *
  * ---- POR QUE ISTO É UM COMPONENTE DE CLIENTE E NÃO SÓ CSS ----
  *
@@ -24,35 +61,79 @@ import { useEffect, useRef } from 'react'
  * `(100% - 3 × --vao) / 4` e o conduíte k mora em `k × (coluna + vão) −
  * vão/2`. Nada a medir.
  *
- * As VERTICAIS não. O filete cai no fim do bloco de texto e o piso no fim do
- * slot do artefato, e as duas alturas são de CONTEÚDO: `--cabeca` e `--slot`
- * são pisos mínimos, não as alturas reais (medido: `--cabeca` 108px contra
- * 120px de texto real). Nenhuma expressão CSS sabe dizer onde eles caem.
+ * As VERTICAIS não. O filete cai no fim do bloco de texto e o piso no fim
+ * do slot do artefato, e as duas alturas são de CONTEÚDO: `--cabeca` e
+ * `--slot` são pisos mínimos, não as alturas reais (medido: `--cabeca`
+ * 108px contra 120px de texto real). Nenhuma expressão CSS sabe dizer onde
+ * eles caem.
  *
- * Daí as três medidas publicadas aqui, e só elas:
+ * Daí as medidas publicadas aqui, e só elas:
  *   --g-y       (em cada segmento) y do filete e do piso daquele instrumento
  *   --g-piso    y do piso mais baixo dos quatro, que fecha a caixa da grade
- *   --g-min     razão entre a largura do quadrado e a da grade aberta
+ *   --g-topo    onde a caixa começa dentro do `.rec-layout`
+ *   --g-base    quanto sobra dela até o fim do layout
+ *   --g-min     razão entre a largura dobrada e a da grade implantada
+ *   --g-min-y   a mesma razão na altura
+ *   --asa-min   quanto cada asa recolhe, que também dita a largura do corpo
  *
- * `--g-min` é o que fecha a conta do quadrado: a grade é quadrada quando a
- * largura iguala a altura, e a altura só se conhece depois de medir. Como
- * escala e não como pixels porque quem faz a compressão é um `scaleX`.
+ * As três últimas não são medidas — são constantes daqui. Passam pelo mesmo
+ * canal porque saturam JUNTAS quando não há dobra a fazer (celular), e essa
+ * decisão depende de uma medida.
  *
  * ---- POR QUE `scaleX` E NÃO LARGURA ----
  *
- * Animar a largura de verdade recalcularia o layout a cada quadro de rolagem,
- * com os quatro quadrados e o conteúdo deles dentro. Pior: em ~130px por
- * coluna os títulos quebram em muito mais linhas, a altura do bloco de texto
- * cresce, e o "quadrado" deixaria de ser quadrado no meio do caminho — a
- * geometria dependeria do texto que ela deveria estar escondendo.
+ * Animar a largura de verdade recalcularia o layout a cada quadro de
+ * rolagem. Pior: em ~130px por coluna os títulos quebram em muito mais
+ * linhas, a altura do bloco de texto cresce, e a geometria do satélite
+ * passaria a depender do texto que ele deveria estar escondendo.
  *
- * Com `scaleX` nada disso acontece: a caixa não muda, só a pintura. O preço é
- * que a escala achataria a espessura das linhas verticais junto — 2px viram
- * 0,6px no começo da abertura. Por isso cada vertical leva a escala INVERSA
- * (`1 / --g-s`) em torno do próprio centro: a posição comprime, a espessura
- * não. As horizontais não precisam de nada, porque `scaleX` mexe no
- * comprimento delas, que é justamente o que se quer, e não na altura.
+ * Com `scaleX` nada disso acontece: a caixa não muda, só a pintura. O preço
+ * é que a escala achataria a espessura das linhas verticais junto. Por isso
+ * cada vertical leva a escala INVERSA das DUAS que a afetam (a da camada e
+ * a da própria asa) em torno do próprio centro: a posição dobra, a
+ * espessura não. As horizontais não precisam de nada, porque `scaleX` mexe
+ * no comprimento delas, que é justamente o que se quer.
  */
+
+/* Quanto o satélite dobrado é mais largo que alto — e o número sai de uma
+   conta, não do olho.
+
+   O corpo ocupa os 40% do meio (ver `--asa-s` em styles/recursos.css), então
+   cada asa fica com 30% da envergadura e, tendo duas colunas, cada coluna
+   vale 15% dela. Com envergadura 1 — o quadrado da versão anterior — a
+   coluna cairia para `0,15 × 379 ≈ 57px` numa janela de 1920, contra os
+   ≈95px que as quatro colunas tinham naquele mesmo quadrado. Ripas, não
+   painéis: o corpo teria saído do bolso das asas.
+
+   1,6 é a envergadura que devolve a coluna ao tamanho que ela já tinha
+   (≈91px) e paga o corpo com largura NOVA. Em 1920 isso dá ~606px dobrado
+   contra 1165 implantado. */
+const ENVERGADURA = 1.6
+
+/* QUANTO CADA ASA RECOLHE AO DOBRAR, e é daqui que sai a largura do corpo.
+   Escalando cada asa em torno da borda de fora por `a`, a aresta interna da
+   esquerda cai em `0,5aG` e a da direita em `G − 0,5aG`: cada asa fica com
+   `0,5aG` e o corpo com o que sobra, `G(1 − a)`.
+
+   0,72 dá asas de 36% e corpo de 28% — o corpo mais ESTREITO que uma asa,
+   que é a proporção da referência (arranjos longos, barramento compacto).
+   A 0,6, que foi a primeira tentativa, o corpo saía com 40% contra 30% de
+   cada asa e a peça lia como um painel com uma caixa em cima, não como um
+   satélite.
+
+   ELE VAI PARA O CSS em vez de ser escrito lá, porque três coisas dependem
+   dele e uma só delas é escala: a dobra das asas, a largura do corpo (que é
+   `1 − a`) e a dobra vertical logo abaixo. Escrito em dois lugares, mexer
+   num deles calaria a boca do outro sem erro nenhum aparecer. */
+const DOBRA_ASA = 0.72
+
+/* As duas asas, e quais conduítes e colunas cada uma leva. O conduíte 2
+   aparece nas duas de propósito — ver a nota do gêmeo no docblock. */
+const ASAS = [
+  { lado: 'esq', verticais: [0, 1, 2], colunas: [0, 1] },
+  { lado: 'dir', verticais: [2, 3, 4], colunas: [2, 3] },
+] as const
+
 export function GradeRecursos() {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -105,8 +186,10 @@ export function GradeRecursos() {
         return { filete, piso: filete + (saida ? saida.offsetHeight : 0) }
       })
 
-      /* Cada segmento recebe o seu próprio y. Os do filete vêm primeiro no
-         DOM, os do piso depois, na mesma ordem dos quadrados. */
+      /* Cada segmento recebe o seu próprio y. Os quatro filetes vêm em ordem
+         de documento — os dois da asa esquerda e depois os dois da direita —
+         que é a mesma ordem dos quadrados, porque a asa esquerda leva as
+         colunas 0 e 1 e a direita as 2 e 3. */
       const filetes = grade.querySelectorAll<HTMLElement>('.rec-grade__seg--filete')
       const pisos = grade.querySelectorAll<HTMLElement>('.rec-grade__seg--piso')
       medidas.forEach((m, i) => {
@@ -116,7 +199,7 @@ export function GradeRecursos() {
 
       /* A CAIXA DA GRADE VAI ATÉ O PISO MAIS BAIXO. Com os quatro
          desalinhados, usar o do primeiro quadrado deixaria o de baixo para
-         fora — e é essa altura que define o lado do quadrado. */
+         fora — e é essa altura que define a envergadura do satélite. */
       const piso = Math.max(...medidas.map((m) => m.piso))
 
       /* A grade aberta é mais larga que a fileira: ela vai do primeiro
@@ -143,17 +226,41 @@ export function GradeRecursos() {
 
       /* Onde a grade começa e termina dentro do `.rec-layout`. O topo dela é
          o trilho, meio vão acima da fileira; a base é o piso. As cantoneiras
-         usam os dois para abraçar o quadrado enquanto ele está fechado. */
+         usam os dois para abraçar o satélite enquanto ele está dobrado. */
       const topo = fileira.offsetTop - folga
       const rodape = layout.offsetHeight - fileira.offsetTop - piso
 
       layout.style.setProperty('--g-piso', `${piso.toFixed(2)}px`)
       layout.style.setProperty('--g-topo', `${topo.toFixed(2)}px`)
       layout.style.setProperty('--g-base', `${rodape.toFixed(2)}px`)
-      /* Quadrado = largura igual à altura. Preso a 1 no teto porque uma
-         estação mais alta que larga (celular) não deve ESTICAR a grade além
-         do console; ali ela já nasce aberta. */
-      layout.style.setProperty('--g-min', Math.min(1, altura / largura).toFixed(4))
+      /* Preso a 1 no teto porque uma estação mais alta que larga (celular)
+         não deve ESTICAR a grade além do console; ali ela já nasce
+         implantada e não há dobra para ver. */
+      const dobraX = Math.min(1, (altura * ENVERGADURA) / largura)
+      layout.style.setProperty('--g-min', dobraX.toFixed(4))
+
+      /* SATURAR É O QUE DESLIGA O SATÉLITE, e as três dobras saturam juntas.
+         No celular a estação é mais alta que larga, `dobraX` bate no teto de
+         1 e não há nada a dobrar; deixar as outras duas dobrarem ali daria um
+         console achatado que nunca foi satélite. */
+      const dobrou = dobraX < 1
+      layout.style.setProperty('--asa-min', (dobrou ? DOBRA_ASA : 1).toFixed(4))
+
+      /* A DOBRA VERTICAL sai das outras duas, e o alvo é a célula dobrada
+         QUADRADA. Cada asa mede `0,5 × a × G` e tem duas colunas, então a
+         célula tem `0,25 × a × G` de largura, com `G = altura ×
+         ENVERGADURA`. Na vertical são duas fileiras dentro de `dobra ×
+         altura`, então `dobra × altura / 2` de altura. Igualando:
+
+             0,25 × a × ENVERGADURA × altura = dobra × altura / 2
+             dobra = 0,5 × a × ENVERGADURA
+
+         Com 0,72 e 1,6 isso dá 0,576 — a grade dobrada fica em ~219px de
+         altura numa janela de 1920, contra os 380 implantados. */
+      layout.style.setProperty(
+        '--g-min-y',
+        (dobrou ? Math.min(1, 0.5 * DOBRA_ASA * ENVERGADURA) : 1).toFixed(4),
+      )
     }
 
     medir()
@@ -163,32 +270,63 @@ export function GradeRecursos() {
     return () => observador.disconnect()
   }, [])
 
-  const colunas = [0, 1, 2, 3]
-
   return (
     <div className="rec-grade" ref={ref} aria-hidden="true">
-      {/* Cinco conduítes fecham as oito células nas laterais. */}
-      {[0, 1, 2, 3, 4].map((k) => (
-        <i key={`v${k}`} className="rec-grade__v" style={{ '--k': k } as React.CSSProperties} />
+      {/* O TRILHO É A VIGA e fica FORA das asas: ele é a única horizontal
+          contínua do console (atravessa a fileira inteira, de conduíte a
+          conduíte), então não pode ser dobrado em duas sem virar dois
+          segmentos no instante da troca. Deixá-lo inteiro por cima das duas
+          asas transforma a limitação na peça certa: enquanto dobrado, é ele
+          que atravessa o satélite de ponta a ponta e sustenta as asas. */}
+      <i className="rec-grade__h rec-grade__h--trilho" />
+
+      {ASAS.map(({ lado, verticais, colunas }) => (
+        <div key={lado} className={`rec-grade__asa rec-grade__asa--${lado}`}>
+          {verticais.map((k) => (
+            <i
+              key={`v${k}`}
+              className="rec-grade__v"
+              style={{ '--k': k } as React.CSSProperties}
+            />
+          ))}
+          {/* Filetes e pisos são SEGMENTADOS, um por instrumento, e não uma
+              linha contínua — é assim que o console os desenha (cada um vai
+              do seu conduíte à borda direita da própria coluna, deixando a
+              calha aberta). Uma linha contínua aqui viraria quatro segmentos
+              no instante da troca, e a troca deixaria de ser invisível. */}
+          {colunas.map((k) => (
+            <i
+              key={`f${k}`}
+              className={`rec-grade__seg rec-grade__seg--filete${k === 3 ? ' rec-grade__seg--fim' : ''}`}
+              style={{ '--k': k } as React.CSSProperties}
+            />
+          ))}
+          {colunas.map((k) => (
+            <i
+              key={`p${k}`}
+              className={`rec-grade__seg rec-grade__seg--piso${k === 3 ? ' rec-grade__seg--fim' : ''}`}
+              style={{ '--k': k } as React.CSSProperties}
+            />
+          ))}
+        </div>
       ))}
 
-      {/* O trilho é contínuo; filetes e pisos são um por instrumento, como no
-          console. Ver a nota de `.rec-grade__seg` em styles/recursos.css. */}
-      <i className="rec-grade__h rec-grade__h--trilho" />
-      {colunas.map((k) => (
-        <i
-          key={`f${k}`}
-          className={`rec-grade__seg rec-grade__seg--filete${k === 3 ? ' rec-grade__seg--fim' : ''}`}
-          style={{ '--k': k } as React.CSSProperties}
-        />
-      ))}
-      {colunas.map((k) => (
-        <i
-          key={`p${k}`}
-          className={`rec-grade__seg rec-grade__seg--piso${k === 3 ? ' rec-grade__seg--fim' : ''}`}
-          style={{ '--k': k } as React.CSSProperties}
-        />
-      ))}
+      {/* O CORPO, entre as duas asas. Ele não desenha as próprias paredes
+          laterais: as arestas internas das asas já são elas, e desenhá-las
+          de novo dobraria o alfa das duas linhas mais visíveis do satélite.
+          O que é dele é só o que as asas não dão — a cabeça acima do trilho,
+          a base abaixo do piso, o cinturão, o mastro e a parabólica. */}
+      <div className="rec-grade__corpo">
+        <i className="rec-grade__cabeca" />
+        <i className="rec-grade__base" />
+        <i className="rec-grade__cinturao" />
+        <i className="rec-grade__mastro" />
+        <i className="rec-grade__prato">
+          <i className="rec-grade__prato-borda" />
+          <i className="rec-grade__prato-foco" />
+          <i className="rec-grade__prato-haste" />
+        </i>
+      </div>
     </div>
   )
 }
