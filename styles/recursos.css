@@ -128,6 +128,25 @@
   --atraca: clamp(0, (var(--chegada) - 0.78) / 0.22, 1);
   --trava: calc(var(--atraca) * var(--atraca) * (3 - 2 * var(--atraca)));
 
+  /* ---- A TROCA ENTRE A GRADE E O CONSOLE ----
+     A `.rec-grade` (ver GradeRecursos.tsx) desenha a MESMA grade de oito
+     células que o console, só que podendo comprimir na horizontal. Ela chega
+     como quadrado, abre, e no fim as duas coincidem exatamente — é aí que uma
+     sai e a outra fica.
+
+     `--acende` é o relógio dessa troca, e ele roda no fim da EXPANSÃO, não da
+     chegada: as linhas de verdade só existem depois que a grade terminou de
+     abrir. Nas outras cinco estações `--expande` nasce saturada em 1 (elas não
+     têm o ato do meio), então lá isto vale 1 desde sempre e nada muda.
+
+     A SOBREPOSIÇÃO É DE PROPÓSITO. As linhas reais entram entre 0,72 e 0,88 da
+     expansão e a grade só começa a sair em 0,88: durante esse trecho as duas
+     estão acesas, uma exatamente por cima da outra. Fosse um cruzamento
+     simétrico, o ponto do meio teria as duas a meia opacidade e a grade
+     inteira piscaria mais fraca por um instante. */
+  --acende: clamp(0, (var(--expande) - 0.72) / 0.16, 1);
+  --linhas: calc(var(--acende) * var(--acende) * (3 - 2 * var(--acende)));
+
   /* Distância da moldura ao conteúdo, travada e aberta. A diferença é o
      quanto ela "se recolhe" ao atracar.
 
@@ -157,6 +176,22 @@
   --folga: clamp(32px, 3.4vw, 56px);
   --abertura: 34px;
   --canto: 28px;
+
+  /* O VÃO ENTRE AS COLUNAS, e ele mora AQUI e não na `.quads` — onde estava —
+     porque duas coisas o leem e só uma delas é filha da fileira.
+
+     A `.rec-grade` é irmã da `.quads`, não filha: as duas penduram no
+     `.rec-layout`. Declarado lá embaixo, o token não chegava à grade, o
+     `var(--vao)` dos `left`/`right` dela virava inválido e a caixa colapsava
+     para largura zero — a grade existia no DOM e não pintava nada. Medido:
+     `getBoundingClientRect().width` em 0 com os cinco conduítes empilhados no
+     mesmo x.
+
+     A fileira continua sendo quem o usa como `gap`; ela só passou a herdá-lo
+     em vez de declará-lo. Quem mexer no valor mexe nos dois de uma vez, que é
+     a relação que a nota do trilho já pedia: as marcas e o vão TÊM de sair do
+     mesmo número. */
+  --vao: clamp(26px, 2.8vw, 44px);
 
   /* ---- A COR DAS TRÊS LINHAS ----
      Tokens PRÓPRIOS da seção, e não os globais `--rule`/`--rule-hi`. A razão
@@ -286,7 +321,25 @@
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  inset: calc(-1 * (var(--folga) + (1 - var(--trava)) * var(--abertura)));
+  /* ---- ELAS ABRAÇAM O QUADRADO E ABREM COM ELE ----
+     O recuo de sempre (a folga, mais a `--abertura` que se recolhe ao
+     atracar) continua valendo em todos os lados. O que entra por cima é o
+     quanto elas precisam FECHAR enquanto a grade ainda está comprimida, para
+     emoldurar o quadrado em vez do console que ainda não existe.
+
+     Na horizontal a conta sai de graça: a grade encolhe por `scaleX` a partir
+     do centro, então cada lado sobra `(1 − escala) × 50%`. Na vertical não há
+     escala nenhuma — a grade sempre teve a altura final —, mas o `.rec-layout`
+     é mais ALTO que ela, porque inclui a faixa do cabeçalho. `--g-topo` e
+     `--g-base` são essa diferença, medidas no componente.
+
+     Tudo multiplicado por `1 − --expande`, que zera quando a abertura termina:
+     daí para a frente a regra é exatamente a de antes desta mudança. */
+  --recuo: calc(var(--folga) + (1 - var(--trava)) * var(--abertura));
+  --fecha: calc(1 - var(--expande));
+  inset-inline: calc((1 - var(--g-min, 1)) * 50% * var(--fecha) - var(--recuo));
+  inset-block-start: calc(var(--g-topo, 0px) * var(--fecha) - var(--recuo));
+  inset-block-end: calc(var(--g-base, 0px) * var(--fecha) - var(--recuo));
   opacity: var(--trava);
   background:
     linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--canto) var(--espessura) no-repeat,
@@ -408,7 +461,8 @@
      trilho saem dele (meio vão para fora de cada borda de coluna). Os dois
      PRECISAM sair do mesmo valor — se o vão mudar e as marcas não, elas
      deixam de cair no meio dele e a régua sai do lugar. */
-  --vao: clamp(26px, 2.8vw, 44px);
+  /* A DECLARAÇÃO SUBIU para o `.rec-layout` — ver a nota lá. Aqui ficou só o
+     uso, que continua sendo quem define o vão de verdade da fileira. */
   gap: var(--vao);
 }
 
@@ -455,7 +509,7 @@
      degrau abaixo da moldura e das marcas. Ver a tabela de contraste na
      declaração dos dois, em `.rec-layout`. */
   background: var(--fio);
-  opacity: var(--trava);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 
 /* SEM `aspect-ratio`, e isso é conserto, não desistência.
@@ -555,7 +609,7 @@
      com o piso, que está na base do card, sem depender de valor nenhum. */
   height: calc(var(--folga) + 100%);
   background: var(--fio-forte);
-  opacity: var(--trava);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 
 /* A QUINTA MARCA — o fim do trilho.
@@ -596,7 +650,7 @@
      quatro sem precisar repetir a conta deles. */
   height: calc(var(--folga) + 100%);
   background: var(--fio-forte);
-  opacity: var(--trava);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 
 /* ---------- O slot do artefato ----------
@@ -684,7 +738,7 @@
   bottom: 0;
   height: var(--espessura);
   background: var(--fio);
-  opacity: var(--trava);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 /* O último painel fecha no quinto conduíte, e não na borda da coluna: é ele
    que termina o console do lado direito. Sem isto o console fecharia com uma
@@ -732,7 +786,7 @@
   bottom: 0;
   height: var(--espessura);
   background: var(--fio-fraco);
-  opacity: var(--trava);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 .page #recursos .quad--calcula .quad__texto::after {
   right: calc(-1 * var(--vao) / 2);
@@ -1322,5 +1376,121 @@
      movimento não perde a estrutura — perde só a animação de atracar. */
   .page #recursos .rec-layout {
     --trava: 1;
+  }
+}
+
+/* ============================================================
+   A GRADE QUE CHEGA COMO QUADRADO
+
+   Desenha a MESMA grade de oito células que o console — cinco conduítes, o
+   trilho, quatro filetes e quatro pisos — só que numa camada própria, que
+   pode ser comprimida na horizontal. As linhas do console não podem: cada
+   uma é um pseudo-elemento preso ao seu quadrado no fluxo.
+
+   O porquê de cada decisão (as três medidas publicadas por JS, o `scaleX` em
+   vez de largura, a contra-escala das verticais) está no docblock de
+   components/sections/GradeRecursos.tsx.
+
+   AS COORDENADAS SÃO AS DO CONSOLE, e é isso que faz a troca ser invisível.
+   A grade é meio vão mais larga que a fileira dos dois lados, porque vai do
+   primeiro conduíte ao quinto. Escrevendo `G` para a largura dela, a da
+   fileira é `G − vão` e a coluna vale `(G − 4×vão) / 4` — é essa a conta que
+   aparece nos `left` abaixo, e ela devolve exatamente os mesmos pixels das
+   regras do console, uma a uma.
+   ============================================================ */
+.page #recursos .rec-grade {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  /* Do primeiro conduíte ao quinto. */
+  left: calc(-1 * var(--vao) / 2);
+  right: calc(-1 * var(--vao) / 2);
+  /* Do trilho até o piso. `--g-topo` e `--g-piso` são medidos: ver o
+     componente. Os zeros de reserva mantêm a regra válida no primeiro quadro,
+     antes de o efeito rodar. */
+  top: var(--g-topo, 0px);
+  height: calc(var(--folga) + var(--g-piso, 0px));
+
+  /* A escala do momento: `--g-min` no começo (quadrado) e 1 no fim (console).
+     Vive aqui, e não em cada filho, porque as verticais precisam dela para
+     desfazê-la. */
+  --g-s: calc(var(--g-min, 1) + (1 - var(--g-min, 1)) * var(--expande));
+  transform: scaleX(var(--g-s));
+
+  /* Sai DEPOIS de as linhas de verdade entrarem — ver `--linhas` lá em cima.
+     Enquanto isso acompanha a atracação, como todo o resto do console. */
+  --g-sai: clamp(0, (var(--expande) - 0.88) / 0.12, 1);
+  opacity: calc(var(--trava) * (1 - var(--g-sai) * var(--g-sai) * (3 - 2 * var(--g-sai))));
+}
+
+/* A coluna e o passo entre conduítes, escritos uma vez só. */
+.page #recursos .rec-grade {
+  --g-col: calc((100% - 4 * var(--vao)) / 4);
+  --g-passo: calc(var(--g-col) + var(--vao));
+}
+
+.page #recursos .rec-grade__v,
+.page #recursos .rec-grade__h {
+  position: absolute;
+  background: var(--fio-forte);
+}
+
+/* Os cinco conduítes. A contra-escala é o que salva a espessura: sem ela os
+   2px chegariam à tela como 0,6px enquanto a grade está comprimida. */
+.page #recursos .rec-grade__v {
+  top: 0;
+  bottom: 0;
+  width: var(--espessura);
+  left: calc(var(--k) * var(--g-passo));
+  transform: scaleX(calc(1 / var(--g-s)));
+}
+
+.page #recursos .rec-grade__h {
+  height: var(--espessura);
+}
+
+/* O trilho é a única horizontal contínua: ele atravessa a fileira inteira,
+   de conduíte a conduíte. */
+.page #recursos .rec-grade__h--trilho {
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--fio);
+}
+
+/* Filetes e pisos são SEGMENTADOS, um por instrumento, e não uma linha
+   contínua — é assim que o console os desenha (cada um vai do seu conduíte à
+   borda direita da própria coluna, deixando a calha aberta). Uma linha
+   contínua aqui viraria quatro segmentos no instante da troca, e a troca
+   deixaria de ser invisível. */
+.page #recursos .rec-grade__seg {
+  position: absolute;
+  height: var(--espessura);
+  left: calc(var(--k) * var(--g-passo));
+  width: calc(var(--vao) / 2 + var(--g-col));
+}
+/* O último fecha no quinto conduíte, e não na borda da coluna — mesma regra
+   do `.quad--calcula .quad__saida::after`. */
+.page #recursos .rec-grade__seg--fim {
+  width: calc(var(--g-col) + var(--vao));
+}
+/* O `--g-y` de cada segmento é escrito pelo componente, um por instrumento —
+   os quatro NÃO caem na mesma altura quando um título quebra em duas linhas.
+   Ver a nota em GradeRecursos.tsx. */
+.page #recursos .rec-grade__seg--filete {
+  top: calc(var(--folga) + var(--g-y, 0px));
+  background: var(--fio-fraco);
+}
+.page #recursos .rec-grade__seg--piso {
+  top: calc(var(--folga) + var(--g-y, 0px) - var(--espessura));
+  background: var(--fio);
+}
+
+/* Sem script, movimento reduzido ou antes de o efeito montar, `--expande`
+   vale 1 e a grade coincide com o console — duas grades idênticas empilhadas.
+   Some, então, e deixa a de verdade. */
+@media (prefers-reduced-motion: reduce) {
+  .page #recursos .rec-grade {
+    display: none;
   }
 }

@@ -1,4 +1,5 @@
 import { CalculoRoi } from '@/components/sections/CalculoRoi'
+import { GradeRecursos } from '@/components/sections/GradeRecursos'
 import { PecaPronta } from '@/components/sections/PecaPronta'
 import { LANDING } from '@/content/landing'
 
@@ -65,6 +66,10 @@ export function WhatItDoes() {
         {/* Duas colunas: o cabeçalho ancora a esquerda, os quadrados ocupam
             a direita em 2×2. Mesmo esqueleto de `.approach-layout`. */}
         <div className="rec-layout">
+        {/* A grade que chega como quadrado e se abre no console. Fica ANTES do
+            conteúdo por ser puramente decorativa e ir atrás dele; o que a
+            posiciona é o `.rec-layout`, que já é `position: relative`. */}
+        <GradeRecursos />
         <div className="rec-head">
           <div>
             {/* O número vem ANTES do nome, como placa de plataforma: primeiro
