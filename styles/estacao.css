@@ -557,35 +557,53 @@
      `(--giro − --orbita)` cancela o ângulo orbital na atitude (ver a
      decomposição acima). Muda só onde ele está.
 
-     SUBIU DE -46 PARA -62 quando o giro passou de 45° para 58°. Quanto mais
-     perto de -90°, mais a órbita vira levantamento puro e menos deslocamento
-     lateral.
+     ABRIU PARA -180° (era -70°, e antes disso -46 e -62) quando o pedido
+     passou a ser explícito: a estação devia orbitar EM VOLTA DA PÁGINA, e
+     não só girar em torno do próprio eixo.
 
-     RECUADA PARA -45° (era -70°) pelo pedido oposto: a estação devia
-     atravessar mais PÁGINA a caminho de atracar, não só girar quase no
-     lugar. A -70° o deslocamento em tela media ~150×135px no pico — lia
-     como cartão inclinando, não como corpo cruzando a tela. Em -45° o termo
-     lateral (`R·cos45°` = 0,71·R) e o vertical (`R·sen45°` = 0,71·R) ficam
-     iguais, e por isso o `--raio` cresceu junto (nota abaixo): o alvo era
-     manter o MESMO levantamento vertical de antes — para não reabrir os
-     32px de folga embaixo — e ganhar o lateral de graça, como um bônus do
-     ângulo mais raso. */
-  --orbita: -45deg;
-  /* O RAIO CRESCEU JUNTO com o ângulo, para o levantamento vertical
-     (`R·sen(ângulo)`) não encolher quando o ângulo caiu de 70° para 45°:
-     0,94·R (a 70°) e 0,71·R (a 45°) precisam bater no mesmo valor em px, e
-     é isso que a conta de baixo resolve — sen(45°)=0,7071 é bem menor que
-     sen(70°)=0,9397, então R precisa crescer ~1,33× para compensar
-     (0,9397/0,7071). Os três números do clamp escalaram juntos por esse
-     mesmo fator (300→400, 32vw→42vw, 540→720), preservando a curva de
-     responsividade anterior.
+     O QUE ESTE ÂNGULO É, e foi o que eu tinha entendido errado: ele não
+     regula a largura do arco, e sim QUANTO DE VOLTA o painel dá. O termo
+     `--resta × --orbita` faz θ varrer de `--orbita` até 0, então o ângulo
+     é o tamanho da volta e o `--raio` é o tamanho dela. Mexer só no raio
+     — que foi a primeira tentativa, -70° → -45° com raio maior — deixa o
+     painel dando o mesmo arco curto, só que mais largo: medido, o centro
+     percorria 111px de tela na chegada inteira, contra 533px de agora.
+     Num quadro de 1440 isso é a diferença entre inclinar e atravessar.
 
-     O que sai de graça é o lateral: a 70° ele media `R·cos70°` = 0,34·R; a
-     45°, com R maior, vira `R·cos45°` = 0,71·R — mais que o dobro em px,
-     sem tocar no orçamento vertical que já era apertado (32px de folga
-     embaixo). É exatamente a troca que faltava: lateral sobrava (550 a
-     663px de folga nas laterais contra 32 embaixo), e agora ela é gasta. */
-  --raio: clamp(400px, 42vw, 720px);
+     -180° É MEIA VOLTA, e é o teto: o painel nasce do lado diametralmente
+     oposto e vem contornando até atracar. Passar disso não compra volta,
+     compra recorte — a seção é `overflow: hidden` e uma volta maior joga o
+     painel pelos extremos VERTICAIS, onde só há ~370px de folga contra os
+     ~500px que o painel mede em plena chegada. Medido, com a fração da
+     área do painel que fica fora da seção:
+
+       -180°  0%    ← atual
+       -200°  18%
+       -220°  31%
+       -270°  painel some do quadro no meio da chegada
+
+     Ou seja, a volta COMPLETA que a leitura literal do pedido sugere é
+     geometricamente incompatível com não recortar. Meia volta é o máximo
+     que cabe, e ela já lê como órbita. */
+  --orbita: -180deg;
+  /* O RAIO É EM ESPAÇO LOCAL, e é por isso que ele parece absurdo para um
+     quadro de 1440: o GSAP encolhe o palco por fora, e durante a órbita a
+     estação está entre 0,16 e ~0,5 do tamanho final. O deslocamento que
+     chega à tela é `--resta × --raio × escala do palco`, então os 1238px
+     que 86vw rende no desktop chegam como ~200 a 380px — que é o arco que
+     se vê. Medido no pico, o centro do painel varre 533px de tela.
+
+     O MÍNIMO DO CLAMP É O DIAL DO CELULAR, e ele não pode subir junto com
+     o resto. Num quadro de 390px o `86vw` vale 335px e cai dentro da
+     faixa; se o mínimo subir para 760px (que foi o valor que eu tinha
+     escolhido olhando só para o desktop), o celular passa a orbitar com um
+     raio maior que a própria tela e 73% do painel sai do quadro — medido.
+     Com 300px de piso, sobram 2%.
+
+     O TETO DE 86vw também é medido, e quem o dita é o celular: a 110vw o
+     mobile já perde 19% do painel para fora, e a 140vw perde 40%. No
+     desktop qualquer um dos três caberia; é o quadro estreito que manda. */
+  --raio: clamp(300px, 86vw, 1380px);
   /* -45° é o pedido do dono do produto, e termina em 0 pela própria estrutura:
      o ângulo é `--resta × --giro`, e `--resta` fecha em zero na atracação.
 
