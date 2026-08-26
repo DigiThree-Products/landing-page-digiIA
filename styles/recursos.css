@@ -181,6 +181,33 @@
      composição sem caixa não pode ter. */
   --fio: rgba(248, 240, 255, 0.26);
   --fio-forte: rgba(248, 240, 255, 0.34);
+
+  /* ---- A ESPESSURA DAS LINHAS ----
+     Um dial só para TODAS as linhas do console: moldura, trilho, os cinco
+     conduítes, o piso de cada instrumento, o filete interno e os dois
+     tracinhos das legendas. Subiu de 1px para 2px a pedido do dono do
+     produto.
+
+     Antes o `1px` estava escrito onze vezes, espalhado por oito regras. Não
+     era repetição inofensiva: a espessura tem geometria pendurada nela — o
+     `right` do trilho desconta a largura de um conduíte para terminar rente
+     à quinta marca em vez de atrás dela. Com o número solto, engrossar as
+     linhas e esquecer esse desconto deixaria o trilho 1px curto, o tipo de
+     erro que ninguém vê e ninguém acha depois.
+
+     NENHUMA DELAS EMPURRA LAYOUT: as linhas do console são pseudo-elementos
+     `position: absolute`, e os dois tracinhos são itens flex de largura
+     fixa. Engrossar não move conteúdo — foi o que permitiu que isto fosse um
+     token e não uma recalibragem.
+
+     O QUE O NÚMERO COBRA é a nota de contraste logo acima: ela mediu os
+     alfas com o fio em 1px e parou antes de 3:1 porque acima disso "o fio de
+     1px deixa de ler como traço de instrumento e vira borda desenhada". Fio
+     mais grosso pesa mais na tela com o mesmo alfa, então os dois dials se
+     somam. Em 2px os alfas atuais (2,00:1 e 2,71:1) seguem de pé; se um dia
+     isto subir para 3px ou mais, vale remedir antes de mexer também na cor,
+     ou as linhas passam a ler como as bordas que a composição não quer. */
+  --espessura: 2px;
   /* Terceiro degrau, para o que é INTERNO a um instrumento: o divisor entre
      as duas linhas da calculadora, e o que mais vier. Fica abaixo do trilho
      de propósito — filete dentro de um painel não pode competir com a
@@ -243,14 +270,14 @@
   inset: calc(-1 * (var(--folga) + (1 - var(--trava)) * var(--abertura)));
   opacity: var(--trava);
   background:
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--canto) 1px no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / 1px var(--canto) no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / var(--canto) 1px no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / 1px var(--canto) no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / var(--canto) 1px no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / 1px var(--canto) no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / var(--canto) 1px no-repeat,
-    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / 1px var(--canto) no-repeat;
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--canto) var(--espessura) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--espessura) var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / var(--canto) var(--espessura) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 0 / var(--espessura) var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / var(--canto) var(--espessura) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 0 100% / var(--espessura) var(--canto) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / var(--canto) var(--espessura) no-repeat,
+    linear-gradient(var(--fio-forte), var(--fio-forte)) 100% 100% / var(--espessura) var(--canto) no-repeat;
 }
 
 /* O VÃO ENTRE O CABEÇALHO E A FILEIRA É DERIVADO, não escolhido: vale
@@ -288,7 +315,7 @@
 .page #recursos .rec-head .tag::before {
   content: '';
   width: 30px;
-  height: 1px;
+  height: var(--espessura);
   flex: none;
   background: currentColor;
 }
@@ -393,16 +420,18 @@
      fileira, e o trilho vai junto: uma régua cuja primeira e última marca
      ficam de fora dela não fecha nada — era exatamente o defeito que a
      quinta marca tinha vindo corrigir.
-     O `- 1px` à direita é a largura da própria marca, para o trilho
-     terminar rente a ela em vez de 1px antes. */
+     O desconto à direita é a largura da própria marca, para o trilho
+     terminar rente a ela em vez de uma espessura antes — e por isso ele sai
+     de `--espessura`, não de um `1px` solto: os dois são a mesma medida e
+     precisam andar juntos. */
   left: calc(-1 * var(--vao) / 2);
-  right: calc(-1 * var(--vao) / 2 - 1px);
+  right: calc(-1 * var(--vao) / 2 - var(--espessura));
   /* NO MEIO EXATO do vão, porque o vão vale 2×`--folga` (ver a nota do
      `.rec-head`). É esta linha que faz o cabeçalho e a fileira lerem como
      duas caixas com a mesma margem nos quatro lados. Um valor fixo aqui
      empurra o trilho para um dos lados e descentraliza as duas. */
   top: calc(-1 * var(--folga));
-  height: 1px;
+  height: var(--espessura);
   /* `--fio` e não `--fio-forte`: o trilho é o mais discreto dos três, um
      degrau abaixo da moldura e das marcas. Ver a tabela de contraste na
      declaração dos dois, em `.rec-layout`. */
@@ -478,7 +507,7 @@
      o que uma régua de quatro cards tem: cinco fronteiras, igualmente
      espaçadas. Os cinco intervalos ficam idênticos, em coluna + vão. */
   left: calc(-1 * var(--vao) / 2);
-  width: 1px;
+  width: var(--espessura);
   /* ---- DE MARCA A CONDUÍTE ----
      Era um tique de 9px pendurado no trilho. Agora desce do trilho até o
      PISO DO PAINEL: `--folga` para vencer o vão entre o trilho e o topo do
@@ -537,7 +566,7 @@
      Ancorando as cinco pela mesma borda, o passo é coluna + vão nas quatro
      vezes, sem sobra. */
   left: calc(100% + var(--vao) / 2);
-  width: 1px;
+  width: var(--espessura);
   /* Mesma altura dos outros quatro: ela virou conduíte junto com eles. Se
      ficasse nos 9px de tique, o console teria quatro colunas descendo e uma
      parada no alto — a única assimetria que a quinta marca existe para não
@@ -634,7 +663,7 @@
   left: calc(-1 * var(--vao) / 2);
   right: 0;
   bottom: 0;
-  height: 1px;
+  height: var(--espessura);
   background: var(--fio);
   opacity: var(--trava);
 }
@@ -682,7 +711,7 @@
   left: calc(-1 * var(--vao) / 2);
   right: 0;
   bottom: 0;
-  height: 1px;
+  height: var(--espessura);
   background: var(--fio-fraco);
   opacity: var(--trava);
 }
@@ -706,7 +735,7 @@
 .page #recursos .quad .verb::before {
   content: '';
   width: 22px;
-  height: 1px;
+  height: var(--espessura);
   flex: none;
   background: currentColor;
 }
