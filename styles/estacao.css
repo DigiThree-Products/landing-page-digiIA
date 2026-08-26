@@ -732,11 +732,15 @@
    WhatItDoes.tsx (planeja, cria, roteiriza, calcula). Trocar a ordem aqui
    desmonta aquele argumento.
 
-   TERMINA EM 0,62 DA TRAVADA de propósito. A travada inteira vale 0,40 tela
+   TERMINA EM 0,78 DA TRAVADA de propósito. A travada inteira vale 0,50 tela
    de rolagem (ver o orçamento do pin em Estacoes.tsx), então a cascata
-   consome ~0,25 tela e sobram ~0,15 com tudo montado e imóvel antes de a
+   consome ~0,39 tela e sobram ~0,11 com tudo montado e imóvel antes de a
    estação começar a partir. Empurrar o fim para perto de 1 elimina essa
    folga e o último quadrado ainda estaria nascendo quando o painel arranca.
+
+   A tabela do antes e depois desta desaceleração está na nota das janelas
+   dos quadrados, mais abaixo — inclusive o motivo de a travada ter crescido
+   junto, sem o que alargar estes números não desaceleraria coisa alguma.
 
    Os `--de` são frações DIRETAS da travada, sem smoothstep global — ver a
    nota do `@property --pousado`. Cada bloco tem o próprio freio no `--t`.
@@ -768,33 +772,52 @@
    Continuam sendo QUATRO EVENTOS e não doze: o verbo, o título e o
    subtítulo de um quadrado compartilham a janela e se leem como um bloco.
    A travada é curta demais para doze eventos separados. */
-.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
-.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
-.page #recursos .quad--planeja { --quad-de: 0.20; }
-.page #recursos .quad--cria { --quad-de: 0.30; }
-.page #recursos .quad--roteiriza { --quad-de: 0.40; }
-.page #recursos .quad--calcula { --quad-de: 0.50; }
+.page #recursos .rec-head .tag { --de: 0; --dur: 0.15; }
+.page #recursos .rec-head h2 { --de: 0.09; --dur: 0.17; }
+.page #recursos .quad--planeja { --quad-de: 0.22; }
+.page #recursos .quad--cria { --quad-de: 0.34; }
+.page #recursos .quad--roteiriza { --quad-de: 0.46; }
+.page #recursos .quad--calcula { --quad-de: 0.58; }
 
-/* A legenda primeiro, a leitura logo atrás. Os 0,05 de atraso são metade da
-   distância entre um quadrado e o vizinho (0,10), então a saída de um
-   instrumento cai no meio do caminho para o próximo: perto o bastante para
-   se ler como o mesmo evento em dois tempos, longe o bastante para não
-   virar um piscar só.
+/* A legenda primeiro, a leitura logo atrás. Os 0,05 de atraso são menos da
+   metade da distância entre um quadrado e o vizinho (0,12), então a saída de
+   um instrumento cai bem antes do próximo: perto o bastante para se ler como
+   o mesmo evento em dois tempos, longe o bastante para não virar um piscar
+   só.
 
-   O ÚLTIMO A NASCER fecha em 0,50 + 0,05 + 0,12 = 0,67 da travada. Sobram
-   0,33 dela — algo como 0,13 tela de rolagem — com a composição inteira
-   montada e imóvel antes de a estação partir. Subir os `--quad-de` come
-   essa folga, e sem ela o último mostrador ainda estaria acendendo quando
-   o painel arrancasse. */
+   ---- A CALIBRAGEM FICOU MAIS LENTA, e ela foi feita em DOIS lugares ----
+
+   O pedido foi desacelerar a revelação, e só alargar os números daqui não
+   resolvia: eles são frações da travada, então esticá-los dentro de uma
+   travada fixa não desacelera nada — apenas rouba a folga imóvel do fim. A
+   travada cresceu junto, de 0,40 para 0,50 tela (PARTIU, em Estacoes.tsx).
+
+   Medido em telas de rolagem, o antes e o depois:
+
+                        antes                depois
+     travada            0,40 tela            0,50 tela
+     fim da cascata     0,67 → 0,268 tela    0,78 → 0,390 tela
+     folga imóvel       0,33 → 0,132 tela    0,22 → 0,110 tela
+     cada bloco         0,12 → 0,048 tela    0,15 → 0,075 tela
+     entre quadrados    0,10 → 0,040 tela    0,12 → 0,060 tela
+
+   Ou seja: a sequência inteira ficou ~1,46× mais lenta e cada bloco
+   ~1,56×, e a folga imóvel do fim quase não foi cobrada (0,132 → 0,110)
+   porque quem pagou a conta foi a partida, não ela.
+
+   O ÚLTIMO A NASCER fecha em 0,58 + 0,05 + 0,15 = 0,78 da travada. Subir
+   mais os `--quad-de` sem mexer de novo em PARTIU come a folga que sobra, e
+   sem ela o último mostrador ainda estaria acendendo quando o painel
+   arrancasse. */
 .page #recursos .quad .verb,
 .page #recursos .quad h3,
 .page #recursos .quad__lede {
   --de: var(--quad-de);
-  --dur: 0.12;
+  --dur: 0.15;
 }
 .page #recursos .quad__saida > * {
   --de: calc(var(--quad-de) + 0.05);
-  --dur: 0.12;
+  --dur: 0.15;
 }
 
 /* ============================================================

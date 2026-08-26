@@ -164,23 +164,37 @@
      entre os números do CALCULA aqui dentro. Subir os globais para clarear a
      moldura mexeria em coisa que ninguém pediu.
 
-     MEDIDO, com o fundo em preto puro (`.page` é #000):
-       trilho, antes 10% .......... 1,19:1  — some numa olhada rápida
-       moldura e marcas, antes 22%  1,72:1
-       trilho, agora 26% .......... 2,00:1
-       moldura e marcas, agora 34%  2,71:1
+     MEDIDO, com o fundo em preto puro (`.page` é #000), a régua inteira:
+       trilho, original 10% ....... 1,19:1  — some numa olhada rápida
+       moldura e marcas, original 22%  1,72:1
+       trilho, 2ª calibragem 26% .. 2,00:1
+       moldura e marcas, 2ª calibragem 34%  2,71:1
+       filete interno, 2ª calibragem 20%  1,60:1
+       trilho, HOJE 40% ........... 3,40:1
+       moldura e marcas, HOJE 52%   5,19:1
+       filete interno, HOJE 30% ... 2,33:1
 
-     O TRILHO SUBIU MAIS QUE OS OUTROS DOIS de propósito. Ele vinha de um
+     O TRILHO SUBIU MAIS QUE OS OUTROS DOIS na 2ª calibragem. Ele vinha de um
      token diferente e ficava uma parada inteira abaixo da moldura e das
      marcas — as três lêem como um instrumento só, e uma delas estava em
-     menos da metade do alfa das outras. Agora a distância entre eles é de
-     um degrau, não de um abismo.
+     menos da metade do alfa das outras. Aquela distância de um degrau (e não
+     de um abismo) é o que os três valores de hoje preservam: 0,30, 0,40 e
+     0,52 guardam a mesma proporção 1 : 1,33 : 1,73 dos 0,20, 0,26 e 0,34.
 
-     Parei antes de 3:1 nos dois. Acima disso o fio de 1px deixa de ler como
-     traço de instrumento e vira borda desenhada, que é justamente o que a
-     composição sem caixa não pode ter. */
-  --fio: rgba(248, 240, 255, 0.26);
-  --fio-forte: rgba(248, 240, 255, 0.34);
+     PASSARAM DE 3:1, e a versão anterior desta nota dizia para não passar.
+     Ela não estava errada — estava datada. O argumento era que "o fio de 1px
+     deixa de ler como traço de instrumento e vira borda desenhada", e ele
+     valia para 1px. Com o fio em 2px (ver `--espessura`) a linha já tem
+     corpo próprio, e o alfa deixou de ser a única coisa que a faz existir na
+     tela.
+
+     O CUIDADO DE VERDADE continua sendo o mesmo, só que agora com dois dials
+     em vez de um: espessura e alfa se somam na presença da linha. Subir os
+     dois juntos de novo é o que levaria a composição a ler como caixa —
+     exatamente o que ela não pode ser. Se um dia a espessura crescer mais,
+     estes alfas é que devem descer. */
+  --fio: rgba(248, 240, 255, 0.4);
+  --fio-forte: rgba(248, 240, 255, 0.52);
 
   /* ---- A ESPESSURA DAS LINHAS ----
      Um dial só para TODAS as linhas do console: moldura, trilho, os cinco
@@ -211,13 +225,18 @@
   /* Terceiro degrau, para o que é INTERNO a um instrumento: o divisor entre
      as duas linhas da calculadora, e o que mais vier. Fica abaixo do trilho
      de propósito — filete dentro de um painel não pode competir com a
-     estrutura que segura o painel. 20% dá 1,60:1, contra 2,00 do trilho e
-     2,71 da moldura: presente, e claramente subordinado.
+     estrutura que segura o painel. 30% dá 2,33:1, contra 3,40 do trilho e
+     5,19 da moldura: presente, e claramente subordinado.
+
+     SUBIU JUNTO com os outros dois (era 20%, 1,60:1) porque a hierarquia é
+     que importa, não o valor absoluto. Deixá-lo para trás enquanto a moldura
+     e o trilho clareavam repetiria exatamente o defeito que ele veio
+     consertar — ver o parágrafo seguinte.
 
      Substituiu o `--rule` global (10%, 1,19:1) que sobrara ali quando as
      outras três linhas subiram — o divisor tinha ficado visivelmente mais
      apagado que tudo à volta. */
-  --fio-fraco: rgba(248, 240, 255, 0.2);
+  --fio-fraco: rgba(248, 240, 255, 0.3);
 
   /* Altura do slot do artefato, agora com nome porque DUAS coisas a usam: o
      próprio slot e o conduíte que desce do trilho até o piso do painel. Se
