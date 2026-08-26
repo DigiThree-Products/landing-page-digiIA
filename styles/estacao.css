@@ -31,6 +31,28 @@
   initial-value: 1;
 }
 
+/* O RELÓGIO DA TRAVADA — 0 quando a estação acaba de atracar, 1 quando ela
+   começa a partir. Publicada pelo mesmo `onUpdate` que a `--chegada`, em
+   components/layout/Estacoes.tsx, onde está a nota longa do porquê.
+
+   Ela existe porque `--chegada` satura em 1 no instante da atracação e não
+   tem como descrever nada que aconteça DEPOIS dela. Quem precisa disso hoje
+   é o texto do #recursos, que fica escondido a viagem inteira e só nasce com
+   o painel já parado em 1:1.
+
+   Ao contrário da `--chegada`, é LINEAR: não tem `suave` embutido, então
+   `--de` e `--dur` são frações diretas da travada e cada bloco põe o próprio
+   freio no `--t`. A armadilha que o aviso em maiúsculas descreve para a
+   cascata da chegada — "`--dur` NÃO é a duração do bloco" — não vale aqui.
+
+   `initial-value: 1` pelo mesmo motivo da irmã: sem script, movimento
+   reduzido ou antes de o JS montar, o conteúdo tem de aparecer pronto. */
+@property --pousado {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 /* Um bloco de cada vez, na ordem da leitura: onde estamos, o que é, o
    que faz, e por último a demonstração.
 
@@ -660,6 +682,76 @@
     rotateX(calc(var(--resta) * var(--arfagem)));
 }
 
+/* ------------------------------------------------------------
+   O TEXTO NASCE COM A ESTAÇÃO JÁ PARADA
+
+   A seção continua SEM CASCATA NA CHEGADA — o bloco acima segue valendo
+   inteiro, e o painel continua chegando como corpo único. O que muda é que
+   o TEXTO não vem junto: ele fica invisível a viagem toda e só nasce depois
+   que a estação atraca, no relógio da travada (`--pousado`).
+
+   POR QUE NÃO DAVA PARA FAZER ISSO COM `--chegada`: ela satura em 1 no
+   instante da atracação, então "revelar depois de atracar" só poderia ser
+   escrito como "revelar no finzinho de --chegada" — ou seja, com o painel
+   ainda orbitando e ainda borrado, que é exatamente o que se quis evitar.
+   Daí o segundo relógio.
+
+   O QUE FICA VISÍVEL durante a chegada é o desenho do console — trilho,
+   conduítes, piso, moldura e o filete interno de cada instrumento — mais os
+   ARTEFATOS (calendário, peça, roteiro e calculadora). A estação chega
+   mostrando a máquina; as palavras entram quando dá para lê-las.
+
+   DOIS FILETES VÃO JUNTO COM O TEXTO, e é decisão, não descuido: o traço
+   antes do rótulo (`.tag::before`) e o filete acima de cada verbo
+   (`.verb::before`) são pseudo-elementos DELES, então herdam a opacidade de
+   quem os carrega. Não dá para separar sem duplicar os dois em elementos
+   próprios, e não vale: os dois são marcação da legenda, não estrutura do
+   painel. As linhas que desenham o console são outras — `.quads::before`,
+   `.quad::before`, `.quads::after`, `.quad__texto::after` e a moldura do
+   `.rec-layout` — e nenhuma delas é tocada aqui.
+
+   A ORDEM é a de leitura, de cima para baixo: o rótulo e o título ancoram a
+   seção, e só então os quatro instrumentos falam, da esquerda para a
+   direita — que é a ordem do dia do empresário documentada em
+   WhatItDoes.tsx (planeja, cria, roteiriza, calcula). Trocar a ordem aqui
+   desmonta aquele argumento.
+
+   TERMINA EM 0,62 DA TRAVADA de propósito. A travada inteira vale 0,40 tela
+   de rolagem (ver o orçamento do pin em Estacoes.tsx), então a cascata
+   consome ~0,25 tela e sobram ~0,15 com tudo montado e imóvel antes de a
+   estação começar a partir. Empurrar o fim para perto de 1 elimina essa
+   folga e o último quadrado ainda estaria nascendo quando o painel arranca.
+
+   Os `--de` são frações DIRETAS da travada, sem smoothstep global — ver a
+   nota do `@property --pousado`. Cada bloco tem o próprio freio no `--t`.
+   ------------------------------------------------------------ */
+.page #recursos .rec-head .tag,
+.page #recursos .rec-head h2,
+.page #recursos .quad .verb,
+.page #recursos .quad h3,
+.page #recursos .quad__lede {
+  /* Deslocamento pequeno porque aqui o painel JÁ ESTÁ em escala 1: estes
+     14px chegam à tela como 14px. Os 32 e 64px das outras estações são
+     grandes porque lá o gesto acontece com o palco ainda encolhido, e
+     precisa sobreviver à redução. */
+  --sobe: 14px;
+  --u: clamp(0, (var(--pousado) - var(--de, 0)) / var(--dur, 1), 1);
+  --t: calc(var(--u) * var(--u) * (3 - 2 * var(--u)));
+  opacity: var(--t);
+  transform: translate3d(0, calc((1 - var(--t)) * var(--sobe)), 0);
+}
+
+/* As janelas. Os quatro quadrados recebem a delas no PRÓPRIO quadrado, e
+   não em cada linha de texto: `--de` e `--dur` são herdáveis, então o verbo,
+   o título e o subtítulo de um quadrado leem o mesmo par e nascem como um
+   bloco só. Quatro eventos, não doze — a travada é curta demais para doze. */
+.page #recursos .rec-head .tag { --de: 0; --dur: 0.12; }
+.page #recursos .rec-head h2 { --de: 0.08; --dur: 0.14; }
+.page #recursos .quad--planeja { --de: 0.20; --dur: 0.12; }
+.page #recursos .quad--cria { --de: 0.30; --dur: 0.12; }
+.page #recursos .quad--roteiriza { --de: 0.40; --dur: 0.12; }
+.page #recursos .quad--calcula { --de: 0.50; --dur: 0.12; }
+
 /* ============================================================
    AS OUTRAS QUATRO ESTAÇÕES
 
@@ -812,10 +904,19 @@
   .page .approach-title,
   .page .approach-description,
   .page .approach-media,
-  /* O #recursos entra pelo INVÓLUCRO e não pelos blocos: lá não há cascata
-     para desligar, só o borrão de foco no `.rec-layout`. Quem pede menos
+  /* O #recursos entra pelo INVÓLUCRO — não há cascata de CHEGADA para
+     desligar, só o borrão de foco no `.rec-layout`. Quem pede menos
      movimento recebe o conteúdo nítido desde o começo da viagem. */
   .page #recursos .rec-layout,
+  /* O texto dele, porém, TEM uma revelação para desligar, e ela é a única
+     da página que roda no relógio da travada em vez do da chegada. Sem
+     estas cinco linhas, quem pede menos movimento ficaria com o texto
+     invisível — e não é "sem animação", é sem conteúdo. */
+  .page #recursos .rec-head .tag,
+  .page #recursos .rec-head h2,
+  .page #recursos .quad .verb,
+  .page #recursos .quad h3,
+  .page #recursos .quad__lede,
   .page #demo .demo-lado,
   .page #demo .demo-head .tag,
   .page #demo .demo-head h2,

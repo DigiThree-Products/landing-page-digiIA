@@ -384,6 +384,11 @@ export function Estacoes() {
          enquanto a estação ainda é um ponto, e saltaria para o começo da
          cascata no instante em que o pin engatasse. */
       el.style.setProperty('--chegada', '0')
+      /* Mesma razão do `--chegada` acima: o `@property` nasce em 1 para
+         quem não tem script, então sem zerar aqui o texto do #recursos
+         apareceria montado enquanto a estação ainda é um ponto no fundo —
+         que é justamente o que esconder o texto pretende evitar. */
+      el.style.setProperty('--pousado', '0')
 
       /* O vão do ATRASO precisa ser espaço de verdade no documento, não
          um deslocamento na condição de início do pin: o GSAP prende o
@@ -534,10 +539,38 @@ export function Estacoes() {
           const volta = -SOBE_VOLTA * (1 - perto)
           const sobe = ida + (volta - ida) * re.atual - SOBE_PASSAGEM * passagem
 
+          /* O SEGUNDO RELÓGIO: a travada, de 0 quando a estação acaba de
+             atracar a 1 quando ela começa a partir.
+
+             `--chegada` satura em 1 no fim da viagem (é `p / CHEGOU`
+             limitado), então ela não sabe dizer NADA sobre o que acontece
+             depois da atracação — para ela, atracar e começar a partir são
+             o mesmo instante. Uma coreografia que precise rodar com a
+             estação já parada em 1:1 não tem como se pendurar nela.
+
+             É o caso do texto do #recursos, que fica escondido durante a
+             chegada inteira e só nasce com o painel parado (ver
+             styles/estacao.css). Sem esta variável o único jeito seria
+             espremer a revelação no finzinho de `--chegada`, ou seja, com
+             o painel ainda orbitando — exatamente o que não se quer.
+
+             LINEAR de propósito, e é a diferença dela para `--chegada`.
+             Aquela leva um `suave` embutido, e é por isso que o arquivo de
+             estilo precisa avisar em maiúsculas que `--dur` não é duração:
+             o mesmo intervalo rende rolagens diferentes conforme onde cai
+             na faixa. Aqui não há curva global, então `--de` e `--dur` são
+             frações diretas da travada e cada bloco põe o próprio freio no
+             `--t`. Um relógio a menos para calibrar às cegas.
+
+             As OUTRAS estações também recebem a variável, porque o motor é
+             um só — nenhuma delas a lê hoje, e publicar não custa nada. */
+          const pousado = limita((p - CHEGOU) / (PARTIU - CHEGOU))
+
           el.style.transform = `translate3d(0, ${sobe.toFixed(3)}vh, 0) scale(${escala.toFixed(4)})`
           el.style.opacity = opacidade.toFixed(3)
           el.dataset.escala = String(escala)
           el.style.setProperty('--chegada', viagem.toFixed(4))
+          el.style.setProperty('--pousado', pousado.toFixed(4))
         },
       })
     })
@@ -551,6 +584,7 @@ export function Estacoes() {
         el.style.transform = ''
         el.style.opacity = ''
         el.style.removeProperty('--chegada')
+        el.style.removeProperty('--pousado')
         delete el.dataset.escala
       })
     }
