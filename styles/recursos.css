@@ -1928,20 +1928,25 @@
   border: var(--espessura) solid var(--fio-forte);
 
   /* ---- E O TOPO É ABERTO, DE 27/08 ----
-     A borda de cima saiu porque ela era a BASE DO TRIÂNGULO da antena: os dois
-     pés pousam nos cantos superiores do corpo, e era esta linha que ligava um ao
-     outro. Fechado, o triângulo lia como telhado — e como telhado apoiado num
-     muro, porque o trilho corre por trás dele de ponta a ponta do console.
+     HOJE A RAZÃO É O PINO: o mastro da antena desce por aqui e termina dentro do
+     barramento. Com tampa, ele bateria nela e a antena voltaria a ser uma peça
+     apoiada em cima em vez de encaixada — ver a nota do pino em GradeRecursos.
 
-     ELA NÃO ERA A ÚNICA LINHA ALI, e é isso que faz desta mudança um par e não
-     uma. Havia TRÊS horizontais coincidentes naquela faixa, medidas a 1536:
-     esta borda (y 257,6), o trilho da `.rec-grade` (261,9) e o `.quads::before`,
-     que é o trilho do console de verdade (261,9). Apagar só esta, com o corpo
-     colado no trilho, não mudaria NADA na tela — os outros dois refechariam a
-     base 4px abaixo. Por isso `--corpo-acima` subiu junto.
+     A RAZÃO ORIGINAL FOI OUTRA, e vale registrar porque explica o número do
+     `--corpo-acima` logo abaixo. A borda de cima era a BASE DO TRIÂNGULO que os
+     dois pés da antena formavam ao pousar nos cantos do corpo; fechado, aquilo
+     lia como telhado — e como telhado sobre um muro, porque o trilho corria por
+     trás dele de ponta a ponta do console.
 
-     Aberto, o que se vê é o que a peça é: duas pernas em Λ descendo do mastro e
-     virando as paredes do barramento, com o trilho do console passando atrás. */
+     E ELA NÃO ERA A ÚNICA LINHA ALI. Havia TRÊS horizontais coincidentes na
+     faixa, medidas a 1536: esta borda (y 257,6), o trilho da `.rec-grade`
+     (261,9) e o `.quads::before`, que é o trilho do console (261,9). Apagar só
+     esta, com o corpo colado no trilho, não mudaria NADA na tela — os outros
+     dois refechariam a base 4px abaixo. Por isso `--corpo-acima` subiu junto, e
+     por isso o trilho ganhou o corte que hoje o faz parar nas paredes.
+
+     Os pés saíram depois, e não por desenho: eles não conseguiam continuar
+     pousados entre janelas. O topo aberto sobreviveu aos dois motivos. */
   border-top: 0;
 
   /* ---- ELE SAI DA CAIXA POR CIMA E POR BAIXO, E EM MEDIDAS DIFERENTES ----
@@ -1963,7 +1968,7 @@
      `--g-base` = 0) e a faixa até a cantoneira de baixo está vazia. 0,62 dá ao
      rabo do corpo a massa que a referência tem ali sem encostar na moldura.
 
-     0,30 EM CIMA É O QUE ABRE O TRIÂNGULO. Era 0,09 — o menor valor que ainda
+     0,30 EM CIMA É O QUE SEPARA O CORPO DO TRILHO. Era 0,09 — o menor valor que ainda
      deixava o topo do corpo aparecer acima do trilho —, e era pequeno de
      propósito, porque cada ponto aqui é largura que o prato perde: a antena é
      dimensionada pelo que sobra da faixa e a largura dela sai da altura pela
@@ -1971,17 +1976,20 @@
 
      O QUE AQUELE MÍNIMO NÃO PREVIA É QUE 4px NÃO SEPARAM. Medido a 1536: borda
      do corpo em 257,6 e trilho em 261,9 — na tela, uma linha só. O corpo não
-     atravessava a viga, parecia nascer dela, e a base do triângulo da antena
-     continuaria fechada mesmo depois de a borda de topo sair (ver a nota do
-     `border-top` acima). Com 0,30 são ~15,7px a 1536, e o trilho passa atrás,
-     legível como o que é.
+     atravessava a viga, parecia nascer dela. Com 0,30 são ~15,7px a 1536, e a
+     travessia se vê. (Havia um segundo motivo, hoje histórico: era isso que
+     abria a base do triângulo dos pés da antena. Os pés saíram; a separação
+     continua valendo pelo primeiro motivo, sozinho.)
 
      O PRATO PAGA MENOS DO QUE PARECE, e a conta explica por quê. O topo da
      antena é `trilho − 1,06·céu + 0,06·--corpo-acima`: subir o corpo empurra a
      antena para cima e encolhe a altura dela na MESMA medida, então a ponta fica
      onde estava — 11px a menos de altura movem o topo em 0,7px. Quem paga é a
-     LARGURA do prato, que sai da altura pela razão do `viewBox`; e é ela que
-     obriga a refazer o x dos pés (ver GradeRecursos.tsx, que traz a fórmula).
+     LARGURA do prato, que sai da altura pela razão do `viewBox`.
+
+     ISSO CUSTAVA MAIS QUANDO A ANTENA TINHA PÉS: mexer aqui mudava a largura
+     dela e desalinhava os pés das paredes do corpo. Não custa mais — o pino
+     desce pelo eixo e não depende da largura de nada.
 
      E 1,40 EMBAIXO ATRAVESSA O BRAÇO DE BAIXO, pela mesma razão que a antena
      atravessa o de cima: a moldura são cantos, e o meio da base está tão aberto

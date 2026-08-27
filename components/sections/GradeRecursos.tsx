@@ -368,10 +368,32 @@ export function GradeRecursos() {
           {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
               ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
           <ellipse cx="95" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
-          {/* O mastro ATRAVESSA a tigela, do alto até o pé — é uma peça só, e
-              desenhá-lo em dois pedaços (acima e abaixo do prato) deixaria uma
-              junta visível bem no vértice da concha. */}
-          <line x1="95" y1="100" x2="95" y2="11" />
+          {/* ---- O PINO CENTRAL ----
+              Uma peça só, do alto até dentro do barramento. Desenhá-lo em
+              pedaços (acima e abaixo do prato) deixaria uma junta visível bem no
+              vértice da concha.
+
+              ELE PASSA DE 118, QUE É A ALTURA DO `viewBox`, E ISSO É DE
+              PROPÓSITO. A caixa do SVG termina no topo do barramento
+              (`bottom: 100%`), então tudo que se desenha além de 118 cai DENTRO
+              do corpo — é `overflow: visible` que deixa, o mesmo que já existia
+              para o aro não ser cortado nas laterais.
+
+              É assim que a antena se prende desde 27/08. Antes ela se apoiava em
+              dois pés que pousavam nas paredes do corpo, e aquilo não tinha
+              conserto por número: a largura da antena sai do CÉU MEDIDO e a
+              largura do corpo sai da LARGURA DO CONTAINER — duas entradas
+              independentes, então qualquer x fixo acerta em uma janela só.
+              Medido: os pés fechavam a 0,14px em 1536×695 e a 7,16px em
+              1536×639, sem uma linha de código mudar entre as duas. O pino não
+              tem esse problema porque não precisa encontrar nada: ele desce pelo
+              eixo, que é o mesmo do corpo por construção.
+
+              A PROFUNDIDADE ACOMPANHA A ANTENA, não o corpo: 62 unidades de
+              `viewBox` valem 62 × (altura da antena ÷ 118) em pixels, então o
+              pino encolhe junto com o prato quando a janela baixa. É o que se
+              quer — pino e prato são a mesma peça. */}
+          <line x1="95" y1="180" x2="95" y2="11" />
           {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
               O aro é o prato visto de viés; a concha é o que o faz ler como
               parábola em vez de anel. Mas os dois começam no MESMO par de
@@ -388,42 +410,27 @@ export function GradeRecursos() {
                 B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
           <ellipse cx="95" cy="34" rx="92" ry="10" />
           <path d="M3 34 Q95 86 187 34" />
-          {/* Os dois pés saem do PÉ DO MASTRO, e não do vértice da concha como
-              antes: com o mastro longo, sair da concha os faria abrir num
-              ângulo raso e a peça leria como tripé, não como antena sobre um
-              barramento.
+          {/* ---- E NÃO HÁ PÉS. O QUE ESTAVA AQUI, E POR QUE NÃO VOLTA ----
+              Dois `<line>` saindo do pé do mastro e pousando nas paredes do
+              barramento. Eles funcionavam, e não eram feios; o que não dava era
+              MANTÊ-LOS POUSADOS.
 
-              ELES POUSAM NAS PAREDES DO CORPO — e desde 27/08 essas paredes são
-              o fim do desenho. A borda de topo do barramento saiu (ver
-              `border-top` em recursos.css) e o triângulo ficou ABERTO: duas
-              pernas em Λ que descem do mastro e viram as paredes, com o trilho
-              do console passando atrás. Fechado, ele lia como telhado.
+              Para um pé encontrar uma parede, a largura da antena e a largura do
+              corpo têm de guardar uma razão fixa. Elas não guardam: a da antena
+              sai da altura, que sai do CÉU MEDIDO; a do corpo sai da LARGURA DO
+              CONTAINER. São duas entradas independentes, então qualquer x escrito
+              no `viewBox` está certo em exatamente uma janela.
 
-              O X SAI DE FÓRMULA, e ela fica escrita aqui porque já apodreceu uma
-              vez — a versão anterior desta nota citava antena 231px, corpo 57 e
-              `viewBox` 170, e nenhum dos três ainda valia:
+              Isso ficou medido, e é a razão de a nota ser longa: os pés fechavam
+              a 0,14px em 1536×695 e, sem uma linha de código mudar entre as duas
+              medições, a 7,16px em 1536×639 — pendurados no ar sobre o topo
+              aberto do corpo. Uma versão anterior desta nota já tinha apodrecido
+              do mesmo jeito, citando antena 231px, corpo 57 e `viewBox` 170,
+              nenhum dos três ainda válido.
 
-                x = 95 ± (B / 2) · 190 / A
-
-              com B a largura PINTADA do barramento, A a da antena e 190 a
-              largura do `viewBox`. A 1536px isso é B = 100 e A = 253,3, que dá
-              57,5 e 132,5.
-
-              QUALQUER MUDANÇA NA ALTURA DA ANTENA CAI AQUI. A largura A sai da
-              altura pela razão do `viewBox`, e a altura sai de
-              `--g-ceu − --corpo-acima`. Foi exatamente o que aconteceu ao abrir
-              a base: `--corpo-acima` foi de 0,09 para 0,30 da folga, a antena
-              encolheu 11px, A caiu de 271 para 253 — e os pés antigos (60 e 130)
-              passariam a pousar 3,4px DENTRO das paredes. Número velho aqui não
-              quebra nada visivelmente: continua desenhando um triângulo, só que
-              pendurado. Por isso a fórmula, e não só o resultado.
-
-              E A RAZÃO A/B NÃO É CONSTANTE ENTRE JANELAS: A depende do céu
-              medido (que encolhe quando o H2 quebra em duas linhas) e B da
-              largura do container. A fórmula fecha na janela em que se mede —
-              conferir nas pontas antes de dar por bom. */}
-          <line x1="91" y1="100" x2="57.5" y2="118" />
-          <line x1="99" y1="100" x2="132.5" y2="118" />
+              A saída não foi um número melhor nem uma fórmula: foi tirar a
+              dependência. O pino desce pelo EIXO, que coincide com o do corpo por
+              construção, e não precisa encontrar coisa nenhuma. */}
         </svg>
       </div>
     </div>
