@@ -147,6 +147,29 @@
   --acende: clamp(0, (var(--expande) - 0.72) / 0.16, 1);
   --linhas: calc(var(--acende) * var(--acende) * (3 - 2 * var(--acende)));
 
+  /* ---- AS DUAS ESCALAS DA DOBRA ----
+     O satélite dobra nos DOIS eixos, e a razão de dobrar na vertical também
+     é de proporção: a altura da grade é fixa em ~380px (o console tem texto
+     e artefato dentro), então uma dobra só na horizontal deixa cada célula
+     em 91×190 — ripa em pé, quando painel solar é o contrário. Com as duas,
+     a célula dobrada sai quadrada e a silhueta vira a da referência: baixa e
+     larga, com o corpo saindo por cima e por baixo.
+
+     ELAS MORAM AQUI e não na `.rec-grade`, embora seja ela quem as aplica.
+     As cantoneiras precisam da vertical para saber onde o satélite dobrado
+     realmente está, e o `::before` que as desenha é filho do `.rec-layout`,
+     não da grade — custom property desce, não sobe.
+
+     `--g-min` e `--g-min-y` são publicados pelo componente. Os defaults de 1
+     mantêm as regras válidas no primeiro quadro e nas outras cinco estações,
+     onde grade nenhuma existe. */
+  --g-s: calc(var(--g-min, 1) + (1 - var(--g-min, 1)) * var(--expande));
+  --g-sy: calc(var(--g-min-y, 1) + (1 - var(--g-min-y, 1)) * var(--expande));
+  /* A altura de layout da grade, do trilho ao piso mais baixo — a mesma
+     expressão que dá a `height` dela. As cantoneiras a usam para descontar o
+     que o `scaleY` recolhe. */
+  --g-alto: calc(var(--folga) + var(--g-piso, 0px));
+
   /* Distância da moldura ao conteúdo, travada e aberta. A diferença é o
      quanto ela "se recolhe" ao atracar.
 
@@ -192,6 +215,38 @@
      a relação que a nota do trilho já pedia: as marcas e o vão TÊM de sair do
      mesmo número. */
   --vao: clamp(26px, 2.8vw, 44px);
+
+  /* ---- A BAIA DO CORPO ----
+     A largura do corpo do satélite entre as paredes, e o único dial da peça:
+     mexer aqui move a fileira, a grade dobrada e as duas paredes juntas,
+     porque as três leem este mesmo token.
+
+     ELA SAI DA LARGURA DAS COLUNAS, 1 para 1. A fileira tem largura fixa
+     (`--world-max`), então cada pixel de baia é um pixel a menos dividido
+     entre os quatro instrumentos. E há um TETO MEDIDO para isso, que não é
+     de gosto:
+
+     "Carrossel", no calendário do PLANEJA, tem 59px numa célula de 55,8px —
+     ele JÁ transborda hoje, e o que salva é o `gap` de 8px do calendário: a
+     sobra cai dentro do vão e não encosta na palavra seguinte. A colisão
+     começa quando `célula + gap` fica menor que os 59px, ou seja quando a
+     coluna desce de 228px. Medido a 1920px:
+
+       coluna 247 (hoje) ..... sobra 4,8px  — não encosta
+       coluna 236 (esta baia)  sobra 2,1px  — não encosta
+       coluna 228 ............ sobra 0,0px  — o limite
+       coluna 210 ............ colide 4,6px — "CarrosselReels"
+
+     Com `--vao` a coluna fica em 236,25px e a baia em 44px. O teto sem mexer
+     no calendário é ~77px; passar dele exige o calendário em três colunas
+     (a nota dele explica por que não dá para descer de 11px).
+
+     O CORPO NÃO PRECISA SER LARGO PARA LER, e é isso que faz 44px bastar: só
+     o trecho que atravessa o array é estreito. A cabeça, a base, o mastro e
+     a parabólica moram nas faixas acima e abaixo, que estão livres, e são
+     eles que dão o volume. Barramento fino com módulos largos é silhueta de
+     satélite, não concessão. */
+  --corpo-larg: var(--vao);
 
   /* ---- A COR DAS TRÊS LINHAS ----
      Tokens PRÓPRIOS da seção, e não os globais `--rule`/`--rule-hi`. A razão
@@ -321,25 +376,35 @@
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  /* ---- ELAS ABRAÇAM O QUADRADO E ABREM COM ELE ----
+  /* ---- ELAS ABRAÇAM O SATÉLITE E ABREM COM ELE ----
      O recuo de sempre (a folga, mais a `--abertura` que se recolhe ao
      atracar) continua valendo em todos os lados. O que entra por cima é o
-     quanto elas precisam FECHAR enquanto a grade ainda está comprimida, para
-     emoldurar o quadrado em vez do console que ainda não existe.
+     quanto elas precisam FECHAR enquanto a grade ainda está dobrada, para
+     emoldurar o satélite em vez do console que ainda não existe.
 
-     Na horizontal a conta sai de graça: a grade encolhe por `scaleX` a partir
-     do centro, então cada lado sobra `(1 − escala) × 50%`. Na vertical não há
-     escala nenhuma — a grade sempre teve a altura final —, mas o `.rec-layout`
-     é mais ALTO que ela, porque inclui a faixa do cabeçalho. `--g-topo` e
-     `--g-base` são essa diferença, medidas no componente.
+     A grade dobra nos DOIS eixos, e cada um cobra uma conta diferente.
 
-     Tudo multiplicado por `1 − --expande`, que zera quando a abertura termina:
-     daí para a frente a regra é exatamente a de antes desta mudança. */
+     NA HORIZONTAL sai de graça: a grade encolhe por `scaleX` a partir do
+     próprio centro e é tão larga quanto o `.rec-layout`, então cada lado
+     sobra `(1 − escala) × 50%`.
+
+     NA VERTICAL são duas coisas somadas. O `.rec-layout` é mais ALTO que a
+     grade, porque inclui a faixa do cabeçalho — `--g-topo` e `--g-base` são
+     essa diferença, medidas no componente. E o `scaleY` recolhe a grade em
+     torno do centro DELA, então o topo ainda desce e a base ainda sobe por
+     meia altura de sobra cada. Sem esse segundo termo as cantoneiras ficam
+     ~99px folgadas em cima e embaixo enquanto o satélite está dobrado
+     (medido a 1920px: grade de 380px de altura, dobra em 0,48).
+
+     Os termos do `--fecha` zeram quando a abertura termina; o do `--g-sy`
+     zera sozinho, porque a escala chega a 1. Daí para a frente a regra é
+     exatamente a de antes desta mudança. */
   --recuo: calc(var(--folga) + (1 - var(--trava)) * var(--abertura));
   --fecha: calc(1 - var(--expande));
+  --g-desce: calc(var(--g-alto) * (1 - var(--g-sy)) / 2);
   inset-inline: calc((1 - var(--g-min, 1)) * 50% * var(--fecha) - var(--recuo));
-  inset-block-start: calc(var(--g-topo, 0px) * var(--fecha) - var(--recuo));
-  inset-block-end: calc(var(--g-base, 0px) * var(--fecha) - var(--recuo));
+  inset-block-start: calc(var(--g-topo, 0px) * var(--fecha) + var(--g-desce) - var(--recuo));
+  inset-block-end: calc(var(--g-base, 0px) * var(--fecha) + var(--g-desce) - var(--recuo));
   opacity: var(--trava);
   background:
     linear-gradient(var(--fio-forte), var(--fio-forte)) 0 0 / var(--canto) var(--espessura) no-repeat,
@@ -455,7 +520,22 @@
   width: 100%;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* ---- DOIS INSTRUMENTOS DE CADA LADO, COM A BAIA NO MEIO ----
+     A quinta pista é VAZIA: ela não recebe card nenhum, só abre o vão onde o
+     corpo do satélite mora. Com `--corpo-larg` valendo um `--vao` ela mede
+     zero, e o que separa CRIA de ROTEIRIZA passam a ser dois vãos em vez de
+     um — a baia entre as paredes é a diferença.
+
+     Por que uma pista vazia e não um `gap` maior no meio: `column-gap` é um
+     valor só para todos os vãos, e a fileira precisa de três vãos iguais e
+     um diferente. A pista é a única forma de pedir isso ao grid.
+
+     As duas primeiras se posicionam sozinhas nas pistas 1 e 2; as outras
+     duas precisam ser mandadas para a 4 e a 5, senão caem na pista vazia. */
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr))
+    calc(var(--corpo-larg) - var(--vao))
+    repeat(2, minmax(0, 1fr));
 
   /* O vão ganhou nome porque deixou de ser só o `gap`: as cinco marcas do
      trilho saem dele (meio vão para fora de cada borda de coluna). Os dois
@@ -464,6 +544,38 @@
   /* A DECLARAÇÃO SUBIU para o `.rec-layout` — ver a nota lá. Aqui ficou só o
      uso, que continua sendo quem define o vão de verdade da fileira. */
   gap: var(--vao);
+}
+
+/* Os dois da direita pulam a pista da baia. Pelo modificador e não por
+   `nth-child`, porque a ordem no DOM é conteúdo e a posição é layout: se um
+   instrumento for reordenado em content/landing.ts, o que tem de continuar
+   verdade é "ROTEIRIZA e CALCULA ficam à direita do corpo". */
+.page #recursos .quad--roteiriza {
+  grid-column: 4;
+}
+.page #recursos .quad--calcula {
+  grid-column: 5;
+}
+
+/* ---- A PAREDE ESQUERDA DA BAIA ----
+   As outras quatro linhas verticais saem de graça: cada `.quad::before` é o
+   conduíte do seu card, e o do ROTEIRIZA já cai exatamente na parede DIREITA
+   do corpo, meio vão à esquerda dele. Falta só a de cá, que não é o começo
+   de card nenhum — é o fim do CRIA.
+
+   Mesma geometria do conduíte espelhada, e mesmo desconto de espessura do
+   `.quads::after`: o `right` negativo tira meio vão e mais a largura da
+   própria linha, para ela ficar rente ao meio do vão e não meia espessura
+   depois dele. */
+.page #recursos .quad--cria::after {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--folga));
+  right: calc(-1 * var(--vao) / 2 - var(--espessura));
+  width: var(--espessura);
+  height: calc(var(--folga) + 100%);
+  background: var(--fio-forte);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 
 /* JÁ FOI TENTADO E VOLTOU ATRÁS: um recuo de 20px no conteúdo da fileira,
@@ -1183,6 +1295,26 @@
   .page #recursos .rec-layout {
     display: block;
   }
+
+  /* ---- O SATÉLITE É DESKTOP ----
+     A camada inteira sai, e agora isso PRECISA ser dito. Antes ela se
+     apagava sozinha aqui: `--expande` nasce saturada em 1 no celular, e a
+     opacidade da camada morria com o `--g-sai`. Desde que o corpo deixou de
+     sair na troca, ele sobreviveria àquele apagamento e apareceria em cima
+     do carrossel — uma baia de 44px atravessando slides que não têm baia.
+
+     Fora que não há o que dobrar aqui: a estação é mais alta que larga e as
+     três razões saturam em 1 (ver GradeRecursos.tsx). */
+  .page #recursos .rec-grade {
+    display: none;
+  }
+  /* E os dois da direita voltam a se posicionar sozinhos: sem a pista da
+     baia, mandá-los para as pistas 4 e 5 os jogaria para fora de um grid que
+     agora tem uma coluna só. */
+  .page #recursos .quad--roteiriza,
+  .page #recursos .quad--calcula {
+    grid-column: auto;
+  }
   /* A MOLDURA, O TRILHO E AS MARCAS SÃO TRATAMENTO DE DESKTOP, por ora.
      No celular a fileira vira carrossel: o trilho rolaria junto com os
      slides e as marcas sairiam da tela com eles, e uma moldura em volta de
@@ -1193,6 +1325,9 @@
   .page #recursos .quads::before,
   .page #recursos .quads::after,
   .page #recursos .quad::before,
+  /* A parede esquerda da baia vai junto com o resto da estrutura, pelo mesmo
+     motivo: no carrossel não há baia — a fileira volta a ser uma coluna só. */
+  .page #recursos .quad--cria::after,
   /* O piso do painel vai junto com o conduíte: ele existe para FECHAR o
      conduíte por baixo e para alinhar os quatro slots. No carrossel não há
      conduíte para fechar e o slot solta a altura travada (`min-height: 0`,
@@ -1380,16 +1515,16 @@
 }
 
 /* ============================================================
-   A GRADE QUE CHEGA COMO QUADRADO
+   O SATÉLITE — a grade dobrada duas colunas de cada lado
 
    Desenha a MESMA grade de oito células que o console — cinco conduítes, o
    trilho, quatro filetes e quatro pisos — só que numa camada própria, que
-   pode ser comprimida na horizontal. As linhas do console não podem: cada
-   uma é um pseudo-elemento preso ao seu quadrado no fluxo.
+   pode ser dobrada ao meio. As linhas do console não podem: cada uma é um
+   pseudo-elemento preso ao seu quadrado no fluxo.
 
-   O porquê de cada decisão (as três medidas publicadas por JS, o `scaleX` em
-   vez de largura, a contra-escala das verticais) está no docblock de
-   components/sections/GradeRecursos.tsx.
+   O porquê de cada decisão (os dois grupos em vez de doze deslocamentos, o
+   conduíte do meio que aparece duas vezes, o `scaleX` em vez de largura)
+   está no docblock de components/sections/GradeRecursos.tsx.
 
    AS COORDENADAS SÃO AS DO CONSOLE, e é isso que faz a troca ser invisível.
    A grade é meio vão mais larga que a fileira dos dois lados, porque vai do
@@ -1411,22 +1546,119 @@
   top: var(--g-topo, 0px);
   height: calc(var(--folga) + var(--g-piso, 0px));
 
-  /* A escala do momento: `--g-min` no começo (quadrado) e 1 no fim (console).
-     Vive aqui, e não em cada filho, porque as verticais precisam dela para
-     desfazê-la. */
-  --g-s: calc(var(--g-min, 1) + (1 - var(--g-min, 1)) * var(--expande));
-  transform: scaleX(var(--g-s));
+  /* A DOBRA, NOS DOIS EIXOS. `--g-s` e `--g-sy` vêm do `.rec-layout` — a nota
+     de lá explica por que moram no pai e não aqui.
+
+     Origem no centro nos dois eixos (o padrão): é isso que deixa o satélite
+     dobrado centrado no lugar exato onde o console vai nascer, em vez de o
+     fazer crescer a partir de um canto. O preço é que o topo da grade desce
+     enquanto ela está dobrada, e as cantoneiras têm de descontar isso — ver
+     `--g-desce` em `.rec-layout::before`. */
+  transform: scaleX(var(--g-s)) scaleY(var(--g-sy));
+
+  /* ---- A DOBRA DAS DUAS ASAS ----
+     De `--asa-min` (dobrado) a 1 (implantado). Cada asa escala em torno da
+     própria borda de fora, então a aresta interna da esquerda cai em
+     `0,5G × a` e a da direita em `G − 0,5G × a`: cada asa fica com `0,5aG` e
+     o corpo com `G(1 − a)`.
+
+     O VALOR VEM DO COMPONENTE, e não está escrito aqui, porque a largura do
+     corpo e a dobra vertical saem dele também — três lugares lendo o mesmo
+     número. A justificativa do 0,72 está em `DOBRA_ASA`, e o default de 1
+     mantém a regra válida nas outras cinco estações e no celular, onde asa
+     nenhuma dobra. */
+  --asa-s: calc(var(--asa-min, 1) + (1 - var(--asa-min, 1)) * var(--expande));
+
+  /* ---- O SATÉLITE APARECE ANTES DO RESTO DO CONSOLE ----
+     Todo o resto desta seção — as cantoneiras, o trilho de verdade, os
+     conduítes, os filetes — nasce no relógio da atracação (`--trava`), que
+     só começa a andar aos 0,78 da chegada. Faz sentido para o console: ele
+     é o que ATRACA.
+
+     Para o satélite, não. A meia volta que ele dá em torno da página começa
+     aos 0,46 da chegada (ver `--orbe` em styles/estacao.css), e com
+     `--trava` ele só apareceria depois de já ter percorrido três quintos
+     dela — um satélite invisível durante a própria órbita, materializando-se
+     em cima da atracação. Ele tem relógio próprio, mais cedo, e é o único
+     elemento da seção que tem.
+
+     0,30 a 0,55 põe o satélite inteiro no ar antes de a órbita chegar ao
+     meio, com o palco ainda a ~30% do tamanho final: ele entra pequeno e
+     longe, que é como convém. Não mexe em `--trava`, então as cantoneiras e
+     as linhas de verdade continuam exatamente onde estavam.
+
+     NAS OUTRAS CINCO ESTAÇÕES E NO CELULAR isto não muda nada: `--expande`
+     nasce saturada em 1 lá, então `--g-sai` também, e a camada fica em
+     opacidade zero o tempo todo — como antes. */
+  --g-vem: clamp(0, (var(--chegada) - 0.3) / 0.25, 1);
+  --g-entra: calc(var(--g-vem) * var(--g-vem) * (3 - 2 * var(--g-vem)));
 
   /* Sai DEPOIS de as linhas de verdade entrarem — ver `--linhas` lá em cima.
-     Enquanto isso acompanha a atracação, como todo o resto do console. */
+     A SOBREPOSIÇÃO É DE PROPÓSITO: as linhas reais entram entre 0,72 e 0,88
+     da implantação e esta camada só começa a sair em 0,88. Fosse um
+     cruzamento simétrico, o ponto do meio teria as duas a meia opacidade e a
+     grade inteira piscaria mais fraca por um instante. */
   --g-sai: clamp(0, (var(--expande) - 0.88) / 0.12, 1);
-  opacity: calc(var(--trava) * (1 - var(--g-sai) * var(--g-sai) * (3 - 2 * var(--g-sai))));
+  --g-troca: calc(1 - var(--g-sai) * var(--g-sai) * (3 - 2 * var(--g-sai)));
+
+  /* A CAMADA NÃO SOME MAIS POR INTEIRO, e é isto que faz o satélite ser o
+     estado da seção em vez de uma fantasia da entrada.
+
+     Quem sai é só o que tem substituto: as asas e o trilho existem em dobro
+     durante a troca, e é o par de baixo — o console de verdade — que fica. O
+     corpo não tem substituto nenhum; se ele saísse junto, a peça terminaria
+     como o console de sempre e o satélite teria durado só a chegada.
+
+     Daí o `--g-troca` viver como token e ser aplicado peça a peça, e não
+     aqui. */
+  opacity: var(--g-entra);
 }
 
-/* A coluna e o passo entre conduítes, escritos uma vez só. */
+/* As duas grades são a mesma nos últimos quadros; some esta e ficam as
+   linhas de verdade, sem salto. */
+.page #recursos .rec-grade__asa,
+.page #recursos .rec-grade__h--trilho {
+  opacity: var(--g-troca);
+}
+
+/* A coluna e o passo entre conduítes, escritos uma vez só.
+
+   A BAIA ENTRA NA CONTA DA COLUNA. Escrevendo `G` para a largura da grade,
+   ela cobre quatro colunas, quatro vãos e a baia — `G = 4c + 4·vão + baia` —,
+   e é daí que sai o `c` abaixo. Com a baia valendo um vão a expressão
+   devolve os mesmos 236,25px que o grid da fileira dá às colunas, que é a
+   condição para a grade e o console coincidirem no fim. */
 .page #recursos .rec-grade {
-  --g-col: calc((100% - 4 * var(--vao)) / 4);
+  --g-col: calc((100% - var(--corpo-larg) - 4 * var(--vao)) / 4);
   --g-passo: calc(var(--g-col) + var(--vao));
+}
+
+/* ---- AS DUAS ASAS ----
+   Cada uma cobre a grade inteira (`inset: 0`) e escala em torno da própria
+   borda de fora. É a ORIGEM que faz a dobra: a borda de fora fica parada —
+   o conduíte 0 e o 4 nunca saem do lugar, dobrados ou implantados — e tudo
+   o mais recolhe na direção dela.
+
+   Escalar o GRUPO, e não cada linha, é o que encurta as horizontais junto
+   sem uma segunda conta para a largura de cada segmento: célula dobrada é
+   célula mais estreita, e a escala já faz isso. */
+.page #recursos .rec-grade__asa {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(var(--asa-s));
+}
+/* O DESLOCAMENTO DA ASA DIREITA é a baia. Os conduítes de cada asa guardam
+   entre si o passo de sempre (coluna + vão); o que separa as duas asas é a
+   largura do corpo, e ela entra uma vez só, como offset de tudo que mora na
+   asa de lá. Sem isto os conduítes 3 e 4 pousariam uma baia à esquerda dos
+   do console. */
+.page #recursos .rec-grade__asa--esq {
+  transform-origin: left center;
+  --g-off: 0px;
+}
+.page #recursos .rec-grade__asa--dir {
+  transform-origin: right center;
+  --g-off: var(--corpo-larg);
 }
 
 .page #recursos .rec-grade__v,
@@ -1435,22 +1667,42 @@
   background: var(--fio-forte);
 }
 
-/* Os cinco conduítes. A contra-escala é o que salva a espessura: sem ela os
-   2px chegariam à tela como 0,6px enquanto a grade está comprimida. */
+/* Os conduítes. A contra-escala desfaz AS DUAS escalas que os afetam — a da
+   camada e a da própria asa — em torno do próprio centro: a posição dobra,
+   a espessura não. Sem ela os 2px chegariam à tela como fio de cabelo
+   enquanto o satélite está dobrado, porque `--g-min` e `--asa-s` se
+   multiplicam.
+
+   Duas divisões encadeadas e não `1 / (a * b)`: dividir por um produto entre
+   parênteses é válido no `calc` de hoje, mas a forma encadeada nunca
+   dependeu disso. */
 .page #recursos .rec-grade__v {
   top: 0;
   bottom: 0;
   width: var(--espessura);
-  left: calc(var(--k) * var(--g-passo));
-  transform: scaleX(calc(1 / var(--g-s)));
+  left: calc(var(--k) * var(--g-passo) + var(--g-off, 0px));
+  transform: scaleX(calc(1 / var(--g-s) / var(--asa-s)));
+}
+
+/* As horizontais são o espelho das verticais: `scaleX` mexe no comprimento
+   delas, que é o que se quer, mas `scaleY` achataria a espessura. Daí a
+   contra-escala em Y — e só em Y. */
+.page #recursos .rec-grade__h,
+.page #recursos .rec-grade__seg,
+.page #recursos .rec-grade__cinturao {
+  transform: scaleY(calc(1 / var(--g-sy)));
 }
 
 .page #recursos .rec-grade__h {
   height: var(--espessura);
 }
 
-/* O trilho é a única horizontal contínua: ele atravessa a fileira inteira,
-   de conduíte a conduíte. */
+/* O TRILHO É A VIGA, e fica FORA das duas asas — é filho direto da camada.
+   Ele é a única horizontal contínua do console (atravessa a fileira inteira,
+   de conduíte a conduíte), então não pode ser dobrado em duas sem virar dois
+   segmentos no instante da troca. Deixá-lo inteiro por cima das asas
+   transforma a limitação na peça certa: enquanto dobrado, é ele que
+   atravessa o satélite de ponta a ponta e sustenta as duas asas. */
 .page #recursos .rec-grade__h--trilho {
   top: 0;
   left: 0;
@@ -1466,7 +1718,7 @@
 .page #recursos .rec-grade__seg {
   position: absolute;
   height: var(--espessura);
-  left: calc(var(--k) * var(--g-passo));
+  left: calc(var(--k) * var(--g-passo) + var(--g-off, 0px));
   width: calc(var(--vao) / 2 + var(--g-col));
 }
 /* O último fecha no quinto conduíte, e não na borda da coluna — mesma regra
@@ -1484,6 +1736,290 @@
 .page #recursos .rec-grade__seg--piso {
   top: calc(var(--folga) + var(--g-y, 0px) - var(--espessura));
   background: var(--fio);
+}
+
+/* ============================================================
+   O CORPO DO SATÉLITE
+
+   Só o que as asas não dão. As paredes laterais dele SÃO as arestas internas
+   das duas asas; desenhá-las aqui de novo dobraria o alfa das duas linhas
+   mais visíveis da peça. O que é do corpo é a cabeça acima do trilho, a base
+   abaixo do piso, o cinturão, o mastro e a parabólica.
+   ============================================================ */
+.page #recursos .rec-grade__corpo {
+  position: absolute;
+  /* ---- AS PAREDES SÃO AS ARESTAS INTERNAS DAS ASAS, SEMPRE ----
+     Cada asa leva três conduítes e escala em torno da borda de fora, então a
+     aresta interna da esquerda mora em `2·passo·a` e a da direita em
+     `G − 2·passo·a`. Escrever os dois recuos assim faz a caixa deste elemento
+     ser o vão entre elas em TODO instante — não uma curva calibrada para
+     parecer que acompanha, a mesma conta.
+
+     E é isso que dispensa o `scaleX` que estava aqui: o obturador sai de
+     graça do próprio `left`/`right`. De quebra, a cabeça, a base, o mastro e
+     a parabólica deixam de ser esticados e cisalhados junto — o corpo
+     estreita e a ferragem dele guarda a forma, que é como uma coisa que se
+     fecha se comporta.
+
+     No fim (`a = 1`) a largura vira `G − 4·passo`, que é exatamente
+     `--corpo-larg`: as paredes pousam sobre as duas linhas que o console
+     desenha ali (o conduíte do ROTEIRIZA e o `.quad--cria::after`). */
+  left: calc(2 * var(--g-passo) * var(--asa-s));
+  right: calc(2 * var(--g-passo) * var(--asa-s));
+
+  /* Sai da caixa da grade por cima e por baixo — é o que dá silhueta de
+     satélite em vez de mais uma célula, já que a caixa vai só do trilho ao
+     piso.
+
+     O TETO É O CABEÇALHO, e a conta fecha exata: `--folga` governa o vão
+     entre o cabeçalho e a fileira (2×folga) e o trilho fica no meio dele.
+     Uma folga acima do trilho é exatamente a base do cabeçalho — encosta e
+     não passa. E o texto de lá só nasce depois da atracação (`--pousado`),
+     quando o corpo já saiu, então os dois nunca dividem o espaço.
+
+     E ELE NÃO ENCOLHE COM A DOBRA VERTICAL. `--corpo-fora` é uma distância
+     de tela, não de layout: escrita crua, o `scaleY` a entregaria como
+     `folga × 0,48` e a cabeça e a base viriam esmagadas justo quando o
+     satélite está inteiro. Dividir por `--g-sy` desfaz isso — o mesmo truque
+     que as horizontais fazem com a contra-escala, aqui em forma de conta
+     porque é distância e não espessura. O corpo é o único que sai da caixa,
+     então é o único que precisa. */
+  --corpo-fora: var(--folga);
+  --corpo-sai: calc(var(--corpo-fora) / var(--g-sy));
+  /* A largura mínima dos dois módulos, para eles continuarem lendo como
+     barramento depois que o corpo estreita até a baia. Fica abaixo da coluna
+     do instrumento (236px) de propósito: um módulo tão largo quanto um card
+     deixaria de ser peça do satélite e viraria uma quinta coluna. */
+  --corpo-modulo: clamp(80px, 6.4vw, 122px);
+  top: calc(-1 * var(--corpo-sai));
+  bottom: calc(-1 * var(--corpo-sai));
+
+  /* ELE NÃO SAI. Nenhuma opacidade, nenhum relógio: o corpo é a peça que
+     sobrevive à troca e fica sendo a seção. O que ele faz do começo ao fim é
+     estreitar, da largura dobrada até a baia — e mesmo estreitado continua
+     lá, com o mastro, a parabólica e os dois módulos. */
+}
+
+/* A cabeça e a base: os dois módulos que fecham o corpo fora da caixa da
+   grade. Mais estreitos que ele de propósito — um prolongamento da mesma
+   largura leria como célula esticada, não como módulo.
+
+   Três lados cada um; o quarto é o trilho (na cabeça) e o piso (na base).
+   `border` em vez de três elementos porque é a mesma linha, no mesmo alfa,
+   nos três lados. */
+.page #recursos .rec-grade__cabeca,
+.page #recursos .rec-grade__base {
+  position: absolute;
+  /* ---- LARGURA FIXA, E NÃO UMA FRAÇÃO DO CORPO ----
+     Eram um recuo percentual, e isso quebrou quando o corpo virou permanente:
+     implantado ele tem a largura da BAIA — 44px —, e 56% daquilo são 25px. O
+     módulo sumia justamente no estado que ficaria na tela.
+
+     Fixo é também o que lê melhor: um módulo é uma peça física, não um
+     desenho elástico. Do começo ao fim ele tem o mesmo tamanho, e é o corpo
+     que estreita em volta dele — que é o que faz os dois estados lerem como
+     o MESMO objeto em posições diferentes.
+
+     E eles podem ser mais largos que o corpo porque não moram no array: a
+     faixa acima do trilho e a abaixo do piso estão livres de ponta a ponta.
+     É essa liberdade que faz uma baia de 44px bastar.
+
+     CENTRALIZADO POR `translate`, e não por `margin: auto`: quando a largura
+     passa a do contêiner — que é o caso implantado, 122px num corpo de 44 —
+     as margens automáticas resolvem para zero e o módulo encosta à esquerda.
+     Medido: cabeça e base nascendo rentes à parede esquerda da baia. */
+  left: 50%;
+  width: var(--corpo-modulo);
+  transform: translateX(-50%);
+  /* METADE DA FAIXA, não a faixa inteira. O que sobra é onde o mastro e a
+     parabólica cabem sem passar do vão e entrar no título. */
+  height: calc(var(--corpo-sai) * 0.5);
+  border: var(--espessura) solid var(--fio-forte);
+  /* AS QUATRO BORDAS DESFAZEM A DOBRA, cada par no seu eixo. Sem isto elas
+     chegam à tela mais finas que os conduítes e o trilho — que são
+     contra-escalados — e o mesmo traço lê com duas espessuras dentro do
+     mesmo desenho. Aqui não dá para usar `transform`: escalar o elemento
+     mexeria na caixa dele junto, e a caixa é o módulo. */
+  border-left-width: calc(var(--espessura) / var(--g-s));
+  border-right-width: calc(var(--espessura) / var(--g-s));
+  border-top-width: calc(var(--espessura) / var(--g-sy));
+  border-bottom-width: calc(var(--espessura) / var(--g-sy));
+}
+/* ---- ELES ENCOSTAM NO ARRAY, NÃO NA BORDA DA FAIXA ----
+   Meia faixa de recuo, e não zero. Com `top: 0` a cabeça grudava no alto do
+   vão e sobrava um buraco de meia folga entre ela e o trilho — pior, o mastro
+   e o prato saíam DELA para cima e entravam no título.
+
+   Descendo-a meia faixa, o quarto lado de cada módulo passa a ser o trilho (e
+   o piso, na base), que é o que faz eles lerem como parte do satélite e não
+   como caixas soltas. E a meia faixa que sobra em cima é exatamente onde o
+   mastro e o prato cabem. */
+.page #recursos .rec-grade__cabeca {
+  top: calc(var(--corpo-sai) * 0.5);
+  border-bottom: 0;
+}
+.page #recursos .rec-grade__base {
+  bottom: calc(var(--corpo-sai) * 0.5);
+  border-top: 0;
+}
+
+/* O cinturão de instrumentos, no meio do corpo. Não se alinha com filete
+   nenhum de propósito: ele é do desenho, não do console — e alinhá-lo com um
+   filete o faria ler como uma quinta coluna em vez de como corpo. */
+.page #recursos .rec-grade__cinturao {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--espessura);
+  background: var(--fio-fraco);
+}
+
+/* O mastro, com a marca no topo. Sobe da cabeça, e a altura é o que sobra da
+   faixa depois dela: meia folga para a cabeça, 0,45 para ele. A soma fica
+   abaixo de uma folga, que é onde a base do cabeçalho começa. */
+.page #recursos .rec-grade__mastro {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: var(--espessura);
+  height: calc(var(--corpo-fora) * 0.45);
+  margin-left: calc(var(--espessura) / -2);
+  background: var(--fio-forte);
+  /* Desfaz as duas dobras, e a marca do topo vem junto por ser filha. A
+     origem é o PÉ dele: é ali que ele encosta na cabeça, e esse ponto não
+     pode se mexer quando a escala muda.
+
+     O que NÃO se desfaz aqui é a escala do próprio corpo: o mastro afina
+     junto com ele quando as asas fecham, e isso é o efeito. */
+  transform-origin: center bottom;
+  transform: scaleX(calc(1 / var(--g-s))) scaleY(calc(1 / var(--g-sy)));
+}
+.page #recursos .rec-grade__mastro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(var(--corpo-fora) * 0.5);
+  height: var(--espessura);
+  transform: translateX(-50%);
+  background: var(--fio-forte);
+}
+
+/* ---- A PARABÓLICA É FACETADA ----
+   E isso não é economia de código: uma curva seria a ÚNICA coisa curva da
+   seção inteira. As cantoneiras, o trilho, os conduítes, os filetes, os
+   pisos, as marcas — tudo aqui é reta. Um arco leria como adesivo colado por
+   cima do instrumento, não como parte dele. Três retas dão o mesmo
+   reconhecimento e ficam na língua da casa.
+
+   ELA MORA NA FAIXA ACIMA DO TRILHO, e é o único lugar em que cabe: as asas
+   ocupam a caixa da grade de ponta a ponta, então qualquer coisa pendurada
+   na lateral do corpo cruzaria as células. Acima do trilho as asas não
+   chegam e a faixa está livre. */
+.page #recursos .rec-grade__prato {
+  position: absolute;
+  /* ENCOSTA NA PAREDE DA CABEÇA, sendo filho dela: `right: 100%` o põe rente
+     ao lado esquerdo dela, onde quer que ela esteja. Antes ele se pendurava
+     no corpo, e isso quebrou de duas formas quando o corpo virou permanente —
+     a haste terminava no ar (as paredes do corpo são as arestas internas das
+     asas, e asa nenhuma sobe acima do trilho) e, com a baia em 44px, o prato
+     inteiro cabia por baixo da cabeça.
+
+     `bottom: 0` o pousa na base da cabeça, que É o trilho. Ele cresce para
+     cima e não desce para o array. */
+  right: 100%;
+  bottom: 0;
+  width: calc(var(--corpo-fora) * 1.15);
+  /* MAIS ALTO QUE A CABEÇA, e limitado pela faixa: a cabeça come meia folga e
+     o prato vai a 0,9 dela, então ele passa por cima da cabeça sem passar do
+     vão e entrar no título. */
+  height: calc(var(--corpo-fora) * 0.9);
+  /* A CONTRA-ESCALA VAI NO INVÓLUCRO, e não em cada peça: desfeitas aqui as
+     duas dobras, a borda, as facetas e a haste passam a viver em unidades de
+     verdade lá dentro — inclusive os 33°, que sob dobra virariam outro
+     ângulo e abririam o prato. É o único lugar da peça com um traço em
+     diagonal, e é o que torna o invólucro a solução certa: nenhuma
+     contra-escala por eixo salvaria um ângulo.
+
+     A origem é o canto de baixo à direita porque é ali que o prato encontra
+     a parede do corpo e o trilho — os dois pontos que não podem se mexer.
+
+     A escala do corpo continua valendo por cima: o prato fecha e cisalha
+     junto com o resto quando as asas chegam. */
+  transform: scaleX(calc(1 / var(--g-s))) scaleY(calc(1 / var(--g-sy)));
+  transform-origin: right bottom;
+}
+/* A borda é a ABERTURA do prato; as duas facetas saem das pontas dela e
+   convergem para o vértice, onde a haste começa. Ela recua 0,3 para deixar
+   espaço ao alimentador, que mora à frente da abertura.
+
+   A TIGELA É RASA, e é isso que separa um prato de uma seta. A primeira
+   versão tinha as facetas a 33° com a profundidade quase igual à abertura:
+   as três retas fechavam um triângulo praticamente equilátero, que lê como o
+   botão de play, não como antena. Uma parábola de verdade é rasa — abertura
+   grande, vértice perto. Foi só copiar isso:
+
+     meia-abertura 0,70 · vértice a 0,32 → atan(0,70 / 0,32) = 65,4°
+     comprimento da faceta = √(0,70² + 0,32²) = 0,77 */
+.page #recursos .rec-grade__prato-borda {
+  position: absolute;
+  left: calc(var(--corpo-fora) * 0.3);
+  top: 0;
+  bottom: 0;
+  width: var(--espessura);
+  background: var(--fio-forte);
+}
+.page #recursos .rec-grade__prato-borda::before,
+.page #recursos .rec-grade__prato-borda::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: calc(var(--corpo-fora) * 0.77);
+  height: var(--espessura);
+  background: var(--fio-forte);
+  transform-origin: left center;
+}
+.page #recursos .rec-grade__prato-borda::before {
+  top: 0;
+  transform: rotate(65.4deg);
+}
+.page #recursos .rec-grade__prato-borda::after {
+  bottom: 0;
+  transform: rotate(-65.4deg);
+}
+
+/* O ALIMENTADOR — a peça que fecha o reconhecimento. Um prato sem nada na
+   frente é uma tigela; o que diz "antena" é o braço curto saindo do meio da
+   abertura para FORA, com a corneta na ponta. Duas retas, e são elas que
+   dispensam qualquer tentativa de curvar a tigela. */
+.page #recursos .rec-grade__prato-foco {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: calc(var(--corpo-fora) * 0.3);
+  height: var(--espessura);
+  background: var(--fio-fraco);
+}
+.page #recursos .rec-grade__prato-foco::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: var(--espessura);
+  height: calc(var(--corpo-fora) * 0.24);
+  transform: translateY(-50%);
+  background: var(--fio-forte);
+}
+/* A haste, do vértice das facetas até a parede da cabeça. Um degrau mais
+   fraca que o prato: é ferragem, não instrumento. */
+.page #recursos .rec-grade__prato-haste {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--corpo-fora) * 0.62);
+  right: 0;
+  height: var(--espessura);
+  background: var(--fio-fraco);
 }
 
 /* Sem script, movimento reduzido ou antes de o efeito montar, `--expande`

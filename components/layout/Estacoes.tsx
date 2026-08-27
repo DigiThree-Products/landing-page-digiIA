@@ -201,26 +201,34 @@ const PARTIU = 0.841
  * O RITMO DE CADA ESTAÇÃO — e por que uma delas foge do padrão.
  *
  * Cinco das seis têm um ato só: chegam e ficam paradas enquanto se lê. A
- * Estação 02 passou a ter TRÊS — chega orbitando, expande de um quadrado até
- * o console deitado, e só então revela o texto. Três atos não cabem no mesmo
- * orçamento de um, e espremê-los ali significaria desfazer a desaceleração da
- * revelação, que foi pedida logo antes.
+ * Estação 02 passou a ter TRÊS — chega orbitando como um satélite dobrado,
+ * implanta as asas até virar o console deitado, e só então revela o texto.
+ * Três atos não cabem no mesmo orçamento de um, e espremê-los ali
+ * significaria desfazer a desaceleração da revelação, que foi pedida logo
+ * antes.
  *
- * Por isso o pin dela é MAIOR, e só o dela: 2,8 telas contra 2,2 das outras.
+ * Por isso o pin dela é MAIOR, e só o dela: 3,0 telas contra 2,2 das outras.
  *
  * OS MARCOS SÃO FRAÇÕES DO PIN, e é aí que mora a pegadinha: aumentar a
  * travessia sem mexer nos marcos esticaria TUDO junto, inclusive a chegada,
  * que já estava no ponto. Os números do `recursos` estão resolvidos ao
  * contrário — eu digo quantas telas cada ato deve durar e divido pelo pin:
  *
- *   chegada   1,35 tela → 1,35 / 2,8 = 0,482   (igual à das outras cinco)
- *   expansão  0,60 tela → acumulado 1,95 / 2,8 = 0,696
- *   revelação 0,50 tela → acumulado 2,45 / 2,8 = 0,875
- *   partida   0,35 tela → o resto
+ *   chegada     1,35 tela → 1,35 / 3,0 = 0,45     (igual à das outras cinco)
+ *   implantação 0,80 tela → acumulado 2,15 / 3,0 = 0,7167
+ *   revelação   0,50 tela → acumulado 2,65 / 3,0 = 0,8833
+ *   partida     0,35 tela → o resto
  *
  * A chegada e a partida ficam do mesmo tamanho das outras estações, medidas
- * em tela de rolagem. O que a Estação 02 cobra a mais são exatamente as 0,60
- * tela da expansão, e nada além disso.
+ * em tela de rolagem. O que a Estação 02 cobra a mais são exatamente as 0,80
+ * tela da implantação, e nada além disso.
+ *
+ * A IMPLANTAÇÃO SUBIU DE 0,60 PARA 0,80 TELA quando o ato do meio deixou de
+ * ser um quadrado esticando e virou duas asas se abrindo com um corpo sendo
+ * fechado entre elas. São três movimentos simultâneos onde antes havia um, e
+ * a 0,60 eles se atropelavam — o corpo sumia antes de dar tempo de ver o que
+ * era. As 0,20 tela vieram do pin, e não da partida: ela já está em 0,35, que
+ * é o piso em que ainda não lê como corte seco.
  *
  * `expandiu` IGUAL a `chegou` no padrão é o que desliga o ato do meio para as
  * outras cinco: a janela da expansão tem comprimento zero, `--expande` nasce
@@ -237,20 +245,21 @@ const RITMO_PADRAO: Ritmo = {
 }
 
 const RITMO_RECURSOS: Ritmo = {
-  travessia: 2.8,
-  chegou: 0.482,
-  expandiu: 0.696,
-  partiu: 0.875,
+  travessia: 3.0,
+  chegou: 0.45,
+  expandiu: 0.7167,
+  partiu: 0.8833,
 }
 
 /**
  * O ATO DO MEIO NÃO EXISTE NO CELULAR, e cobrar por ele seria cobrar por nada.
  *
- * A grade só tem o que comprimir quando o console é mais LARGO que alto: o
- * quadrado é a largura igualando a altura. No celular a seção é mais alta que
- * larga, então `--g-min` satura em 1 (o teto está em GradeRecursos.tsx) e a
- * grade já nasce aberta — não há expansão para ver. Com o ritmo do desktop, o
- * pin cobraria 0,60 tela de rolagem por um ato que ali não acontece.
+ * A grade só tem o que dobrar quando o console é mais LARGO que alto: a
+ * envergadura do satélite dobrado é a altura vezes 1,6. No celular a seção é
+ * mais alta que larga, então `--g-min` satura em 1 (o teto está em
+ * GradeRecursos.tsx) e a grade já nasce implantada — não há dobra para ver.
+ * Com o ritmo do desktop, o pin cobraria 0,80 tela de rolagem por um ato que
+ * ali não acontece.
  *
  * O breakpoint é o mesmo de recursos.css, onde a fileira vira carrossel.
  *
