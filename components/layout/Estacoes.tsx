@@ -246,27 +246,46 @@ const RITMO_PADRAO: Ritmo = {
    e divide-se pelo pin —, senão aumentar a travessia estica a chegada junto,
    que é justamente o que não se quer:
 
-     chegada    1,35 tela → 1,35 / 3,0 = 0,45      (igual às outras cinco)
-     revelação  0,50 tela → acumulado 1,85 / 3,0 = 0,6167
+     chegada    1,35 tela → 1,35 / 3,4 = 0,3971   (igual às outras cinco)
+     revelação  0,90 tela → acumulado 2,25 / 3,4 = 0,6618
      PARADA     0,80 tela → o vão até a partida
-     partida    0,35 tela → 2,65 / 3,0 = 0,8833
+     partida    0,35 tela → acumulado 3,05 / 3,4 = 0,8971
 
-   Chegada, revelação e partida ficam do MESMO tamanho das outras estações,
-   medidas em tela de rolagem. O que a Estação 02 cobra a mais são exatamente
-   as 0,80 tela de parada, e nada além disso. A folga imóvel vai de 0,11 para
-   0,91 tela — sete vezes mais.
+   Chegada e partida ficam do MESMO tamanho das outras estações, medidas em
+   tela de rolagem. O que a Estação 02 cobra a mais são a parada e a revelação
+   mais longa, e nada além disso.
 
-   O PIN VOLTOU A 3,0 TELAS, e é a segunda vez que ele tem esse tamanho por
-   razões diferentes: até 27/08 as 0,80 extras pagavam o ATO DO MEIO, em que o
-   satélite chegava dobrado e implantava as asas. O ato saiu, o pin encolheu
-   para 2,2, e agora as mesmas 0,80 voltam comprando parada. Se alguém for
-   mexer aqui achando que está mexendo na implantação: ela não existe mais. */
+   ---- POR QUE A REVELAÇÃO NÃO ROUBOU DA PARADA ----
+
+   O pedido de desacelerar o texto veio DEPOIS do de manter o satélite mais
+   tempo na tela, e os dois valem ao mesmo tempo. A revelação foi de 0,50 para
+   0,90 tela — 1,8× mais lenta — e a parada continua nas 0,80 que o pedido
+   anterior comprou. Quem pagou foi o pin, que subiu de 3,0 para 3,4.
+
+   Tirar da parada teria sido o caminho barato e teria desfeito o pedido
+   anterior em silêncio, que é o pior tipo de regressão: a que atende o último
+   pedido às custas do penúltimo, sem ninguém perceber.
+
+   É `revelou` estar separado de `partiu` que torna isso possível — as duas
+   janelas ficaram independentes. Antes da separação, alargar a revelação comia
+   a folga imóvel obrigatoriamente, porque era a mesma janela.
+
+   ---- O TAMANHO DO PIN JÁ TEVE TRÊS RAZÕES ----
+
+   2,2 telas é o padrão. Ele foi a 3,0 duas vezes, por motivos diferentes: até
+   27/08 as 0,80 extras pagavam o ATO DO MEIO (o satélite chegava dobrado e
+   implantava as asas), o ato saiu e o pin voltou a 2,2, e depois as mesmas
+   0,80 voltaram comprando PARADA. Agora ele vai a 3,4, e as 0,40 novas são da
+   revelação.
+
+   Se alguém for mexer aqui achando que mexe na implantação: ela não existe
+   mais. Cada um destes quatro números tem um dono diferente. */
 const RITMO_RECURSOS: Ritmo = {
-  travessia: 3.0,
-  chegou: 0.45,
-  expandiu: 0.45,
-  revelou: 0.6167,
-  partiu: 0.8833,
+  travessia: 3.4,
+  chegou: 0.3971,
+  expandiu: 0.3971,
+  revelou: 0.6618,
+  partiu: 0.8971,
 }
 
 /**
