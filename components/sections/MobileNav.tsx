@@ -7,7 +7,7 @@ const ITEMS = [
   { id: 'cadastro', label: 'Início', icon: <HomeIcon /> },
   { id: 'video', label: 'Funciona', icon: <SparkIcon /> },
   { id: 'recursos', label: 'Recursos', icon: <GridIcon /> },
-  { id: 'demo', label: 'Demo', icon: <PlayIcon /> },
+  { id: 'como-funciona', label: 'Como funciona', icon: <PlayIcon /> },
   { id: 'oferta', label: 'Oferta', icon: <ArrowIcon /> },
 ] as const
 

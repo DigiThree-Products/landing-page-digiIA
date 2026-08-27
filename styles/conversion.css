@@ -907,6 +907,6 @@ html.waitlist-modal-open body {
 /* Como funciona: marcador em escala mais contida. O tamanho do titulo
    vive em institutional.css, junto do layout que o sustenta — separar os
    dois foi o que deixou um titulo de 70px numa coluna de 359px. */
-.page #demo .demo-head .tag {
+.page #como-funciona .cf-head .tag {
   font-size: 11px;
 }

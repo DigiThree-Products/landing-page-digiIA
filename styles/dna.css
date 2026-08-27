@@ -447,3 +447,32 @@
   .page #dna .dna-ficha__travados { padding: 9px 14px; gap: 5px 10px; }
   .page #dna .dna-ficha__nota { padding: 8px 14px; }
 }
+
+/* EXCEÇÃO À METADE CLARA — ver o bloco "A METADE CLARA DA PÁGINA" em
+   styles/institutional.css, que inverte a família de tokens claros dentro
+   desta seção.
+
+   Esta regra mora AQUI e não lá porque dna.css é importado depois de
+   institutional.css (app/globals.css, linhas 10 e 18): com a mesma
+   especificidade, quem vem depois vence, e a versão de lá perdia em
+   silêncio.
+
+   A ficha usa `background: var(--paper)` para ser um CARTÃO BRANCO sobre o
+   vazio escuro. Com a inversão, `--paper` virou tinta e a ficha saía
+   PRETA — e junto com ela sumiam os campos internos, que são desenhados
+   com `--tinta` sobre ela. É o ponto mais perigoso da mudança: a ficha
+   carrega a leitura de "isto é o que a IA produz", e sem contraste a
+   seção perde o argumento inteiro, não só um elemento.
+
+   Sobre papel ela continua branca, e o que a separa do fundo deixa de ser
+   a cor e passa a ser o filete mais a sombra — documento sobre a mesa, em
+   vez de recorte no escuro. A sombra afina porque sombra forte sobre
+   claro lê como sujeira, não como relevo.
+
+   `--color-paper` e não `--paper`: o alias do @theme não é invertido, e é
+   exatamente para casos como este. */
+.page #dna .dna-ficha {
+  background: var(--color-paper);
+  border: 1px solid rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.09);
+}

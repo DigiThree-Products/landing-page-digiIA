@@ -64,7 +64,7 @@ export function AncoraSuave() {
 
       /* A CAIXA que mede a posição não é sempre o destino — mesma razão de
          `caudaAcima` em Estacoes.tsx. `#cadastro` (a hero) e as estações
-         (`#video`, `#recursos`, `#demo`, `#faq`) são presas por scroll, e o
+         (`#video`, `#recursos`, `#como-funciona`, `#faq`) são presas por scroll, e o
          GSAP aplica ao elemento pinado um `transform: translateY(...)` do
          tamanho do próprio pin assim que ele é solto — é o que o mantém no
          lugar certo do fluxo depois de a rolagem passar por cima dele.

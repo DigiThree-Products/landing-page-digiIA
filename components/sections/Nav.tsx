@@ -9,7 +9,7 @@ import { MobileNav } from './MobileNav'
 const LINKS = [
   { id: 'video', label: 'Funciona' },
   { id: 'recursos', label: 'Recursos' },
-  { id: 'demo', label: 'Demo' },
+  { id: 'como-funciona', label: 'Como funciona' },
   { id: 'oferta', label: 'Oferta' },
   { id: 'faq', label: 'FAQ' },
 ] as const

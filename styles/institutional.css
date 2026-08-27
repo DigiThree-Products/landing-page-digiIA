@@ -38,7 +38,7 @@ body::after {
 /* A malha de pontos violeta que marcava as seções claras foi REMOVIDA.
    Ela era desenhada para ler sobre papel, e a lista de quem a usava foi
    encolhendo até esvaziar: "Veja funcionando" saiu primeiro, quando virou
-   vazio escuro; agora saíram #demo e .credibility-section pelo mesmo
+   vazio escuro; agora saíram #como-funciona e .credibility-section pelo mesmo
    motivo. Sobre a poeira, um ponto de rgba(69,0,249,0.34) a 32% de
    opacidade é invisível — manter a regra seria custo de pintura sem nada
    na tela.
@@ -82,7 +82,7 @@ body::after {
 /* Textos e controles da hero foram desenhados para o vazio escuro; aqui
    ganham o inverso, escuro-sobre-branco.
 
-   A hero é agora a ÚNICA seção clara da página — #demo e
+   A hero é agora a ÚNICA seção clara da página — #como-funciona e
    .credibility-section eram as outras duas e passaram para a poeira. Ou
    seja, estas inversões não têm mais companhia: qualquer regra abaixo que
    assuma fundo branco vale só aqui dentro. */
@@ -228,266 +228,6 @@ body::after {
 }
 
 /* ============================================================
-   DEMO �?" capitulo claro em duas colunas
-   ============================================================ */
-/* Cabeçalho em faixa de largura total, com a demo embaixo — e não texto
-   espremido ao lado dela. A coluna antiga tinha 359px para um título de
-   70px: razão de 5,1x, quando as referências não descem de 11x. O título
-   quebrava em 7 linhas. Em faixa, ele respira e a janela dobra de largura. */
-.page #demo {
-  width: 100%;
-  min-height: 100svh;
-  margin: 0;
-  padding: clamp(84px, 10vh, 112px) var(--world-edge) clamp(48px, 6vh, 76px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(26px, 3.4vh, 42px);
-  overflow: hidden;
-  /* CLARO sobre a poeira, não escuro sobre branco. E esta linha é o
-     interruptor da seção inteira, não só a cor do texto: PoeiraFundo.tsx
-     decide se pinta a faixa branca pela LUMINÂNCIA DO TEXTO da seção
-     (`claro: lum < 0.5`). Enquanto era `--ink`, o canvas pintava o papel
-     aqui e desenhava os grãos em silhueta; com `--paper`, ele para de
-     pintar e os grãos voltam a emitir. Trocar por qualquer cor escura
-     ressuscita a faixa branca sem que nada no CSS diga isso. */
-  color: var(--paper);
-  /* Sem fundo próprio — ver a nota em #recursos: o brilho lilás que ficava
-     atrás do retrato lavava a poeira em vez de compor com ela. */
-}
-
-/* Era `#demo>.rv`. O `Reveal` saiu quando a seção virou estação, e o
-   filho direto passou a ser o `.estacao-palco` — o seletor antigo deixaria
-   de casar em silêncio, tirando a largura máxima e a centralização. */
-.page #demo>.estacao-palco {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: var(--world-max);
-  margin-inline: auto;
-}
-
-/* Todo o conteúdo à direita; a coluna da esquerda fica reservada para o
-   componente que ainda vai entrar. Ela é declarada no grid mesmo vazia — é o
-   que segura o conteúdo à direita antes de o componente existir. */
-.page #demo .demo-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
-  gap: clamp(28px, 4.4vw, 72px);
-  align-items: center;
-}
-
-/* `--retrato` é a única medida do retrato: a máscara e a luz da base saem
-   daqui. A luz precisa da largura da FIGURA, não da coluna — a coluna é bem
-   mais larga no mobile, e um brilho maior que a silhueta denuncia o truque. */
-.page #demo .demo-lado {
-  --retrato: 300px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-/* A luz de onde ela emerge. Sem isso a máscara abaixo lê como "recorte
-   apagado"; com a luz, a base vira origem — ela sobe de algum lugar. Fica
-   atrás do retrato (z-index negativo, contido pelo contexto de empilhamento
-   do `.rv`), nunca por cima, para não lavar o queixo e o ombro. */
-.page #demo .demo-lado::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  left: 50%;
-  bottom: 0;
-  /* O -50% centraliza; o termo extra desloca à esquerda, para a luz cair sob
-     a massa do ombro em vez do meio geométrico da caixa. Em fração de
-     `--retrato` para acompanhar o mobile sem um segundo valor. */
-  translate: calc(-50% - var(--retrato) * 0.12) 30%;
-  /* Nunca mais larga que o próprio retrato — senão vaza para fora da
-     silhueta e vira uma mancha ao lado dele, em vez de uma luz sob ele.
-
-     `closest-side` faz os raios da elipse pararem exatamente nas laterais
-     da caixa: a luz chega às duas bordas e morre ali, alinhada ao
-     componente. Com o padrão (`farthest-corner`) o gradiente é dimensionado
-     pelos cantos, então some antes das laterais e a base parece estreita
-     demais para a silhueta. */
-  /* Largura e altura separadas de propósito: `aspect-ratio` encolheria os
-     dois eixos juntos, e aqui só o horizontal deve ceder. A altura segue a
-     razão original (2.4) para a luz continuar rasa como uma poça. */
-  width: calc(var(--retrato) * 0.7);
-  height: calc(var(--retrato) / 2.4);
-  /* A queda é achatada de propósito. Com um decaimento acentuado a luz só
-     "chega" na borda esquerda, onde o cabelo escuro do retrato a reforça; à
-     direita, contra o fundo claro, ela se dissolvia antes da lateral e o
-     conjunto ficava torto. Segurando opacidade até 78%, os dois lados
-     alcançam a borda. */
-  background: radial-gradient(ellipse closest-side at center,
-      color-mix(in srgb, var(--violet) 30%, transparent) 0%,
-      color-mix(in srgb, var(--violet) 25%, transparent) 45%,
-      color-mix(in srgb, var(--violet) 13%, transparent) 78%,
-      transparent 100%);
-  pointer-events: none;
-}
-
-/* Governado pela altura da textura real (816x994), não por um teto fixo de
-   largura arbitrário: mantém a proporção do recorte sem distorcer.
-
-   A máscara não é um fade linear: linear cria uma faixa visível onde a queda
-   começa e lê como névoa sobre um recorte. Aqui a opacidade segura até ~55% e
-   só então despenca, acelerando — a silhueta parece emergir da base em vez de
-   ser apagada nela. */
-.page #demo .liquid-portrait,
-.page #demo .liquid-portrait__fallback {
-  display: block;
-  width: 100%;
-  max-width: var(--retrato);
-  aspect-ratio: 816 / 994;
-  background: transparent;
-  -webkit-mask-image: linear-gradient(to bottom,
-      #000 0%,
-      #000 52%,
-      rgba(0, 0, 0, 0.94) 63%,
-      rgba(0, 0, 0, 0.72) 74%,
-      rgba(0, 0, 0, 0.4) 85%,
-      rgba(0, 0, 0, 0.12) 94%,
-      transparent 100%);
-  mask-image: linear-gradient(to bottom,
-      #000 0%,
-      #000 52%,
-      rgba(0, 0, 0, 0.94) 63%,
-      rgba(0, 0, 0, 0.72) 74%,
-      rgba(0, 0, 0, 0.4) 85%,
-      rgba(0, 0, 0, 0.12) 94%,
-      transparent 100%);
-}
-
-.page #demo .liquid-portrait {
-  cursor: pointer;
-  touch-action: pan-y;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.page #demo .liquid-portrait:focus-visible {
-  outline: 2px solid var(--violet);
-  outline-offset: 6px;
-}
-
-.page #demo .liquid-portrait__fallback {
-  height: auto;
-}
-
-.page #demo .demo-coluna {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(24px, 3.2vh, 40px);
-}
-
-.page #demo .demo-head {
-  display: block;
-  /* Centralizado fazia sentido quando o cabeçalho era faixa de largura total.
-     Numa coluna, texto centralizado deixa as duas margens serrilhadas. */
-  text-align: left;
-}
-
-/* O rótulo da seção fica à esquerda, como nas demais seções da página. */
-.page #demo .demo-head .tag {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 600;
-  /* Lilás, não violeta: #4500f9 foi escolhido contra papel e sobre o vazio
-     escuro fica quase preto. Mesma troca em todos os acentos desta seção. */
-  color: var(--lilac);
-}
-
-.page #demo .demo-head .tag::before {
-  content: '';
-  width: 30px;
-  height: 1px;
-  flex: none;
-  background: currentColor;
-}
-
-/* Uma linha só: o tamanho é escolhido para a frase inteira caber na
-   largura da coluna, e fica abaixo do h1 do hero (82px) para não inverter a
-   hierarquia da página. Era 76px quando o cabeçalho ocupava a faixa toda;
-   numa coluna de ~640px, esse tamanho quebrava a frase em três linhas. */
-.page #demo .demo-head h2 {
-  margin: 14px 0 0;
-  font-size: clamp(30px, 3.9vw, 55px);
-  line-height: 1.04;
-  letter-spacing: -0.045em;
-}
-
-.page #demo .demo-head h2 span {
-  display: inline;
-}
-
-.page #demo .demo-head__accent {
-  color: var(--lilac);
-}
-
-.page #demo .demo-head__sub {
-  margin: 16px 0 0;
-  max-width: 46ch;
-  color: var(--paper-56);
-  font-size: clamp(15px, 1.35vw, 19px);
-  line-height: 1.45;
-}
-
-.page #demo .tag {
-  color: var(--lilac);
-}
-
-.page #demo .demo {
-  --demo-tinta: var(--ink);
-  --demo-tinta-fraca: rgb(0 0 0 / 0.62);
-  --demo-tinta-filete: rgb(0 0 0 / 0.12);
-  width: 100%;
-  max-width: 560px;
-  justify-self: end;
-  /* Quem governa a largura agora é a coluna da direita, não este teto. */
-  max-width: none;
-  border-color: transparent;
-  border-radius: 24px;
-  color: var(--demo-tinta);
-  background: var(--paper);
-  box-shadow: 0 18px 50px rgb(0 0 0 / 0.28);
-}
-
-.page #demo .demo {
-  max-width: 560px;
-}
-
-.page #demo .demo-bar {
-  border-bottom-color: var(--demo-tinta-filete);
-  color: var(--demo-tinta);
-}
-
-.page #demo .prompt-line {
-  color: var(--demo-tinta);
-  border-bottom-color: var(--demo-tinta-filete);
-  padding-bottom: 14px;
-  margin-bottom: 14px;
-}
-
-.page #demo .out-item {
-  color: var(--demo-tinta-fraca);
-  border-bottom-color: var(--demo-tinta-filete);
-  padding-block: 8px;
-  font-size: 14px;
-}
-
-.page #demo .demo-body {
-  min-height: clamp(96px, 14vh, 190px);
-  padding: clamp(18px, 2.1vw, 28px);
-}
-
-.page #demo .demo-bar {
-  padding: 13px 18px;
-}
-
-/* ============================================================
    OFERTA �?" grande bloco de cor da referencia
    ============================================================ */
 .page #oferta {
@@ -561,7 +301,7 @@ body::after {
    ============================================================ */
 .page .credibility-section {
   width: 100%;
-  /* 100svh, como .approach, #recursos, #demo e #faq — as outras quatro
+  /* 100svh, como .approach, #recursos, #como-funciona e #faq — as outras quatro
      estações. Os 72svh são de antes de esta seção virar estação
      (commit a1976df, "respiro claro" de uma faixa em fluxo normal); quando
      ela passou a ser presa e a chegar de longe (9037aa6), ninguém subiu
@@ -580,7 +320,7 @@ body::after {
   display: grid;
   place-items: center;
   overflow: hidden;
-  /* Ver a nota em #demo: esta linha é o interruptor da faixa branca, não
+  /* Ver a nota em #como-funciona: esta linha é o interruptor da faixa branca, não
      só a cor do texto. Aqui ela era ainda mais decisiva — esta seção nunca
      teve fundo próprio em CSS, então TODO o branco dela vinha do canvas.
      Com `--paper`, ela passa a ser vazio com poeira, como as vizinhas. */
@@ -769,11 +509,11 @@ body::after {
   place-items: center;
   overflow: hidden;
   color: var(--paper);
-  /* Sem fundo próprio, igual a #recursos e #demo: passagem inteira para a
+  /* Sem fundo próprio, igual a #recursos e #como-funciona: passagem inteira para a
      poeira, sem o véu violeta que ficava no canto superior esquerdo. */
 }
 
-/* Mesma troca de #demo: o filho direto agora é o palco da estação. */
+/* Mesma troca de #como-funciona: o filho direto agora é o palco da estação. */
 /* O GRID DAS DUAS COLUNAS VIVE AQUI, não na seção — e isto não é
    preferência de organização, é o conserto de uma regressão real.
 
@@ -979,7 +719,7 @@ body::after {
     font-size: clamp(46px, 12vw, 76px);
   }
 
-  .page #demo,
+  .page #como-funciona,
   .page #oferta,
   .page .credibility-section,
   .page #faq,
@@ -989,66 +729,6 @@ body::after {
 
   .page .credibility-section {
     padding-inline: clamp(28px, 7vw, 56px);
-  }
-
-  /* PRESA como no desktop. `min-height: auto` era de quando a seção rolava
-     solta — mesma família do bug da FAQ e dos 72svh da "+15 anos". Presa,
-     o que passa da tela fica inalcançável. Medido antes: 1.211px numa tela
-     de 844. */
-  .page #demo {
-    gap: 18px;
-  }
-
-  /* O subtítulo sai no mobile por orçamento, não por descuido: é texto de
-     apoio, e a tela inteira é o que compra a JANELA DE DEMONSTRAÇÃO
-     visível — o conteúdo que prova o produto funcionando. O dial de troca,
-     se ele fizer falta, é o `--retrato`. */
-  .page #demo .demo-head__sub {
-    display: none;
-  }
-
-  .page #demo .demo-body {
-    min-height: clamp(300px, 42svh, 420px);
-  }
-
-  /* Empilhado, o retrato ocupava uma faixa própria de 220px antes de
-     qualquer texto. Agora ele é VIZINHO do cabeçalho — retrato e título na
-     mesma linha — e a janela de demonstração leva a largura toda embaixo.
-
-     `display: contents` no `.demo-coluna` é o que torna isso possível sem
-     mexer na marcação: ele desaparece como caixa e seus dois filhos
-     (`.demo-head` e `.demo`) passam a ser itens diretos do grid do
-     `.demo-layout`, onde podem ser posicionados. Sem isso o retrato e o
-     cabeçalho estariam em pais diferentes e não teriam como dividir uma
-     linha. */
-  .page #demo .demo-coluna {
-    display: contents;
-  }
-
-  .page #demo .demo-layout {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 16px;
-  }
-
-  .page #demo .demo-lado {
-    --retrato: 96px;
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .page #demo .demo-head {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .page #demo .demo {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .page #demo .demo-head h2 {
-    font-size: clamp(24px, 5.8vw, 32px);
   }
 
   .page #oferta .offer-grid {
@@ -1121,7 +801,7 @@ body::after {
     display: none;
   }
 
-  .page #demo,
+  .page #como-funciona,
   .page #oferta,
   .page .credibility-section,
   .page #faq,
@@ -1132,14 +812,6 @@ body::after {
   .page #oferta .sec-head h2,
   .page #faq .sec-head h2 {
     font-size: clamp(40px, 12vw, 56px);
-  }
-
-  .page #demo .demo-head h2 {
-    font-size: clamp(34px, 10vw, 46px);
-  }
-
-  .page #demo .demo-body {
-    min-height: 360px;
   }
 
   /* O celular é o viewport apertado da seção: são seis blocos dentro de uma
@@ -1352,146 +1024,6 @@ body::after {
   }
 }
 
-/* A DEMO no mobile — mesma razão de ordem da FAQ: o bloco de 620px
-   devolve `padding-block: 96px 118px` para todas as seções
-   institucionais, e a demo presa não tem esse orçamento. */
-@media (max-width: 1023px) {
-  .page #demo {
-    padding-block: clamp(56px, 8vh, 92px);
-  }
-
-  .page #demo .demo {
-    max-width: none;
-    justify-self: stretch;
-  }
-}
-
-@media (max-width: 1023px) and (max-height: 780px) {
-  /* O rodapé do padding reserva o dock (fixed, 82px): a janela de
-     demonstração é o último bloco da seção e é justamente ela que ficava
-     por baixo. */
-  .page #demo {
-    padding-block: clamp(40px, 5.5vh, 64px) clamp(92px, 13vh, 108px);
-  }
-
-  /* Quem manda na altura da janela não é o `min-height` — é o conteúdo. O
-     `.out` tem quatro resultados de ~71px cada, e são eles a prova do
-     produto: nenhum pode sumir. Então encolhem, em vez de sair. */
-  .page #demo .demo-body {
-    min-height: 0;
-    padding: 14px;
-  }
-
-  .page #demo .prompt-line {
-    font-size: 12.5px;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-  }
-
-  .page #demo .out .tag {
-    margin-bottom: 8px;
-  }
-
-  .page #demo .out-item {
-    padding: 6px 0;
-    gap: 10px;
-    font-size: 13px;
-  }
-
-  .page #demo .demo-bar {
-    padding-block: 10px;
-  }
-
-  .page #demo .demo-lado {
-    --retrato: 68px;
-  }
-
-  .page #demo .demo-head h2 {
-    font-size: clamp(21px, 5.2vw, 27px);
-  }
-
-  .page #demo .demo-layout {
-    gap: 12px;
-  }
-}
-
-/* Paisagem: o retrato volta a ser COLUNA, como no desktop, e o cabeçalho
-   mais a janela ocupam a outra. Deitado sobra largura — empilhar retrato,
-   título e janela em 390px de altura não cabe. `display: contents` é
-   desfeito para o `.demo-coluna` voltar a ser a caixa da direita. */
-@media (max-width: 1023px) and (max-height: 480px) and (orientation: landscape) {
-  .page #demo {
-    padding-block: 26px 62px;
-  }
-
-  .page #demo .demo-coluna {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .page #demo .demo-layout {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 18px;
-  }
-
-  .page #demo .demo-lado {
-    --retrato: 120px;
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .page #demo .demo-body {
-    min-height: 0;
-    padding: 10px 12px;
-  }
-
-  .page #demo .prompt-line {
-    font-size: 11.5px;
-    padding-bottom: 7px;
-    margin-bottom: 7px;
-  }
-
-  .page #demo .out .tag {
-    margin-bottom: 5px;
-  }
-
-  .page #demo .out-item {
-    padding: 4px 0;
-    font-size: 12px;
-  }
-
-  .page #demo .demo-bar {
-    padding-block: 7px;
-  }
-
-  .page #demo .demo-head h2 {
-    font-size: clamp(19px, 2.6vw, 26px);
-  }
-}
-
-/* Paisagem de 400px para baixo: o dock ainda alcançava a janela. */
-@media (max-width: 1023px) and (max-height: 400px) and (orientation: landscape) {
-  .page #demo {
-    padding-block: 12px 66px;
-  }
-
-  .page #demo .demo-lado {
-    --retrato: 88px;
-  }
-
-  .page #demo .out-item {
-    padding: 2px 0;
-    font-size: 11.5px;
-  }
-
-  .page #demo .demo-layout {
-    gap: 14px;
-  }
-}
-
 /* Paisagem: as DUAS COLUNAS voltam, como na hero e pelo mesmo motivo —
    deitado sobra largura e falta altura, o oposto do retrato. Empilhar seis
    perguntas mais o cabeçalho em 390px de altura não cabe de jeito nenhum;
@@ -1531,5 +1063,506 @@ body::after {
 
   .page .approach .ghost:hover {
     transform: none;
+  }
+}
+
+/* ============================================================
+   COMO FUNCIONA — #como-funciona
+   Cabeçalho centrado, miolo de três colunas com a animação no meio,
+   faixa de garantias e fecho. Ver components/sections/ComoFunciona.tsx:
+   a ordem do DOM é a do celular, e é o grid abaixo que remonta o desktop.
+   ============================================================ */
+.page #como-funciona {
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  padding: clamp(84px, 10vh, 112px) var(--world-edge) clamp(48px, 6vh, 76px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  /* CLARO sobre a poeira, não escuro sobre branco. E esta linha é o
+     interruptor da seção inteira, não só a cor do texto: PoeiraFundo.tsx
+     decide se pinta a faixa branca pela LUMINÂNCIA DO TEXTO da seção
+     (claro: lum menor que 0.5). Trocar por qualquer cor escura ressuscita
+     a faixa branca sem que nada no CSS diga isso. */
+  color: var(--paper);
+}
+
+/* O filho direto é o palco da estação — ver o contrato de duas partes em
+   components/layout/Estacoes.tsx. */
+.page #como-funciona>.estacao-palco {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--world-max);
+  margin-inline: auto;
+}
+
+.page #como-funciona .cf {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(30px, 4.6vh, 58px);
+}
+
+.page #como-funciona .cf-head {
+  max-width: 42rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.page #como-funciona .cf-head .tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--lilac);
+}
+
+.page #como-funciona .cf-head .tag::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+}
+
+.page #como-funciona .cf-head h2 {
+  margin: 14px 0 0;
+  font-size: clamp(28px, 3.4vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -0.045em;
+}
+
+.page #como-funciona .cf-head__sub {
+  margin: 16px 0 0;
+  color: var(--paper-56);
+  font-size: clamp(15px, 1.3vw, 18px);
+  line-height: 1.45;
+}
+
+.page #como-funciona .cf-miolo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 3.4vw, 56px) clamp(28px, 4vw, 64px);
+}
+
+/* A animação é o PRIMEIRO filho no DOM (ordem do celular) e vai para a
+   coluna do meio, ocupando as duas linhas dos blocos. */
+.page #como-funciona .cf-anim {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* A célula é 200x256 como pedido. O retrato mantém a proporção real da
+     textura (816x994, ou seja 200x244) e fica centrado dentro dela em vez
+     de ser esticado — distorcer um rosto para ganhar 12px não paga. */
+  width: 200px;
+  height: 256px;
+  --retrato: 200px;
+}
+
+.page #como-funciona .cf-bloco:nth-of-type(1) { grid-column: 1; grid-row: 1; }
+.page #como-funciona .cf-bloco:nth-of-type(2) { grid-column: 1; grid-row: 2; }
+.page #como-funciona .cf-bloco:nth-of-type(3) { grid-column: 3; grid-row: 1; }
+.page #como-funciona .cf-bloco:nth-of-type(4) { grid-column: 3; grid-row: 2; }
+
+/* A máscara não é fade linear: linear cria uma faixa visível onde a queda
+   começa e lê como névoa sobre um recorte. Segurando até 55% e despencando
+   depois, a silhueta parece emergir da base em vez de ser apagada nela. */
+.page #como-funciona .liquid-portrait,
+.page #como-funciona .liquid-portrait__fallback {
+  display: block;
+  width: 100%;
+  max-width: var(--retrato);
+  aspect-ratio: 816 / 994;
+  background: transparent;
+  -webkit-mask-image: linear-gradient(to bottom,
+      #000 0%, #000 52%,
+      rgba(0, 0, 0, 0.94) 63%,
+      rgba(0, 0, 0, 0.72) 74%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0.12) 94%,
+      transparent 100%);
+  mask-image: linear-gradient(to bottom,
+      #000 0%, #000 52%,
+      rgba(0, 0, 0, 0.94) 63%,
+      rgba(0, 0, 0, 0.72) 74%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0.12) 94%,
+      transparent 100%);
+}
+
+.page #como-funciona .liquid-portrait {
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.page #como-funciona .liquid-portrait:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 6px;
+}
+
+.page #como-funciona .liquid-portrait__fallback { height: auto; }
+
+/* SEM caixa, SEM ícone e SEM número decorativo: quem separa um bloco do
+   outro é o espaço, e quem diz o passo é o rótulo, em texto. */
+.page #como-funciona .cf-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 34rem;
+}
+
+.page #como-funciona .cf-bloco__rotulo {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-38);
+}
+
+/* A serifa é a única quebra tipográfica da página, e é de propósito: a aspa
+   é fala de outra pessoa, não voz da marca.
+
+   O SISTEMA NÃO TEM TOKEN DE SERIFA — tokens.css publica só display (Sora),
+   body (Instrument Sans) e mono (DM Mono). Esta pilha é do sistema
+   operacional, então não acrescenta dependência nem peso de fonte. Se a
+   marca adotar uma serifa própria, ela vira token e esta linha some. */
+.page #como-funciona .cf-bloco__aspa {
+  margin: 2px 0 0;
+  font-family: Georgia, 'Times New Roman', 'Nimbus Roman', serif;
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.25;
+  color: var(--paper-56);
+}
+
+.page #como-funciona .cf-bloco__dor {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--paper-56);
+}
+
+/* O único texto claro do bloco: é ele que o olho pega ao varrer a seção sem
+   ler tudo, e por isso carrega o maior contraste. */
+.page #como-funciona .cf-bloco__virada {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--paper);
+}
+
+.page #como-funciona .cf-fecho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2.2vh, 24px);
+  text-align: center;
+}
+
+.page #como-funciona .cf-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--violet);
+  color: var(--color-paper);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background 0.2s var(--ease-brand), transform 0.2s var(--ease-brand);
+}
+
+.page #como-funciona .cf-cta:hover {
+  background: var(--mid);
+  transform: translateY(-1px);
+}
+
+.page #como-funciona .cf-cta:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1023px) {
+  .page #como-funciona {
+    padding-block: clamp(56px, 8vh, 92px) clamp(92px, 13vh, 108px);
+  }
+
+  /* Uma coluna só: o grid deixa de posicionar e a ordem passa a ser a do
+     DOM — cabeçalho, animação, 01, 02, 03, 04, faixa, fecho. */
+  .page #como-funciona .cf-miolo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(22px, 3.4vh, 32px);
+  }
+
+  .page #como-funciona .cf-anim,
+  .page #como-funciona .cf-bloco:nth-of-type(1),
+  .page #como-funciona .cf-bloco:nth-of-type(2),
+  .page #como-funciona .cf-bloco:nth-of-type(3),
+  .page #como-funciona .cf-bloco:nth-of-type(4) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .page #como-funciona .cf-anim {
+    justify-self: center;
+    width: 152px;
+    height: auto;
+    --retrato: 152px;
+  }
+
+  .page #como-funciona .cf-bloco { max-width: none; }
+}
+
+/* TELAS BAIXAS — a seção é alta (medido: ~930px de conteúdo mais ~190px de
+   padding a 1536 de largura, ou seja ~1120px). Numa janela de 1080p o
+   espaço útil é ~950px, e como a seção tem `overflow: hidden` o excedente
+   seria CORTADO, não empurrado.
+
+   Primeiro o padding cede, que é de graça. Quando ele acaba, a composição
+   inteira é reduzida.
+
+   `zoom` e não `transform: scale()`: `zoom` age no LAYOUT e encolhe a
+   altura real do palco, que é o que precisa acontecer. Um `scale`
+   encolheria só o desenho, deixaria a caixa do mesmo tamanho e ainda
+   disputaria a propriedade `transform`, que pertence ao JS da estação
+   (Estacoes.tsx a reescreve a cada quadro).
+
+   Degraus fixos porque CSS não sabe dividir comprimento por comprimento:
+   não há como escrever "encolha o quanto faltar". Mesmo molde de
+   styles/recursos.css, na Estação 02. */
+@media (min-width: 1024px) and (max-height: 940px) {
+  .page #como-funciona {
+    padding-block: clamp(48px, 5.4vh, 72px) clamp(36px, 4vh, 52px);
+  }
+
+  .page #como-funciona .cf { gap: clamp(22px, 3vh, 36px); }
+}
+
+@media (min-width: 1024px) and (max-height: 880px) {
+  .page #como-funciona .estacao-palco { zoom: 0.92; }
+}
+
+@media (min-width: 1024px) and (max-height: 800px) {
+  .page #como-funciona .estacao-palco { zoom: 0.84; }
+}
+
+@media (min-width: 1024px) and (max-height: 720px) {
+  .page #como-funciona .estacao-palco { zoom: 0.76; }
+}
+
+/* ============================================================
+   A METADE CLARA DA PÁGINA
+   A partir de "Como funciona" o site vira fundo branco. Pedido do dono
+   em 27/08/2026.
+
+   QUEM PINTA O BRANCO NÃO É ESTE CSS — é o PoeiraFundo.tsx. Ele lê a cor
+   de TEXTO computada de cada `.page section` e trata como clara toda
+   seção cujo texto seja escuro (lum < 0.5): aí pinta o papel e desenha os
+   grãos em silhueta, em vez de emissão. Por isso a virada abaixo é de cor
+   de texto, e o fundo vem junto de graça. Devolver `color: var(--paper)`
+   a qualquer uma destas seções apaga o branco dela sozinho.
+
+   O ESCOPO INVERTE A FAMÍLIA CLARA em vez de corrigir ~80 cores à mão:
+   dentro destas seções `--paper` deixa de significar "claro" e passa a
+   ser a tinta escura, e o mesmo vale para os derivados e para os filetes.
+   Todo `var(--paper)` que era texto claro vira texto escuro sem mais
+   nenhuma edição.
+
+   O ALIAS NÃO INVERTIDO É A SAÍDA DE EMERGÊNCIA: `--color-paper`, o token
+   do @theme, continua claro em toda parte. Onde for preciso texto claro
+   aqui dentro — sobre um botão violeta, por exemplo — usa-se ele.
+
+   AS EXCEÇÕES ESTÃO NO FIM DESTE MESMO BLOCO, e são os pontos em que
+   `--paper` era FUNDO e não texto. Um botão branco sobre fundo branco não
+   existe, e isso não tem conserto por inversão de token.
+
+   #oferta E .site-footer FICARAM DE FORA, e não por descuido. As duas são
+   peças fechadas por decisão do dono — "nem por ganho de conversão" —, e
+   dentro delas vivem um botão e uma faixa BRANCOS sobre escuro
+   (.offer-cta, .offer-ticker). Branco sobre branco não existe, então
+   inverter a seção obrigaria a repintar a peça congelada. Pintar o fundo
+   não é o mesmo que pedir para redesenhar o CTA: a segunda decisão é
+   consequência da primeira, e é do dono, não do CSS. Enquanto ele não
+   escolher, as duas seguem escuras — e uma página clara terminando em
+   bloco escuro de conversão e rodapé escuro é padrão comum, não remendo.
+
+   PARA DESFAZER A MUDANÇA INTEIRA: apague este bloco. Nada fora dele foi
+   tocado, de propósito. ============================================ */
+.page #como-funciona,
+.page #dna,
+.page .credibility-section,
+.page #repertorio,
+.page #faq {
+  color: var(--ink);
+
+  --paper: var(--ink);
+  --paper-80: rgb(0 0 0 / 0.8);
+  --paper-56: rgb(0 0 0 / 0.62);
+  --paper-38: rgb(0 0 0 / 0.62);
+  --rule: rgb(0 0 0 / 0.12);
+  --rule-hi: rgb(0 0 0 / 0.22);
+  --surface: rgb(0 0 0 / 0.035);
+
+  /* O lilás foi escolhido para brilhar contra o vazio escuro; sobre papel
+     ele quase some. O acento da metade clara é o violeta da marca, que é
+     o mesmo que a hero — a única outra seção clara — já usa. */
+  --lilac: var(--violet);
+}
+
+
+
+/* O FUNDO SÓLIDO DA METADE CLARA — e é ele que TIRA A POEIRA daqui para
+   baixo. Pedido do dono em 27/08/2026, logo depois do fundo branco.
+
+   Não existe interruptor da poeira por seção: o PoeiraFundo é um canvas
+   único, fixo atrás da página inteira. O jeito de calar a poeira num
+   trecho é o que o próprio componente documenta — "cada seção que pinta o
+   próprio fundo sólido cobre a poeira ali; ela só aparece onde a seção
+   deixar passagem". Então a seção deixa de dar passagem.
+
+   O FUNDO VAI NA SEÇÃO, NUNCA NO `.estacao-palco`. O palco é quem o
+   Estacoes.tsx escala e translada a cada quadro na chegada: pintado nele,
+   o branco chegaria de longe encolhido a 16% e cresceria junto com o
+   conteúdo — um retângulo branco flutuando no vazio. Na seção, ele fica
+   parado e do tamanho da tela enquanto o conteúdo viaja por cima.
+
+   ISTO TAMBÉM RESOLVE, DE VEZ, A DEPENDÊNCIA DO CANVAS. Antes o branco
+   destas seções era pintado pelo PoeiraFundo, que desiste inteiro quando
+   `prefers-reduced-motion: reduce` está ligado (PoeiraFundo.tsx:77) — e
+   sem canvas o `.page` preto por baixo aparecia, deixando texto escuro
+   sobre fundo preto. Havia aqui um `@media (prefers-reduced-motion)` só
+   para esse caso; ele saiu porque a regra abaixo vale sempre e cobre o
+   mesmo buraco sem precisar de exceção.
+
+   A TRAVESSIA ENTRE OS DOIS REGIMES VIRA CORTE SECO. O PoeiraFundo
+   dissolve a passagem de estrela para silhueta numa faixa na borda das
+   seções; com fundo sólido, a última seção escura (#recursos) encontra a
+   primeira clara numa linha reta. É consequência conhecida do pedido, não
+   descuido: sem poeira aqui não há o que dissolver. */
+.page #como-funciona,
+.page #dna,
+.page .credibility-section,
+.page #repertorio,
+.page #faq {
+  background: var(--color-paper);
+}
+
+
+/* O RETRATO QUE OLHA — ver components/ui/RetratoQueOlha.tsx.
+   Substituiu o LiquidPortrait na célula central em 27/08/2026, quando o dono
+   pediu que ela acompanhasse o cursor. O shader anterior ondulava o material
+   de UMA pose; este percorre 55 poses de uma virada contínua recortada do
+   vídeo, e resolve o eixo vertical em transform. */
+.page #como-funciona .olhar {
+  --olha-x: 0;
+  --olha-y: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* O EIXO VERTICAL INTEIRO MORA AQUI, e isto não é enfeite: é metade do
+     efeito.
+
+     O sprite cobre só o giro horizontal, porque só ele tem material bom no
+     vídeo — nas poses de olhar para baixo ela está de olhos fechados e nas de
+     cima está semicerrando (a medição está no cabeçalho do
+     RetratoQueOlha.tsx). Um sprite também não SOMA direções: não existe
+     combinar "virada" com "erguida" a partir de dois quadros separados, o
+     resultado seria dupla exposição. Então a inclinação vertical é contínua e
+     vem daqui.
+
+     O PONTO DE GIRO FICA NA LINHA DOS OLHOS (origin em 50% 44%), e chegar nele
+     custou duas tentativas. Com o eixo na BASE do quadro, girar para trás
+     afasta a cabeça inteira da câmera: verificado no Playwright, com o cursor
+     no topo da tela o rosto encolhia visivelmente, e o efeito lia como
+     afasta/aproxima, não como olhar para cima. Girando em torno da própria
+     linha dos olhos o tamanho aparente fica estável e o que muda é o
+     escorço — a testa some quando ela olha para cima, a coroa aparece quando
+     olha para baixo. Isso é um aceno.
+
+     O rotateY é pequeno de propósito — 3 graus. Quem vira a cabeça é o sprite;
+     isto aqui só acrescenta paralaxe entre um quadro e o seguinte.
+
+     SEM TRANSIÇÃO, de propósito: ela tinha 260ms, e o resultado era o pior dos
+     dois mundos — o sprite trocava na hora e a inclinação chegava um quarto de
+     segundo depois, discordando dele. A suavidade mora na mistura de quadros
+     do componente, não aqui. */
+  transform-origin: 50% 44%;
+  transform:
+    perspective(820px)
+    rotateX(calc(var(--olha-y) * -19deg))
+    rotateY(calc(var(--olha-x) * 3deg))
+    translate3d(calc(var(--olha-x) * 6px), calc(var(--olha-y) * 9px), 0);
+  will-change: transform;
+}
+
+/* A MÁSCARA RESOLVE UM PROBLEMA DE COR, não é enfeite: o fundo do vídeo é
+   #f1f1f1 (cinza neutro) e o papel da seção é #f8f0ff (lilás claríssimo).
+   São próximos, mas uma BORDA RETA entre os dois apareceria como um retângulo
+   pousado na página. Com as bordas dissolvidas não há retângulo — o cinza
+   morre dentro do papel antes de encontrar uma linha. */
+.page #como-funciona .olhar__quadro {
+  position: absolute;
+  inset: 0;
+  will-change: opacity;
+  background-repeat: no-repeat;
+  background-image: url('/assets/digi-ia-olhar.webp');
+  /* 10 colunas x 5 linhas — casado com COLUNAS e LINHAS no componente. */
+  background-size: 1000% 500%;
+  background-position: 0% 0%;
+  -webkit-mask-image: radial-gradient(118% 104% at 50% 42%,
+      #000 52%, rgba(0, 0, 0, 0.86) 70%, transparent 100%);
+  mask-image: radial-gradient(118% 104% at 50% 42%,
+      #000 52%, rgba(0, 0, 0, 0.86) 70%, transparent 100%);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .page #como-funciona .olhar {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* TEMPORÁRIO — APAGAR JUNTO COM app/olhar/page.tsx.
+   Só o que a página de teste precisa: uma coluna e o retrato grande o
+   bastante para se julgar o olhar. Tudo o mais ela herda da seção real, de
+   propósito, para o teste exercitar o CSS de produção. */
+.page #como-funciona .cf-miolo--teste {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.page #como-funciona .cf-anim--teste {
+  grid-column: 1;
+  grid-row: 1;
+  width: 340px;
+  height: 435px;
+  --retrato: 340px;
+}
+
+/* TELA DE TOQUE NÃO USA O ATLAS, e isto é economia real, não detalhe.
+   Sem cursor não há efeito — o componente nem pendura ouvinte —, mas o
+   atlas continuaria sendo BAIXADO e DECODIFICADO só para exibir um quadro
+   parado: 423KB de arquivo e cerca de 37MB de memória depois de decodificado,
+   num aparelho que é justamente o que menos tem dos dois.
+
+   Aqui ele e trocado por um retrato unico de 10KB. Basta a ordem no arquivo:
+   esta regra vem depois da que aponta para o atlas, e o componente nao
+   escreve mais background-image em estilo inline. */
+@media (pointer: coarse) {
+  .page #como-funciona .olhar__quadro {
+    background-image: url('/assets/digi-ia-frontal.webp');
+    background-size: cover;
+    background-position: center;
   }
 }

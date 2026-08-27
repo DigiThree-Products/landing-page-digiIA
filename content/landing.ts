@@ -1,11 +1,5 @@
 import { SITE } from '@/config/site'
 
-export type DemoScene = {
-  prompt: string
-  label: string
-  items: readonly (readonly [string, string])[]
-}
-
 /** Toda a copy da landing. Componentes cuidam de apresentação e interação. */
 export const LANDING = {
   skipLink: 'Pular para a oferta e cadastro',
@@ -142,7 +136,7 @@ export const LANDING = {
        * peça de conteúdo tem data, canal e formato. Não se copia nada daqui.
        *
        * Cada `valor` é rastreável a algo que a página já afirma: "melhor
-       * horário" vem de LANDING.demo, os formatos vêm do calendário do card
+       * horário" vem de LANDING.comoFunciona, os formatos vêm do calendário do card
        * PLANEJA, e "na voz da sua marca" vem da hero. Nenhum é novo.
        */
       /* SEM TÍTULO INTERNO. A ficha tinha um ("O que vem em cada peça") de
@@ -281,51 +275,69 @@ export const LANDING = {
        Se alguém precisar de um dos dois de volta aqui, o problema não é
        recriá-lo: é que ele vai brigar com a seção que já existe. */
   },
-  demo: {
+  /**
+   * Como funciona — a estação que troca "o que a ferramenta faz" por "o que
+   * sai da sua semana".
+   *
+   * A seção inteira é escrita do lado do LEITOR, não do produto. Cada bloco
+   * tem quatro partes e a ordem delas é o argumento:
+   *   `rotulo` diz em que passo estamos;
+   *   `aspa`   é a frase que a pessoa já disse para si mesma;
+   *   `dor`    é o custo de ter dito aquilo;
+   *   `virada` é o que passa a acontecer no lugar.
+   *
+   * A aspa vem ANTES da dor de propósito: quem lê precisa se reconhecer
+   * antes de aceitar o diagnóstico. Invertido, vira acusação.
+   *
+   * A `virada` é o único texto claro do bloco (ver styles/institutional.css)
+   * — é ela que o olho pega ao varrer a seção sem ler tudo.
+   */
+  comoFunciona: {
     eyebrow: 'Como funciona',
-    /* Duas partes na mesma linha: o ritmo binário é o argumento. Título de
-       seção com 3 a 5 palavras é a norma nas referências; a frase longa
-       que ficava aqui virou subtítulo, que é o papel dela. */
-    title: 'Você pede.',
-    titleAccent: 'Ela entrega.',
-    /* A segunda frase vende CONTROLE, que é o segundo medo de quem compra IA
-       de marketing — o primeiro é sair genérico, e disso cuida a seção de DNA.
-       A etapa de aprovação existe no produto e o site não a vendia. */
+    title: 'O que você deixa de fazer a partir de agora.',
     subtitle:
-      'Seu pedido ganha forma e evolui com cada ajuste. Nada vai para o ar sem o seu de acordo.',
-    windowLabel: 'Digi.IA — demonstração',
-    scenes: [
+      'Não é uma ferramenta a mais para aprender. É a lista de coisas que saem da sua semana.',
+    /* Quatro passos, e a ordem é a do uso real: pedir, ver sair, conferir,
+       soltar. Não é o organograma do produto — é a sequência em que a pessoa
+       encosta nele. */
+    blocos: [
       {
-        prompt: 'campanha de dia das mães para uma joalheria de bairro',
-        label: 'Campanha gerada — 3 variações',
-        items: [
-          ['01', 'Headline: “Ela guardou tudo. Guarde isso para ela.”'],
-          ['02', 'Headline: “Presente que não vai para a gaveta.”'],
-          ['03', 'Headline: “Dez anos de loja. Milhares de mães.”'],
-          ['→', 'Legenda, criativo 1080×1350 e versão para stories inclusos.'],
-        ],
+        rotulo: '01 · Pede',
+        aspa: '“Depois eu monto.”',
+        dor: 'O plano do mês é sempre a tarefa que empurra pra semana que vem. Entre a primeira ideia e a primeira peça no ar, passam duas ou três semanas.',
+        virada: 'Você explica o mês uma vez, em português, e manda gerar.',
       },
       {
-        prompt: 'calendário editorial de 30 dias para uma clínica odontológica',
-        label: 'Calendário gerado — abril',
-        items: [
-          ['01', 'Seg — Carrossel: o que ninguém conta sobre clareamento'],
-          ['02', 'Qua — Reels: bastidor de um dia na clínica'],
-          ['03', 'Sex — Post: antes e depois com consentimento do paciente'],
-          ['→', 'Mais 27 pautas com formato, legenda e melhor horário.'],
-        ],
+        rotulo: '02 · Vê acontecer',
+        aspa: '“Será que travou?”',
+        dor: 'Ferramenta que roda sem dizer nada te obriga a esperar sem saber se vale a pena esperar.',
+        virada: 'Os posts aparecem um a um na sua frente. Se falhar, você sabe naquele segundo.',
       },
       {
-        prompt: 'qual o ROI de investir R$ 3.000 em tráfego neste lançamento?',
-        label: 'Projeção calculada',
-        items: [
-          ['R$', 'Custo por lead estimado: R$ 4,80 — 625 leads no período'],
-          ['%', 'Conversão histórica do setor: 3,2% → 20 vendas'],
-          ['→', 'ROI projetado: 2,4× sobre o investimento em mídia'],
-          ['→', 'Cenário conservador e cenário otimista no detalhamento.'],
-        ],
+        rotulo: '03 · Confere',
+        aspa: '“Achei que estava tudo pronto.”',
+        dor: 'Você dá o ok no mês inteiro e descobre na terça que faltavam seis peças.',
+        virada: 'Mês com buraco não fecha. A lista do que falta aparece antes do seu ok.',
       },
-    ] satisfies readonly DemoScene[],
+      {
+        rotulo: '04 · Solta',
+        aspa: '“Isso aqui eu não aprovei.”',
+        dor: 'O post errado no ar é o tipo de erro que custa cliente, não tempo.',
+        virada: 'Nada sai sem você dizer sim. Aprovado é aprovado — não muda sozinho.',
+      },
+    ],
+    /* SÓ O CONVITE FECHA A SEÇÃO. Viviam aqui uma faixa de garantias (seis
+       itens) e uma frase de fecho em serifa; as duas saíram a pedido do dono
+       em 27/08/2026. A seção termina nos quatro blocos e no botão — sem
+       resumo depois deles.
+
+       As garantias eram material de tirar objeção. Se voltarem, é provável
+       que o lugar delas seja o FAQ, não o fim desta seção: aqui elas
+       competiam com o convite pelo último olhar. */
+    fecho: {
+      ctaHref: '#cadastro',
+      ctaLabel: 'Entrar na primeira turma',
+    },
   },
   /**
    * DNA Estratégico — a estação que responde "por que não sai com cara de IA".
