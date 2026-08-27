@@ -198,42 +198,22 @@ const CHEGOU = 0.614
 const PARTIU = 0.841
 
 /**
- * O RITMO DE CADA ESTAÇÃO — e por que uma delas foge do padrão.
+ * O RITMO DE UMA ESTAÇÃO — dois atos hoje, e o encaixe para um terceiro.
  *
- * Cinco das seis têm um ato só: chegam e ficam paradas enquanto se lê. A
- * Estação 02 passou a ter TRÊS — chega orbitando como um satélite dobrado,
- * implanta as asas até virar o console deitado, e só então revela o texto.
- * Três atos não cabem no mesmo orçamento de um, e espremê-los ali
- * significaria desfazer a desaceleração da revelação, que foi pedida logo
- * antes.
+ * As seis chegam e ficam paradas enquanto se lê: chegada, revelação, partida.
+ * `expandiu` IGUAL a `chegou` é o que desliga o ato do meio — a janela da
+ * expansão tem comprimento zero, `--expande` nasce saturada em 1 e a revelação
+ * começa no mesmo instante em que a chegada termina.
  *
- * Por isso o pin dela é MAIOR, e só o dela: 3,0 telas contra 2,2 das outras.
+ * O CAMPO CONTINUA AQUI porque a Estação 02 já usou um, e pode voltar a usar.
+ * Entre 26 e 27/08 ela teve três atos: chegava orbitando como um satélite
+ * DOBRADO, implantava as asas até virar o console deitado, e só então revelava
+ * o texto. O pedido de 27/08 foi tirar a dobra e deixar o satélite fixo, então
+ * o ato do meio não tem mais o que fazer e ela voltou às 2,2 telas das outras.
  *
- * OS MARCOS SÃO FRAÇÕES DO PIN, e é aí que mora a pegadinha: aumentar a
- * travessia sem mexer nos marcos esticaria TUDO junto, inclusive a chegada,
- * que já estava no ponto. Os números do `recursos` estão resolvidos ao
- * contrário — eu digo quantas telas cada ato deve durar e divido pelo pin:
- *
- *   chegada     1,35 tela → 1,35 / 3,0 = 0,45     (igual à das outras cinco)
- *   implantação 0,80 tela → acumulado 2,15 / 3,0 = 0,7167
- *   revelação   0,50 tela → acumulado 2,65 / 3,0 = 0,8833
- *   partida     0,35 tela → o resto
- *
- * A chegada e a partida ficam do mesmo tamanho das outras estações, medidas
- * em tela de rolagem. O que a Estação 02 cobra a mais são exatamente as 0,80
- * tela da implantação, e nada além disso.
- *
- * A IMPLANTAÇÃO SUBIU DE 0,60 PARA 0,80 TELA quando o ato do meio deixou de
- * ser um quadrado esticando e virou duas asas se abrindo com um corpo sendo
- * fechado entre elas. São três movimentos simultâneos onde antes havia um, e
- * a 0,60 eles se atropelavam — o corpo sumia antes de dar tempo de ver o que
- * era. As 0,20 tela vieram do pin, e não da partida: ela já está em 0,35, que
- * é o piso em que ainda não lê como corte seco.
- *
- * `expandiu` IGUAL a `chegou` no padrão é o que desliga o ato do meio para as
- * outras cinco: a janela da expansão tem comprimento zero, `--expande` nasce
- * saturada em 1 e a revelação começa no mesmo instante em que a chegada
- * termina — exatamente o comportamento anterior a esta mudança.
+ * O molde daquele ritmo está guardado logo abaixo de `RITMO_PADRAO`, junto com
+ * a regra de como resolver os marcos. Vale a pena ler antes de declarar um ato
+ * novo: eles são FRAÇÕES do pin, e essa é a pegadinha da conta.
  */
 type Ritmo = { travessia: number; chegou: number; expandiu: number; partiu: number }
 
@@ -244,34 +224,37 @@ const RITMO_PADRAO: Ritmo = {
   partiu: PARTIU,
 }
 
-const RITMO_RECURSOS: Ritmo = {
-  travessia: 3.0,
-  chegou: 0.45,
-  expandiu: 0.7167,
-  partiu: 0.8833,
-}
+/* O molde de um ritmo com ato do meio, guardado por ser o único exemplo de
+   como se declara um. Era o da Estação 02 até 27/08:
+
+     travessia 3,0 · chegou 0,45 · expandiu 0,7167 · partiu 0,8833
+
+   Os marcos saem RESOLVIDOS AO CONTRÁRIO — diz-se quantas telas cada ato dura
+   e divide-se pelo pin — senão aumentar a travessia estica a chegada junto:
+
+     chegada     1,35 tela → 1,35 / 3,0 = 0,45
+     implantação 0,80 tela → acumulado 2,15 / 3,0 = 0,7167
+     revelação   0,50 tela → acumulado 2,65 / 3,0 = 0,8833
+     partida     0,35 tela → o resto
+
+   Repare que chegada e partida ficam do mesmo tamanho das outras estações,
+   medidas em tela de rolagem: o ato do meio cobra exatamente o que dura. */
 
 /**
- * O ATO DO MEIO NÃO EXISTE NO CELULAR, e cobrar por ele seria cobrar por nada.
+ * AS SEIS ESTAÇÕES ANDAM NO MESMO RITMO, e voltaram a andar em 27/08.
  *
- * A grade só tem o que dobrar quando o console é mais LARGO que alto: a
- * envergadura do satélite dobrado é a altura vezes 1,6. No celular a seção é
- * mais alta que larga, então `--g-min` satura em 1 (o teto está em
- * GradeRecursos.tsx) e a grade já nasce implantada — não há dobra para ver.
- * Com o ritmo do desktop, o pin cobraria 0,80 tela de rolagem por um ato que
- * ali não acontece.
+ * A Estação 02 teve, por um tempo, um pin próprio de 3,0 telas: as 0,80 tela a
+ * mais pagavam o ATO DO MEIO, em que o satélite chegava dobrado e implantava as
+ * asas até virar o console. Esse ato saiu (ver GradeRecursos.tsx) e, com ele,
+ * some a única razão que ela tinha para cobrar mais rolagem que as outras.
  *
- * O breakpoint é o mesmo de recursos.css, onde a fileira vira carrossel.
- *
- * ENVELHECE NUMA MUDANÇA DE JANELA, até o próximo mount: o ritmo é lido uma
- * vez, na criação do gatilho. É o mesmo preço que `vaoDaEstacao` já paga e
- * pela mesma razão — e, como lá, o caso real (girar o telefone) é raro o
- * bastante para não valer um observador só para isto.
+ * A função fica, em vez de sumir junto: ela é o ponto de extensão onde um ato
+ * próprio se declara, e apagá-la esconderia isso de quem vier depois. Quem for
+ * reintroduzir um: o molde está no histórico deste arquivo, e a pegadinha é que
+ * os marcos são FRAÇÕES do pin — aumentar a travessia sem remexer neles estica
+ * a chegada junto, que é justamente o que não se quer.
  */
-const ritmoDa = (secao: HTMLElement): Ritmo => {
-  if (secao.id !== 'recursos') return RITMO_PADRAO
-  return window.matchMedia('(max-width: 1023px)').matches ? RITMO_PADRAO : RITMO_RECURSOS
-}
+const ritmoDa = (_secao: HTMLElement): Ritmo => RITMO_PADRAO
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
