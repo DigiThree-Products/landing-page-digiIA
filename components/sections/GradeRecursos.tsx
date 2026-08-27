@@ -58,10 +58,14 @@ import { useEffect, useRef } from 'react'
  * 120px de texto real). Nenhuma expressão CSS sabe dizer onde eles caem.
  *
  * Daí as medidas publicadas aqui, e só elas:
- *   --g-y     (em cada segmento) y do filete e do piso daquele instrumento
- *   --g-piso  y do piso mais baixo dos quatro, que fecha a caixa da grade
- *   --g-topo  onde a caixa começa dentro do `.rec-layout`
- *   --g-base  quanto sobra dela até o fim do layout
+ *   --g-y           (em cada segmento) y do filete e do piso daquele instrumento
+ *   --g-piso        y do piso mais baixo dos quatro, que fecha a caixa da grade
+ *   --g-topo        onde a caixa começa dentro do `.rec-layout`
+ *   --g-base        quanto sobra dela até o fim do layout
+ *   --g-junta       o filete mais alto dos quatro, onde as hastes cruzam
+ *   --g-ceu         o vão livre acima do trilho, que dimensiona a antena
+ *   --g-parede      x da parede esquerda do barramento, onde o trilho para
+ *   --g-parede-fim  x da parede direita, onde ele recomeça
  */
 
 /* Os dois arranjos, e quais verticais e colunas cada um leva.
@@ -192,6 +196,35 @@ export function GradeRecursos() {
          no meio da frase, a coluna central ficou livre de ponta a ponta e o
          teto subiu para cá. Medido a 1536px: 177px contra os 52 de antes. */
       layout.style.setProperty('--g-ceu', `${fileira.offsetTop.toFixed(2)}px`)
+
+      /* ---- ONDE O TRILHO TEM DE PARAR ----
+         O trilho atravessava o barramento por dentro. Não se via enquanto o
+         corpo estava colado nele: a borda de topo do corpo cobria a linha. Ao
+         abrir a base do triângulo, o corpo subiu 14px e a linha ficou exposta,
+         cortando a peça central ao meio.
+
+         São DOIS trilhos a cortar, e eles têm de continuar idênticos: o desta
+         camada e o `.quads::before`, que é o do console. Se um ganhar o corte e
+         o outro não, a troca no fim da chegada — hoje invisível porque as duas
+         grades coincidem — vira um piscar.
+
+         E O CORTE NÃO SAI EM PORCENTAGEM. Os dois trilhos partem da MESMA borda
+         esquerda (ambos a meio vão para fora do `.rec-layout`, medido: x = 200
+         para os dois), mas não têm a mesma largura — o do console desconta uma
+         `--espessura` à direita, para terminar rente à última marca. Uma parada
+         escrita em % resolveria contra larguras diferentes e os dois cortes
+         cairiam a ~1px um do outro; ancorada à esquerda em px, é exata nos dois.
+
+         `offsetLeft` de novo, e não `getBoundingClientRect`: o palco leva
+         `zoom: 0.92` no repouso, e zoom entra no retângulo pintado. */
+      const corpo = grade.querySelector<HTMLElement>('.rec-grade__corpo')
+      if (corpo) {
+        layout.style.setProperty('--g-parede', `${corpo.offsetLeft}px`)
+        layout.style.setProperty(
+          '--g-parede-fim',
+          `${corpo.offsetLeft + corpo.offsetWidth}px`,
+        )
+      }
     }
 
     medir()
@@ -203,9 +236,17 @@ export function GradeRecursos() {
 
   return (
     <div className="rec-grade" ref={ref} aria-hidden="true">
-      {/* O TRILHO É A VIGA: a única horizontal contínua do console, atravessando
-          a fileira inteira de conduíte a conduíte. Fica fora dos dois arranjos
-          porque é de ambos — é ele que os liga por cima do barramento. */}
+      {/* O TRILHO É A VIGA: a horizontal que atravessa a fileira inteira, de
+          conduíte a conduíte. Fica fora dos dois arranjos porque é de ambos — é
+          ele que os liga.
+
+          E DESDE 27/08 ELE PARA NO BARRAMENTO em vez de atravessá-lo. Antes
+          dizia-se aqui que ele passava POR CIMA do corpo; na verdade passava POR
+          DENTRO, e só não se via porque a borda de topo do corpo cobria a linha.
+          Aberta a base do triângulo da antena, o corpo subiu 14px e o corte
+          apareceu. O corte de verdade agora é no trilho, entre `--g-parede` e
+          `--g-parede-fim` (ver a nota delas no efeito, e o gradiente
+          `--trilho-fio` em recursos.css, que os dois trilhos dividem). */}
       <i className="rec-grade__h rec-grade__h--trilho" />
 
       {ARRANJOS.map(({ lado, verticais, colunas }) => (

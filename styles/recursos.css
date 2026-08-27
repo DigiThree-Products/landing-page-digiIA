@@ -365,6 +365,37 @@
      isto subir para 3px ou mais, vale remedir antes de mexer também na cor,
      ou as linhas passam a ler como as bordas que a composição não quer. */
   --espessura: 2px;
+
+  /* ---- O FIO DO TRILHO, COM O BURACO DO BARRAMENTO ----
+     Escrito UMA VEZ e usado nos dois trilhos — o do console (`.quads::before`)
+     e o desta camada (`.rec-grade__h--trilho`) —, porque a condição para a
+     troca no fim da chegada ser invisível é que os dois sejam a mesma linha.
+     Duplicar o gradiente seria criar duas fontes de verdade para uma coisa que
+     precisa ser uma; a próxima mexida em um esqueceria o outro e o defeito
+     apareceria só naquele instante, que é o pior lugar para procurá-lo.
+
+     AS PARADAS SÃO PX ABSOLUTOS, ancorados à esquerda, e isso não é preguiça:
+     os dois trilhos partem exatamente da mesma borda esquerda (meio vão para
+     fora do `.rec-layout` — medido, x = 200 nos dois), mas o do console
+     desconta uma `--espessura` à direita para terminar rente à última marca.
+     Uma parada em % resolveria contra larguras diferentes e os dois cortes
+     cairiam a ~1px um do outro. Ancorada à esquerda, é exata nos dois.
+
+     O RECUO DE 50%/50% É O ESTADO SEM MEDIDA, e é por isso que ele é degenerado
+     de propósito: sem `--g-parede` (primeiro quadro, ou celular, onde a
+     `.rec-grade` é `display: none`) a faixa transparente tem largura zero e
+     sobra a linha inteira, que era o comportamento anterior. Falha para o lado
+     de não cortar nada. */
+  --trilho-fio: linear-gradient(
+    to right,
+    var(--fio) 0,
+    var(--fio) var(--g-parede, 50%),
+    transparent var(--g-parede, 50%),
+    transparent var(--g-parede-fim, 50%),
+    var(--fio) var(--g-parede-fim, 50%),
+    var(--fio) 100%
+  );
+
   /* Terceiro degrau, para o que é INTERNO a um instrumento: o divisor entre
      as duas linhas da calculadora, e o que mais vier. Fica abaixo do trilho
      de propósito — filete dentro de um painel não pode competir com a
@@ -723,8 +754,12 @@
   height: var(--espessura);
   /* `--fio` e não `--fio-forte`: o trilho é o mais discreto dos três, um
      degrau abaixo da moldura e das marcas. Ver a tabela de contraste na
-     declaração dos dois, em `.rec-layout`. */
-  background: var(--fio);
+     declaração dos dois, em `.rec-layout`.
+
+     E ELE PARA NO BARRAMENTO. O fio vem de `--trilho-fio`, que é a mesma linha
+     com um buraco do tamanho do corpo do satélite; a nota de lá explica por que
+     o gradiente é escrito uma vez só e por que as paradas são px e não %. */
+  background: var(--trilho-fio);
   opacity: calc(var(--trava) * var(--linhas));
 }
 
@@ -1790,15 +1825,19 @@
   height: var(--espessura);
 }
 
-/* O TRILHO É A VIGA: a única horizontal contínua do console, atravessando a
-   fileira inteira de vertical a vertical. Fica FORA dos dois arranjos — é
-   filho direto da camada — porque é de ambos: é ele que os liga por cima do
-   barramento. */
+/* O TRILHO É A VIGA: a horizontal que atravessa a fileira de vertical a
+   vertical. Fica FORA dos dois arranjos — é filho direto da camada — porque é
+   de ambos: é ele que os liga.
+
+   ELE PARA NO BARRAMENTO, e o fio sai de `--trilho-fio` — o mesmo gradiente que
+   o trilho do console usa. Os dois têm de ser a mesma linha, senão a troca no
+   fim da chegada deixa de ser invisível; é por isso que o gradiente mora num
+   token e não aqui. */
 .page #recursos .rec-grade__h--trilho {
   top: 0;
   left: 0;
   right: 0;
-  background: var(--fio);
+  background: var(--trilho-fio);
 }
 
 /* Filetes e pisos são SEGMENTADOS, um por instrumento, e não uma linha
