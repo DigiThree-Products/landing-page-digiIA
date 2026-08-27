@@ -175,6 +175,23 @@ export function GradeRecursos() {
         '--g-junta',
         `${Math.min(...medidas.map((m) => m.filete)).toFixed(2)}px`,
       )
+
+      /* ---- O CÉU DA ANTENA ----
+         Quanto espaço livre existe acima do trilho, dele até o braço de cima
+         da moldura. É o teto da antena, e precisa ser MEDIDO porque o
+         cabeçalho tem altura de conteúdo: o H2 quebra em duas linhas numa
+         janela estreita e o céu encolhe junto.
+
+         A conta se reduz a um número só. O trilho fica uma folga acima da
+         fileira e a moldura uma folga acima do topo do layout, então o vão
+         entre os dois é `(fileira.offsetTop − folga) + folga` — as folgas se
+         cancelam e sobra o `offsetTop` da fileira, limpo.
+
+         SÓ EXISTE PORQUE O TÍTULO SE PARTIU. Enquanto a frase corria inteira, a
+         antena batia na base do H2 e o teto era uma `--folga`; com o vão aberto
+         no meio da frase, a coluna central ficou livre de ponta a ponta e o
+         teto subiu para cá. Medido a 1536px: 177px contra os 52 de antes. */
+      layout.style.setProperty('--g-ceu', `${fileira.offsetTop.toFixed(2)}px`)
     }
 
     medir()
@@ -269,9 +286,23 @@ export function GradeRecursos() {
             tampa: prato mais estreito que o próprio corpo não lê. Com a baia em
             3,2 vãos e esta razão, a conta bate nos mesmos 2,1×. Mexer num dos
             dois sem o outro desmancha a proporção. */}
+        {/* ---- O MASTRO É LONGO, E É ELE QUE DÁ A ALTURA ----
+            O `viewBox` cresceu de 78 para 118 de altura e a largura ficou em
+            130. Nada do prato mudou de tamanho aqui dentro: os 40 pontos novos
+            foram TODOS para o mastro e os pés, entre a concha e o barramento.
+
+            A razão é aritmética. A peça é dimensionada pela ALTURA disponível
+            e a largura sai da razão do `viewBox` — então esticar a altura com a
+            razão antiga (1,67) levaria a largura junto, e o prato passaria do
+            vão que o título abriu. Alongando o `viewBox` em vez do desenho, a
+            razão cai para 1,10 e a peça sobe sem engordar.
+
+            É ASSIM QUE A REFERÊNCIA MONTA. Lá o prato mora no alto de um mastro
+            que atravessa a tigela e desce até os pés; a versão anterior tinha o
+            prato quase encostado no corpo porque não havia altura para mais. */}
         <svg
           className="rec-grade__antena"
-          viewBox="0 0 130 78"
+          viewBox="0 0 130 118"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -282,7 +313,10 @@ export function GradeRecursos() {
           {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
               ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
           <ellipse cx="65" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
-          <line x1="65" y1="60" x2="65" y2="11" />
+          {/* O mastro ATRAVESSA a tigela, do alto até o pé — é uma peça só, e
+              desenhá-lo em dois pedaços (acima e abaixo do prato) deixaria uma
+              junta visível bem no vértice da concha. */}
+          <line x1="65" y1="100" x2="65" y2="11" />
           {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
               O aro é o prato visto de viés; a concha é o que o faz ler como
               parábola em vez de anel. Mas os dois começam no MESMO par de
@@ -299,13 +333,13 @@ export function GradeRecursos() {
                 B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
           <ellipse cx="65" cy="34" rx="62" ry="10" />
           <path d="M3 34 Q65 86 127 34" />
-          {/* Os dois pés saem do vértice da concha, onde o mastro também
-              termina, e abrem em direção ao barramento — é o que apoia o prato
-              sem precisar de torre, e o que evita o mastro espetado. Eles pousam
-              DENTRO da largura do corpo: medido, 39% e 61% do `viewBox` contra
-              o corpo ocupando 25% a 75% dele. */}
-          <line x1="61" y1="60" x2="50" y2="78" />
-          <line x1="69" y1="60" x2="80" y2="78" />
+          {/* Os dois pés saem do PÉ DO MASTRO, e não do vértice da concha como
+              antes: com o mastro longo, sair da concha os faria abrir num
+              ângulo raso e a peça leria como tripé, não como antena sobre um
+              barramento. Eles pousam DENTRO da largura do corpo — medido, 37% e
+              63% do `viewBox` contra o corpo ocupando 25% a 75% dele. */}
+          <line x1="62" y1="100" x2="48" y2="118" />
+          <line x1="68" y1="100" x2="82" y2="118" />
         </svg>
       </div>
     </div>

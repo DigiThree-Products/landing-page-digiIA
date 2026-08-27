@@ -536,9 +536,16 @@
    cabeçalho. Assim a frase começa onde sempre começou; o que muda é onde ela
    é interrompida.
 
-   O VÃO É A BAIA MAIS UM VÃO DE COLUNA. Só a baia deixaria o texto raspando o
-   prato, que tem 102px numa baia de 138 e é a peça mais larga que sobe ali. O
-   vão extra é a folga de cada lado.
+   O VÃO É DITADO PELO PRATO, NÃO PELA BAIA. Ele começou valendo "baia + um vão
+   de coluna" e ficou pequeno assim que a antena subiu: o prato é a peça mais
+   larga que passa por aqui e mede bem mais que o barramento — medido, 180px de
+   aro contra 52 de corpo. Dois vãos e meio dão a ele ~30px de respiro de cada
+   lado contra as letras.
+
+   E O TEXTO CONTINUA CABENDO, que é o outro lado da conta: com 243px de vão as
+   colunas laterais ficam com 487px cada, contra 430px da metade da esquerda e
+   330 da direita. Alargar mais começa a espremer "O método da DigiThree," e a
+   quebra em duas linhas — que é o sinal de que se passou do ponto.
 
    POR QUE `1fr` E NÃO `auto` NAS LATERAIS: com `auto` a coluna encolhe até o
    texto e o vão central escorrega para onde sobrar — deixa de ser centro e
@@ -557,7 +564,7 @@
   line-height: 1.02;
   letter-spacing: -0.042em;
   display: grid;
-  grid-template-columns: 1fr calc(var(--corpo-larg) + var(--vao)) 1fr;
+  grid-template-columns: 1fr calc(var(--corpo-larg) + 2.5 * var(--vao)) 1fr;
   /* `baseline` e não `center`: as duas metades são a MESMA linha de texto,
      partida. Alinhadas pela caixa, um `em` de tamanho diferente as
      desnivelaria e a frase deixaria de ler como contínua. */
@@ -1906,36 +1913,33 @@
   position: absolute;
   left: 50%;
 
-  /* ---- O PRATO DESCE PARA DENTRO DA BAIA ----
-     E é isto que o fez crescer, depois de duas tentativas fracassadas.
+  /* ---- ELA POUSA NO BARRAMENTO E SOBE ATÉ QUASE A MOLDURA ----
+     `bottom: 100%` a assenta exatamente no topo do corpo. A altura é o CÉU
+     medido (ver `--g-ceu` em GradeRecursos.tsx): o vão entre o trilho e o braço
+     de cima da moldura, descontado o quanto o corpo já sobe acima do trilho.
 
-     A faixa acima do trilho é uma `--folga` e não estica: a seção é centrada
-     verticalmente e a barra flutuante fica a 6px da moldura (a conta está na
-     nota da `--folga`). Alargar só o `viewBox` também não resolvia, porque
-     achatar o prato sem lhe dar altura o transforma numa risca.
+     0,86 deixa 14% de respiro sob a moldura. Encostar nela faria a antena ler
+     como se estivesse pendurada no braço, e não plantada no barramento.
 
-     A saída é que A BAIA É PISTA VAZIA DO GRID. Ela não recebe card nenhum —
-     existe só para abrir o vão onde o barramento mora —, então o espaço abaixo
-     do trilho, ali no meio, está livre. O prato desce para dentro dele.
+     O QUE SAIU DAQUI, e por que não volta: um `--mergulho` que jogava o prato
+     para DENTRO da baia, abaixo do trilho. Era a saída enquanto o título corria
+     inteiro e a antena tinha uma `--folga` de teto — a baia é pista vazia do
+     grid, então havia espaço livre ali embaixo. Com a frase partida, a coluna
+     central abriu de ponta a ponta e o céu passou de 52px para 177. Mergulhar
+     virou desperdício: o prato desceria justamente para onde há menos espaço.
 
-     O aro pousa praticamente SOBRE o trilho e a concha mergulha na baia. Não
-     cobre conteúdo nenhum: medido, o prato tem 102px de largura numa baia de
-     137, então ele nem encosta nas paredes. E a ordem no DOM garante a
-     pintura por cima — o corpo vem depois do trilho.
-
-     0,75 de mergulho quase DOBRA a peça (de 0,91 folga para 1,66) e é o que põe
-     a razão prato/corpo em 1,96, contra os 2,1 da referência. Passar disso
-     afunda o aro na fileira e o prato deixa de ler como coisa montada em cima
-     do barramento. */
-  --mergulho: calc(var(--folga) * 0.75);
-  bottom: calc(100% - var(--mergulho));
-  --antena-alt: calc(var(--folga) - var(--corpo-acima) + var(--mergulho));
+     A ORDEM DAS DUAS MUDANÇAS IMPORTA para quem for ler o histórico. Primeiro o
+     prato mergulhou porque não podia subir; depois o título abriu e ele pôde.
+     Reintroduzir o mergulho hoje devolveria o prato ao meio da fileira sem
+     ganho nenhum. */
+  bottom: 100%;
+  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 0.86);
   height: var(--antena-alt);
-  /* 130/78 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx, que
-     explica por que ele é mais raso que o da referência. Os dois números
-     PRECISAM andar juntos: divergindo, o `preserveAspectRatio` padrão passa a
-     encaixotar o desenho e sobra faixa vazia dentro da caixa. */
-  width: calc(var(--antena-alt) * 130 / 78);
+  /* 130/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx, que
+     explica por que os 40 pontos de altura novos foram todos para o mastro. Os
+     dois números PRECISAM andar juntos: divergindo, o `preserveAspectRatio`
+     padrão passa a encaixotar o desenho e sobra faixa vazia dentro da caixa. */
+  width: calc(var(--antena-alt) * 130 / 118);
   transform: translateX(-50%);
   stroke-width: var(--espessura);
   /* O aro do prato encosta nas bordas do `viewBox`; sem isto o traço dele é
