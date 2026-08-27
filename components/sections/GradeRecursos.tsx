@@ -286,23 +286,31 @@ export function GradeRecursos() {
             tampa: prato mais estreito que o próprio corpo não lê. Com a baia em
             3,2 vãos e esta razão, a conta bate nos mesmos 2,1×. Mexer num dos
             dois sem o outro desmancha a proporção. */}
-        {/* ---- O MASTRO É LONGO, E É ELE QUE DÁ A ALTURA ----
-            O `viewBox` cresceu de 78 para 118 de altura e a largura ficou em
-            130. Nada do prato mudou de tamanho aqui dentro: os 40 pontos novos
-            foram TODOS para o mastro e os pés, entre a concha e o barramento.
+        {/* ---- O `viewBox` É UM DIAL DE DUAS PONTAS ----
+            A peça é dimensionada pela ALTURA disponível e a largura sai da
+            razão daqui. Isso faz do `viewBox` o lugar onde se escolhe QUAL das
+            duas cresce, e as duas mudanças de hoje usaram as duas pontas:
 
-            A razão é aritmética. A peça é dimensionada pela ALTURA disponível
-            e a largura sai da razão do `viewBox` — então esticar a altura com a
-            razão antiga (1,67) levaria a largura junto, e o prato passaria do
-            vão que o título abriu. Alongando o `viewBox` em vez do desenho, a
-            razão cai para 1,10 e a peça sobe sem engordar.
+            ALTURA 78 → 118, com a largura parada em 130. Os 40 pontos novos
+            foram todos para o mastro e os pés; nada do prato mudou de tamanho
+            aqui dentro. Foi assim que a antena subiu sem engordar — com a razão
+            antiga (1,67), esticar a altura teria levado a largura junto e o
+            prato passaria do vão que o título abriu.
 
-            É ASSIM QUE A REFERÊNCIA MONTA. Lá o prato mora no alto de um mastro
-            que atravessa a tigela e desce até os pés; a versão anterior tinha o
-            prato quase encostado no corpo porque não havia altura para mais. */}
+            LARGURA 130 → 170, com a altura parada em 118. Aqui é o inverso, e
+            atende ao "aumenta a largura dele também": o aro cresce de rx 62
+            para 82 e a peça alarga sem subir mais — que é bom, porque a altura
+            já está a 7% da moldura e não tem para onde ir.
+
+            A razão foi de 1,67 a 1,10 e voltou a 1,44. Quem for mexer: escolha
+            qual eixo quer e mexa SÓ no outro número. Mexer nos dois ao mesmo
+            tempo é o jeito de não entender o que mudou.
+
+            E o par tem de bater com o `width` em recursos.css, senão o
+            `preserveAspectRatio` padrão encaixota o desenho. */}
         <svg
           className="rec-grade__antena"
-          viewBox="0 0 130 118"
+          viewBox="0 0 170 118"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -312,11 +320,11 @@ export function GradeRecursos() {
         >
           {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
               ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
-          <ellipse cx="65" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
+          <ellipse cx="85" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
           {/* O mastro ATRAVESSA a tigela, do alto até o pé — é uma peça só, e
               desenhá-lo em dois pedaços (acima e abaixo do prato) deixaria uma
               junta visível bem no vértice da concha. */}
-          <line x1="65" y1="100" x2="65" y2="11" />
+          <line x1="85" y1="100" x2="85" y2="11" />
           {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
               O aro é o prato visto de viés; a concha é o que o faz ler como
               parábola em vez de anel. Mas os dois começam no MESMO par de
@@ -331,15 +339,20 @@ export function GradeRecursos() {
               Agora o aro fecha em 44 e a concha desce até 60 — 16 unidades. O
               vértice sai da conta da quadrática, não do olho:
                 B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
-          <ellipse cx="65" cy="34" rx="62" ry="10" />
-          <path d="M3 34 Q65 86 127 34" />
+          <ellipse cx="85" cy="34" rx="82" ry="10" />
+          <path d="M3 34 Q85 86 167 34" />
           {/* Os dois pés saem do PÉ DO MASTRO, e não do vértice da concha como
               antes: com o mastro longo, sair da concha os faria abrir num
               ângulo raso e a peça leria como tripé, não como antena sobre um
-              barramento. Eles pousam DENTRO da largura do corpo — medido, 37% e
-              63% do `viewBox` contra o corpo ocupando 25% a 75% dele. */}
-          <line x1="62" y1="100" x2="48" y2="118" />
-          <line x1="68" y1="100" x2="82" y2="118" />
+              barramento.
+
+              ELES POUSAM NAS PAREDES DO CORPO, e os números saem de conta, não
+              do olho: com a antena em 231px e o corpo em 57, o corpo ocupa de
+              37,7% a 62,3% da largura da peça — o que em unidades do `viewBox`
+              (170 de largura) cai em 64 e 106. Alargar o `viewBox` sem refazer
+              esta conta deixaria os pés pendurados fora do barramento. */}
+          <line x1="81" y1="100" x2="64" y2="118" />
+          <line x1="89" y1="100" x2="106" y2="118" />
         </svg>
       </div>
     </div>

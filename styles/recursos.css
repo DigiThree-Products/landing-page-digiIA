@@ -275,7 +275,7 @@
      faixa acima do trilho, que está livre de ponta a ponta, e é ela que dá o
      volume. Barramento fino com antena larga é silhueta de satélite, não
      concessão. */
-  --corpo-larg: calc(var(--vao) * 3.2);
+  --corpo-larg: calc(var(--vao) * 3.5);
 
   /* ---- A HASTE ----
      O vão de cada lado, entre a parede da baia e a parede do barramento. Sai
@@ -537,15 +537,23 @@
    é interrompida.
 
    O VÃO É DITADO PELO PRATO, NÃO PELA BAIA. Ele começou valendo "baia + um vão
-   de coluna" e ficou pequeno assim que a antena subiu: o prato é a peça mais
-   larga que passa por aqui e mede bem mais que o barramento — medido, 180px de
-   aro contra 52 de corpo. Dois vãos e meio dão a ele ~30px de respiro de cada
-   lado contra as letras.
+   de coluna" e ficou pequeno duas vezes, nas duas vezes em que a antena
+   cresceu: o prato é a peça mais larga que passa por aqui e mede QUATRO VEZES o
+   barramento — medido, 226px de aro contra 57 de corpo.
 
-   E O TEXTO CONTINUA CABENDO, que é o outro lado da conta: com 243px de vão as
-   colunas laterais ficam com 487px cada, contra 430px da metade da esquerda e
-   330 da direita. Alargar mais começa a espremer "O método da DigiThree," e a
-   quebra em duas linhas — que é o sinal de que se passou do ponto.
+   QUEM MANDA NO TETO É A METADE ESQUERDA DA FRASE, e não o calendário como eu
+   supus a primeira vez. Medido a 1536px:
+
+     "O método da DigiThree,"  450px de texto
+     "agora na sua mão."       336px
+     coluna lateral com 2,9 vãos ... 471px  → sobra 21px na esquerda
+
+   Passar disso quebra "O método da DigiThree," em duas linhas, e a quebra é o
+   sinal visível de que se foi longe demais — não precisa medir para ver.
+
+   O CALENDÁRIO NÃO É MAIS O LIMITE. Com a baia em 3,5 vãos a coluna dos cards
+   fica em 235px, ainda acima do piso de 228 onde "Carrossel" começa a colidir.
+   Ele volta a mandar se a baia passar de ~4 vãos.
 
    POR QUE `1fr` E NÃO `auto` NAS LATERAIS: com `auto` a coluna encolhe até o
    texto e o vão central escorrega para onde sobrar — deixa de ser centro e
@@ -564,7 +572,7 @@
   line-height: 1.02;
   letter-spacing: -0.042em;
   display: grid;
-  grid-template-columns: 1fr calc(var(--corpo-larg) + 2.5 * var(--vao)) 1fr;
+  grid-template-columns: 1fr calc(var(--corpo-larg) + 2.9 * var(--vao)) 1fr;
   /* `baseline` e não `center`: as duas metades são a MESMA linha de texto,
      partida. Alinhadas pela caixa, um `em` de tamanho diferente as
      desnivelaria e a frase deixaria de ler como contínua. */
@@ -1918,8 +1926,12 @@
      medido (ver `--g-ceu` em GradeRecursos.tsx): o vão entre o trilho e o braço
      de cima da moldura, descontado o quanto o corpo já sobe acima do trilho.
 
-     0,86 deixa 14% de respiro sob a moldura. Encostar nela faria a antena ler
-     como se estivesse pendurada no braço, e não plantada no barramento.
+     0,93 deixa 7% de respiro sob a moldura — medido, 12px a 1536px. Encostar
+     nela faria a antena ler como se estivesse pendurada no braço, e não
+     plantada no barramento, e é por isso que não vai a 1. O número subiu de
+     0,86 quando o pedido foi "aumenta um pouco mais": os 7 pontos são a última
+     coisa que a altura ainda tinha para dar. Daqui em diante, crescer é
+     alargar (ver o `viewBox`), não subir.
 
      O QUE SAIU DAQUI, e por que não volta: um `--mergulho` que jogava o prato
      para DENTRO da baia, abaixo do trilho. Era a saída enquanto o título corria
@@ -1933,13 +1945,12 @@
      Reintroduzir o mergulho hoje devolveria o prato ao meio da fileira sem
      ganho nenhum. */
   bottom: 100%;
-  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 0.86);
+  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 0.93);
   height: var(--antena-alt);
-  /* 130/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx, que
-     explica por que os 40 pontos de altura novos foram todos para o mastro. Os
+  /* 170/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx. Os
      dois números PRECISAM andar juntos: divergindo, o `preserveAspectRatio`
      padrão passa a encaixotar o desenho e sobra faixa vazia dentro da caixa. */
-  width: calc(var(--antena-alt) * 130 / 118);
+  width: calc(var(--antena-alt) * 170 / 118);
   transform: translateX(-50%);
   stroke-width: var(--espessura);
   /* O aro do prato encosta nas bordas do `viewBox`; sem isto o traço dele é
