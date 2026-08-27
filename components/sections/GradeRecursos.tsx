@@ -436,9 +436,8 @@ export function GradeRecursos() {
         {/* ---- OS QUATRO ESTAIS ----
             Dois grupos, um de cada lado da CINTURA: as pontas abertas do topo
             descem até ela, e dela saem os outros dois até as pontas da base. A
-            cintura é o meio do trecho que o pino faz dentro do barramento — não
-            o fim dele (ver `--pino-cintura` em recursos.css). O pino cruza a
-            cintura e segue, com a ponta livre.
+            cintura mora na BASE DO PINO, e onde ela cai é dial de desenho, não
+            de geometria — está em `--pino-cintura`, em recursos.css.
 
             ELES NÃO PODEM MORAR NO `viewBox` DA ANTENA, e essa é a lição que
             acabou de custar os pés. A antena tem escala própria, tirada da

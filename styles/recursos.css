@@ -2028,26 +2028,32 @@
   --pino-fundo: calc(var(--antena-alt) * 62 / 118);
 
   /* ---- ONDE OS QUATRO ESTAIS SE ENCONTRAM ----
-     No MEIO do trecho que o pino percorre dentro do barramento, e não no fim
-     dele. Os estais chegaram encostando na ponta; encostando ali, a cintura
-     caía no ponto mais baixo possível e o desenho ficava com um triângulo
-     comprido ocupando quase toda a caixa.
+     NA BASE DO PINO — coincide com `--pino-fundo`, e é uma decisão de desenho
+     que já foi testada nos dois sentidos: os estais nasceram aqui, subiram para
+     o meio da profundidade, e voltaram.
 
-     "Meio do pino" aqui é o meio do que se vê DENTRO do corpo — o meio do
-     mastro inteiro cairia lá em cima, perto do prato, fora da caixa, e não há
-     estai que o alcance de dentro.
+     ELA CONTINUA SENDO UMA PROPRIEDADE SEPARADA, mesmo valendo o mesmo, porque
+     as duas dizem coisas diferentes: `--pino-fundo` é onde o DESENHO do mastro
+     termina, e está acoplada ao `y1` dele no `viewBox`; esta é onde os ESTAIS se
+     encontram. Colapsar as duas faria a próxima mexida na profundidade do pino
+     mover a cintura sem que ninguém tivesse pedido — e ao contrário, mover a
+     cintura passaria a exigir mexer no desenho.
 
-     E o pino segue passando dela: ele cruza a cintura e termina uma metade
-     abaixo. É de propósito — mastro travado no meio, com a ponta livre, é o que
-     a peça sugere; travado na ponta, ele virava o vértice de um funil. */
-  --pino-cintura: calc(var(--pino-fundo) / 2);
+     E O DIAL É CONTRAINTUITIVO, para quem for mexer: é uma fração da
+     profundidade contada do TOPO do corpo para baixo, então número MENOR sobe a
+     cintura. Subindo, o V de cima fica mais raso e o triângulo de baixo mais
+     comprido; os dois sempre somam a profundidade do pino.
+
+     E "no pino" é sempre o trecho que se vê DENTRO do corpo. O meio do mastro
+     inteiro cairia perto do prato, fora da caixa — não há estai que o alcance
+     de dentro. É a leitura errada mais provável desta nota. */
+  --pino-cintura: var(--pino-fundo);
 }
 
 /* ---- OS QUATRO ESTAIS ----
-   Dois grupos que se encontram na CINTURA — o meio do trecho que o pino faz
-   dentro do barramento (ver `--pino-cintura`). As pontas abertas do topo descem
-   até lá, e de lá saem os outros dois até as pontas da base. O pino cruza a
-   cintura e segue: ele não termina nela.
+   Dois grupos que se encontram na CINTURA, hoje na base do pino (ver
+   `--pino-cintura`, que é o dial disso). As pontas abertas do topo descem até
+   lá, e de lá saem os outros dois até as pontas da base do corpo.
 
    ESTA REGRA É SÓ O QUE OS DOIS TÊM EM COMUM — a largura e o traço. O que os
    distingue é a faixa vertical, e ela mora nos dois modificadores logo abaixo.
