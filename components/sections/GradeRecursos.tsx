@@ -249,9 +249,29 @@ export function GradeRecursos() {
             linhas da grade mesmo com o palco escalando de 0,16 a 1 durante a
             viagem. Sem ele a antena seria a única peça da seção cuja espessura
             muda com a chegada. */}
+        {/* ---- O PRATO É MAIS RASO QUE O DA REFERÊNCIA, DE PROPÓSITO ----
+            A referência tem `viewBox` de 400×260 com o aro em rx 46 — razão
+            1,23 entre a peça inteira e a altura dela. Aqui é 1,67, e a
+            diferença toda foi para a LARGURA DO ARO (rx 45 → 62); o mastro, a
+            ponta e os pés não mudaram de proporção.
+
+            O motivo é o teto vertical. A antena é dimensionada pela faixa entre
+            o trilho e a base do H2, que vale uma `--folga` e não estica: a
+            largura sai da altura pela razão daqui. Alargar o `viewBox` é a
+            única forma de dar presença ao prato sem pedir altura que não
+            existe — e é fiel ao objeto, porque parabólica vista de viés é rasa
+            mesmo. A primeira versão desta peça errou para o outro lado: com a
+            profundidade quase igual à abertura, as retas fechavam um triângulo
+            e a coisa lia como botão de play.
+
+            E A RAZÃO É O QUE CASA COM O BARRAMENTO. Na referência o prato é
+            2,1× o corpo, e é esse contraste que o faz ler como antena em vez de
+            tampa: prato mais estreito que o próprio corpo não lê. Com a baia em
+            3,2 vãos e esta razão, a conta bate nos mesmos 2,1×. Mexer num dos
+            dois sem o outro desmancha a proporção. */}
         <svg
           className="rec-grade__antena"
-          viewBox="0 0 96 78"
+          viewBox="0 0 130 78"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -261,16 +281,31 @@ export function GradeRecursos() {
         >
           {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
               ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
-          <ellipse cx="48" cy="9" rx="4.5" ry="6.5" fill="currentColor" stroke="none" />
-          <line x1="48" y1="60" x2="48" y2="14" />
-          {/* O aro em elipse é o prato visto de viés; a concha é o que o faz ler
-              como parábola em vez de anel. */}
-          <ellipse cx="48" cy="42" rx="45" ry="11" />
-          <path d="M3 42 Q48 77 93 42" />
-          {/* Os dois pés abrem em direção ao barramento: é o que apoia o prato
-              sem precisar de uma torre, e o que evita o mastro espetado. */}
-          <line x1="42" y1="59" x2="34" y2="78" />
-          <line x1="54" y1="59" x2="62" y2="78" />
+          <ellipse cx="65" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
+          <line x1="65" y1="60" x2="65" y2="11" />
+          {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
+              O aro é o prato visto de viés; a concha é o que o faz ler como
+              parábola em vez de anel. Mas os dois começam no MESMO par de
+              pontos, e o arco de baixo do aro corre junto com a concha — se
+              ficarem perto, a concha vira só um engrossamento do aro.
+
+              Na primeira versão deste `viewBox` mais largo eles ficaram a 6
+              unidades um do outro e foi exatamente o que aconteceu: sumiu a
+              parábola. O desenho ficou mais raso que a referência (razão 1,67
+              contra 1,23), e nessa proporção a separação também precisa crescer.
+
+              Agora o aro fecha em 44 e a concha desce até 60 — 16 unidades. O
+              vértice sai da conta da quadrática, não do olho:
+                B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
+          <ellipse cx="65" cy="34" rx="62" ry="10" />
+          <path d="M3 34 Q65 86 127 34" />
+          {/* Os dois pés saem do vértice da concha, onde o mastro também
+              termina, e abrem em direção ao barramento — é o que apoia o prato
+              sem precisar de torre, e o que evita o mastro espetado. Eles pousam
+              DENTRO da largura do corpo: medido, 39% e 61% do `viewBox` contra
+              o corpo ocupando 25% a 75% dele. */}
+          <line x1="61" y1="60" x2="50" y2="78" />
+          <line x1="69" y1="60" x2="80" y2="78" />
         </svg>
       </div>
     </div>

@@ -174,7 +174,23 @@
      conteúdo, o vão entre o cabeçalho e a fileira (2×folga) e a altura do
      trilho e das marcas (no meio desse vão). Mexer aqui move as três linhas
      juntas e mantém as duas caixas centradas; mexer em qualquer uma delas
-     isoladamente quebra a relação. */
+     isoladamente quebra a relação.
+
+     JÁ FOI TENTADO CRESCÊ-LA PARA O PRATO CABER, em 27/08, e a medida provou
+     que não dá. A faixa entre o trilho e a base do H2 vale exatamente uma
+     `--folga`, e é ela que dimensiona a antena — mas a seção não tem altura
+     para ceder:
+
+       folga 38 → moldura fecha a 95px do topo, barra flutuante em 89 → 6px
+       folga 46 → moldura a 82px                                     → COLIDE
+
+     A seção é centrada verticalmente, então crescer em qualquer lugar empurra
+     o topo contra a barra. E não há entrelinha para roubar por outro caminho:
+     medido, os glifos do H2 descem 4,1px ABAIXO da caixa da linha (fonte 40px,
+     entrelinha 40,8), então a faixa útil é MENOR que a folga, não maior.
+
+     O prato cresceu por outro caminho — ele desce para dentro da baia, que é
+     pista vazia do grid. Ver `--mergulho` na antena. */
   --folga: clamp(32px, 3.4vw, 56px);
   --abertura: 34px;
   --canto: 28px;
@@ -259,7 +275,7 @@
      faixa acima do trilho, que está livre de ponta a ponta, e é ela que dá o
      volume. Barramento fino com antena larga é silhueta de satélite, não
      concessão. */
-  --corpo-larg: calc(var(--vao) * 2.55);
+  --corpo-larg: calc(var(--vao) * 3.2);
 
   /* ---- A HASTE ----
      O vão de cada lado, entre a parede da baia e a parede do barramento. Sai
@@ -1836,11 +1852,38 @@
    responsivo, como nenhum outro. */
 .page #recursos .rec-grade__antena {
   position: absolute;
-  bottom: 100%;
   left: 50%;
-  --antena-alt: calc(var(--folga) - var(--corpo-acima));
+
+  /* ---- O PRATO DESCE PARA DENTRO DA BAIA ----
+     E é isto que o fez crescer, depois de duas tentativas fracassadas.
+
+     A faixa acima do trilho é uma `--folga` e não estica: a seção é centrada
+     verticalmente e a barra flutuante fica a 6px da moldura (a conta está na
+     nota da `--folga`). Alargar só o `viewBox` também não resolvia, porque
+     achatar o prato sem lhe dar altura o transforma numa risca.
+
+     A saída é que A BAIA É PISTA VAZIA DO GRID. Ela não recebe card nenhum —
+     existe só para abrir o vão onde o barramento mora —, então o espaço abaixo
+     do trilho, ali no meio, está livre. O prato desce para dentro dele.
+
+     O aro pousa praticamente SOBRE o trilho e a concha mergulha na baia. Não
+     cobre conteúdo nenhum: medido, o prato tem 102px de largura numa baia de
+     137, então ele nem encosta nas paredes. E a ordem no DOM garante a
+     pintura por cima — o corpo vem depois do trilho.
+
+     0,75 de mergulho quase DOBRA a peça (de 0,91 folga para 1,66) e é o que põe
+     a razão prato/corpo em 1,96, contra os 2,1 da referência. Passar disso
+     afunda o aro na fileira e o prato deixa de ler como coisa montada em cima
+     do barramento. */
+  --mergulho: calc(var(--folga) * 0.75);
+  bottom: calc(100% - var(--mergulho));
+  --antena-alt: calc(var(--folga) - var(--corpo-acima) + var(--mergulho));
   height: var(--antena-alt);
-  width: calc(var(--antena-alt) * 96 / 78);
+  /* 130/78 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx, que
+     explica por que ele é mais raso que o da referência. Os dois números
+     PRECISAM andar juntos: divergindo, o `preserveAspectRatio` padrão passa a
+     encaixotar o desenho e sobra faixa vazia dentro da caixa. */
+  width: calc(var(--antena-alt) * 130 / 78);
   transform: translateX(-50%);
   stroke-width: var(--espessura);
   /* O aro do prato encosta nas bordas do `viewBox`; sem isto o traço dele é
