@@ -1533,23 +1533,6 @@ body::after {
   }
 }
 
-/* TEMPORÁRIO — APAGAR JUNTO COM app/olhar/page.tsx.
-   Só o que a página de teste precisa: uma coluna e o retrato grande o
-   bastante para se julgar o olhar. Tudo o mais ela herda da seção real, de
-   propósito, para o teste exercitar o CSS de produção. */
-.page #como-funciona .cf-miolo--teste {
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-}
-
-.page #como-funciona .cf-anim--teste {
-  grid-column: 1;
-  grid-row: 1;
-  width: 340px;
-  height: 435px;
-  --retrato: 340px;
-}
-
 /* TELA DE TOQUE NÃO USA O ATLAS, e isto é economia real, não detalhe.
    Sem cursor não há efeito — o componente nem pendura ouvinte —, mas o
    atlas continuaria sendo BAIXADO e DECODIFICADO só para exibir um quadro
