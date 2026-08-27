@@ -29,11 +29,11 @@ import { useEffect, useRef } from 'react'
  *   asa esquerda   escala em torno de x = 0   (a borda esquerda da grade)
  *   asa direita    escala em torno de x = G   (a borda direita)
  *
- * Com `a` indo de `DOBRA_ASA` (dobrado) a 1 (implantado), o conduíte k da asa
- * esquerda cai em `k·passo·a` e o da direita em `G − (G − k·passo)·a`. Em
- * `a = 1` os dois viram `k·passo` — a posição do console, IDÊNTICA, por
- * álgebra e não por calibragem. É isso que preserva o trabalho de medida do
- * PR anterior: as verticais batendo a 0px e as horizontais a 0,4px.
+ * Com `a` indo da dobra (ver `CORPO_DOBRADO`) a 1, o conduíte k da asa
+ * esquerda cai em `k·passo·a` e o da direita em `G − (G − k·passo − baia)·a`.
+ * Em `a = 1` os dois viram a posição do console — IDÊNTICA, por álgebra e não
+ * por calibragem. É isso que preserva o trabalho de medida do PR anterior: as
+ * verticais batendo a 0px e as horizontais a 0,4px.
  *
  * De quebra, escalar o GRUPO encurta as horizontais junto, que é
  * exatamente o que se quer (as células dobradas são mais estreitas), sem
@@ -110,22 +110,19 @@ import { useEffect, useRef } from 'react'
    contra 1165 implantado. */
 const ENVERGADURA = 1.6
 
-/* QUANTO CADA ASA RECOLHE AO DOBRAR, e é daqui que sai a largura do corpo.
-   Escalando cada asa em torno da borda de fora por `a`, a aresta interna da
-   esquerda cai em `0,5aG` e a da direita em `G − 0,5aG`: cada asa fica com
-   `0,5aG` e o corpo com o que sobra, `G(1 − a)`.
+/* QUANTO DO SATÉLITE DOBRADO É CORPO. É este o número que se escolhe a olho;
+   a dobra das asas sai dele, e não o contrário.
 
-   0,72 dá asas de 36% e corpo de 28% — o corpo mais ESTREITO que uma asa,
-   que é a proporção da referência (arranjos longos, barramento compacto).
-   A 0,6, que foi a primeira tentativa, o corpo saía com 40% contra 30% de
-   cada asa e a peça lia como um painel com uma caixa em cima, não como um
-   satélite.
+   0,28 põe o corpo mais ESTREITO que cada asa (36%), que é a proporção da
+   referência: arranjos longos, barramento compacto. A 0,40, que foi a
+   primeira tentativa, a peça lia como um painel com uma caixa em cima.
 
-   ELE VAI PARA O CSS em vez de ser escrito lá, porque três coisas dependem
-   dele e uma só delas é escala: a dobra das asas, a largura do corpo (que é
-   `1 − a`) e a dobra vertical logo abaixo. Escrito em dois lugares, mexer
-   num deles calaria a boca do outro sem erro nenhum aparecer. */
-const DOBRA_ASA = 0.72
+   POR QUE DERIVAR A DOBRA EM VEZ DE ESCREVÊ-LA: o corpo não fecha mais até
+   sumir — ele para na baia, que é uma medida de LAYOUT (`--corpo-larg`, em
+   styles/recursos.css) e muda de tamanho com a janela. Uma dobra fixa daria
+   uma proporção dobrada diferente a cada largura de tela. Fixando a
+   proporção e resolvendo a dobra, a silhueta é a mesma em todas elas. */
+const CORPO_DOBRADO = 0.28
 
 /* As duas asas, e quais conduítes e colunas cada uma leva. O conduíte 2
    aparece nas duas de propósito — ver a nota do gêmeo no docblock. */
@@ -244,22 +241,50 @@ export function GradeRecursos() {
          1 e não há nada a dobrar; deixar as outras duas dobrarem ali daria um
          console achatado que nunca foi satélite. */
       const dobrou = dobraX < 1
-      layout.style.setProperty('--asa-min', (dobrou ? DOBRA_ASA : 1).toFixed(4))
 
-      /* A DOBRA VERTICAL sai das outras duas, e o alvo é a célula dobrada
-         QUADRADA. Cada asa mede `0,5 × a × G` e tem duas colunas, então a
-         célula tem `0,25 × a × G` de largura, com `G = altura ×
-         ENVERGADURA`. Na vertical são duas fileiras dentro de `dobra ×
-         altura`, então `dobra × altura / 2` de altura. Igualando:
+      /* ---- A BAIA, MEDIDA E NÃO LIDA ----
+         `--corpo-larg` é `var(--vao)`, que é um `clamp` — e custom property
+         comum não resolve em `getComputedStyle` (a nota da `--folga` acima
+         conta essa história). A baia sai da geometria: o vão entre CRIA e
+         ROTEIRIZA vale dois vãos mais a pista vazia, e a baia entre paredes é
+         isso menos um vão. */
+      const entreAsas =
+        quadrados[2].offsetLeft - (quadrados[1].offsetLeft + quadrados[1].offsetWidth)
+      const baia = Math.max(0, entreAsas - vao)
 
-             0,25 × a × ENVERGADURA × altura = dobra × altura / 2
-             dobra = 0,5 × a × ENVERGADURA
+      /* ---- A DOBRA DAS ASAS SAI DA PROPORÇÃO PEDIDA ----
+         Dobrado, o corpo mede `G − 4·passo·a` e as duas asas o resto, com
+         `4·passo = G − baia`. Pondo a fração do corpo em CORPO_DOBRADO:
 
-         Com 0,72 e 1,6 isso dá 0,576 — a grade dobrada fica em ~219px de
-         altura numa janela de 1920, contra os 380 implantados. */
+             1 − (1 − baia/G) × a = CORPO_DOBRADO
+             a = (1 − CORPO_DOBRADO) / (1 − baia/G)
+
+         Com a baia em 44px numa grade de 1165, isso dá 0,748. O teto de 1 é
+         o caso em que a baia já é mais larga que a proporção pedida: aí não
+         há asa a recolher, e recolher assim mesmo abriria um corpo maior do
+         que se pediu. */
+      const semBaia = 1 - baia / largura
+      const dobraAsa = semBaia > 0 ? Math.min(1, (1 - CORPO_DOBRADO) / semBaia) : 1
+      layout.style.setProperty('--asa-min', (dobrou ? dobraAsa : 1).toFixed(4))
+
+      /* ---- A DOBRA VERTICAL, com a célula dobrada QUADRADA como alvo ----
+         Cada asa mede `2·passo·a` e tem duas colunas, então a célula dobrada
+         tem `passo·a` de largura. Na vertical são duas fileiras dentro de
+         `dobra × altura`. Igualando, com `passo = (G − baia)/4` e a largura
+         dobrada valendo `altura × ENVERGADURA`:
+
+             dobra = 0,5 × a × ENVERGADURA × (1 − baia/G)
+
+         E o produto `a × (1 − baia/G)` é, por construção, `1 −
+         CORPO_DOBRADO` — a baia se cancela. Sobra uma constante:
+
+             dobra = ENVERGADURA × (1 − CORPO_DOBRADO) / 2 = 0,576
+
+         Ou seja: mexer na baia muda a dobra das asas e NÃO muda esta. É a
+         confirmação de que as duas contas falam da mesma silhueta. */
       layout.style.setProperty(
         '--g-min-y',
-        (dobrou ? Math.min(1, 0.5 * DOBRA_ASA * ENVERGADURA) : 1).toFixed(4),
+        (dobrou ? Math.min(1, (ENVERGADURA * (1 - CORPO_DOBRADO)) / 2) : 1).toFixed(4),
       )
     }
 
@@ -317,15 +342,28 @@ export function GradeRecursos() {
           O que é dele é só o que as asas não dão — a cabeça acima do trilho,
           a base abaixo do piso, o cinturão, o mastro e a parabólica. */}
       <div className="rec-grade__corpo">
-        <i className="rec-grade__cabeca" />
+        {/* O MASTRO E A PARABÓLICA SÃO FILHOS DA CABEÇA, e não do corpo, por
+            duas razões que só apareceram quando o corpo virou permanente.
+
+            A primeira é de ancoragem: implantado, o corpo tem a largura da
+            baia (44px), e a cabeça é MAIS LARGA que ele — ela mora na faixa
+            acima do trilho, que está livre. Pendurados no corpo, os dois
+            ficavam dentro daqueles 44px, ou seja, por baixo da cabeça.
+
+            A segunda é de altura: presos ao corpo eles subiam a partir do topo
+            dele e entravam no título da seção. Presos à cabeça, a pilha
+            inteira — cabeça, mastro, prato — cabe dentro de uma `--folga`, que
+            é a metade do vão entre o cabeçalho e a fileira. */}
+        <i className="rec-grade__cabeca">
+          <i className="rec-grade__mastro" />
+          <i className="rec-grade__prato">
+            <i className="rec-grade__prato-borda" />
+            <i className="rec-grade__prato-foco" />
+            <i className="rec-grade__prato-haste" />
+          </i>
+        </i>
         <i className="rec-grade__base" />
         <i className="rec-grade__cinturao" />
-        <i className="rec-grade__mastro" />
-        <i className="rec-grade__prato">
-          <i className="rec-grade__prato-borda" />
-          <i className="rec-grade__prato-foco" />
-          <i className="rec-grade__prato-haste" />
-        </i>
       </div>
     </div>
   )

@@ -216,6 +216,38 @@
      mesmo número. */
   --vao: clamp(26px, 2.8vw, 44px);
 
+  /* ---- A BAIA DO CORPO ----
+     A largura do corpo do satélite entre as paredes, e o único dial da peça:
+     mexer aqui move a fileira, a grade dobrada e as duas paredes juntas,
+     porque as três leem este mesmo token.
+
+     ELA SAI DA LARGURA DAS COLUNAS, 1 para 1. A fileira tem largura fixa
+     (`--world-max`), então cada pixel de baia é um pixel a menos dividido
+     entre os quatro instrumentos. E há um TETO MEDIDO para isso, que não é
+     de gosto:
+
+     "Carrossel", no calendário do PLANEJA, tem 59px numa célula de 55,8px —
+     ele JÁ transborda hoje, e o que salva é o `gap` de 8px do calendário: a
+     sobra cai dentro do vão e não encosta na palavra seguinte. A colisão
+     começa quando `célula + gap` fica menor que os 59px, ou seja quando a
+     coluna desce de 228px. Medido a 1920px:
+
+       coluna 247 (hoje) ..... sobra 4,8px  — não encosta
+       coluna 236 (esta baia)  sobra 2,1px  — não encosta
+       coluna 228 ............ sobra 0,0px  — o limite
+       coluna 210 ............ colide 4,6px — "CarrosselReels"
+
+     Com `--vao` a coluna fica em 236,25px e a baia em 44px. O teto sem mexer
+     no calendário é ~77px; passar dele exige o calendário em três colunas
+     (a nota dele explica por que não dá para descer de 11px).
+
+     O CORPO NÃO PRECISA SER LARGO PARA LER, e é isso que faz 44px bastar: só
+     o trecho que atravessa o array é estreito. A cabeça, a base, o mastro e
+     a parabólica moram nas faixas acima e abaixo, que estão livres, e são
+     eles que dão o volume. Barramento fino com módulos largos é silhueta de
+     satélite, não concessão. */
+  --corpo-larg: var(--vao);
+
   /* ---- A COR DAS TRÊS LINHAS ----
      Tokens PRÓPRIOS da seção, e não os globais `--rule`/`--rule-hi`. A razão
      é escopo: aqueles pintam filetes na página inteira, inclusive o divisor
@@ -488,7 +520,22 @@
   width: 100%;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* ---- DOIS INSTRUMENTOS DE CADA LADO, COM A BAIA NO MEIO ----
+     A quinta pista é VAZIA: ela não recebe card nenhum, só abre o vão onde o
+     corpo do satélite mora. Com `--corpo-larg` valendo um `--vao` ela mede
+     zero, e o que separa CRIA de ROTEIRIZA passam a ser dois vãos em vez de
+     um — a baia entre as paredes é a diferença.
+
+     Por que uma pista vazia e não um `gap` maior no meio: `column-gap` é um
+     valor só para todos os vãos, e a fileira precisa de três vãos iguais e
+     um diferente. A pista é a única forma de pedir isso ao grid.
+
+     As duas primeiras se posicionam sozinhas nas pistas 1 e 2; as outras
+     duas precisam ser mandadas para a 4 e a 5, senão caem na pista vazia. */
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr))
+    calc(var(--corpo-larg) - var(--vao))
+    repeat(2, minmax(0, 1fr));
 
   /* O vão ganhou nome porque deixou de ser só o `gap`: as cinco marcas do
      trilho saem dele (meio vão para fora de cada borda de coluna). Os dois
@@ -497,6 +544,38 @@
   /* A DECLARAÇÃO SUBIU para o `.rec-layout` — ver a nota lá. Aqui ficou só o
      uso, que continua sendo quem define o vão de verdade da fileira. */
   gap: var(--vao);
+}
+
+/* Os dois da direita pulam a pista da baia. Pelo modificador e não por
+   `nth-child`, porque a ordem no DOM é conteúdo e a posição é layout: se um
+   instrumento for reordenado em content/landing.ts, o que tem de continuar
+   verdade é "ROTEIRIZA e CALCULA ficam à direita do corpo". */
+.page #recursos .quad--roteiriza {
+  grid-column: 4;
+}
+.page #recursos .quad--calcula {
+  grid-column: 5;
+}
+
+/* ---- A PAREDE ESQUERDA DA BAIA ----
+   As outras quatro linhas verticais saem de graça: cada `.quad::before` é o
+   conduíte do seu card, e o do ROTEIRIZA já cai exatamente na parede DIREITA
+   do corpo, meio vão à esquerda dele. Falta só a de cá, que não é o começo
+   de card nenhum — é o fim do CRIA.
+
+   Mesma geometria do conduíte espelhada, e mesmo desconto de espessura do
+   `.quads::after`: o `right` negativo tira meio vão e mais a largura da
+   própria linha, para ela ficar rente ao meio do vão e não meia espessura
+   depois dele. */
+.page #recursos .quad--cria::after {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--folga));
+  right: calc(-1 * var(--vao) / 2 - var(--espessura));
+  width: var(--espessura);
+  height: calc(var(--folga) + 100%);
+  background: var(--fio-forte);
+  opacity: calc(var(--trava) * var(--linhas));
 }
 
 /* JÁ FOI TENTADO E VOLTOU ATRÁS: um recuo de 20px no conteúdo da fileira,
@@ -1216,6 +1295,26 @@
   .page #recursos .rec-layout {
     display: block;
   }
+
+  /* ---- O SATÉLITE É DESKTOP ----
+     A camada inteira sai, e agora isso PRECISA ser dito. Antes ela se
+     apagava sozinha aqui: `--expande` nasce saturada em 1 no celular, e a
+     opacidade da camada morria com o `--g-sai`. Desde que o corpo deixou de
+     sair na troca, ele sobreviveria àquele apagamento e apareceria em cima
+     do carrossel — uma baia de 44px atravessando slides que não têm baia.
+
+     Fora que não há o que dobrar aqui: a estação é mais alta que larga e as
+     três razões saturam em 1 (ver GradeRecursos.tsx). */
+  .page #recursos .rec-grade {
+    display: none;
+  }
+  /* E os dois da direita voltam a se posicionar sozinhos: sem a pista da
+     baia, mandá-los para as pistas 4 e 5 os jogaria para fora de um grid que
+     agora tem uma coluna só. */
+  .page #recursos .quad--roteiriza,
+  .page #recursos .quad--calcula {
+    grid-column: auto;
+  }
   /* A MOLDURA, O TRILHO E AS MARCAS SÃO TRATAMENTO DE DESKTOP, por ora.
      No celular a fileira vira carrossel: o trilho rolaria junto com os
      slides e as marcas sairiam da tela com eles, e uma moldura em volta de
@@ -1226,6 +1325,9 @@
   .page #recursos .quads::before,
   .page #recursos .quads::after,
   .page #recursos .quad::before,
+  /* A parede esquerda da baia vai junto com o resto da estrutura, pelo mesmo
+     motivo: no carrossel não há baia — a fileira volta a ser uma coluna só. */
+  .page #recursos .quad--cria::after,
   /* O piso do painel vai junto com o conduíte: ele existe para FECHAR o
      conduíte por baixo e para alinhar os quatro slots. No carrossel não há
      conduíte para fechar e o slot solta a altura travada (`min-height: 0`,
@@ -1497,12 +1599,37 @@
      cruzamento simétrico, o ponto do meio teria as duas a meia opacidade e a
      grade inteira piscaria mais fraca por um instante. */
   --g-sai: clamp(0, (var(--expande) - 0.88) / 0.12, 1);
-  opacity: calc(var(--g-entra) * (1 - var(--g-sai) * var(--g-sai) * (3 - 2 * var(--g-sai))));
+  --g-troca: calc(1 - var(--g-sai) * var(--g-sai) * (3 - 2 * var(--g-sai)));
+
+  /* A CAMADA NÃO SOME MAIS POR INTEIRO, e é isto que faz o satélite ser o
+     estado da seção em vez de uma fantasia da entrada.
+
+     Quem sai é só o que tem substituto: as asas e o trilho existem em dobro
+     durante a troca, e é o par de baixo — o console de verdade — que fica. O
+     corpo não tem substituto nenhum; se ele saísse junto, a peça terminaria
+     como o console de sempre e o satélite teria durado só a chegada.
+
+     Daí o `--g-troca` viver como token e ser aplicado peça a peça, e não
+     aqui. */
+  opacity: var(--g-entra);
 }
 
-/* A coluna e o passo entre conduítes, escritos uma vez só. */
+/* As duas grades são a mesma nos últimos quadros; some esta e ficam as
+   linhas de verdade, sem salto. */
+.page #recursos .rec-grade__asa,
+.page #recursos .rec-grade__h--trilho {
+  opacity: var(--g-troca);
+}
+
+/* A coluna e o passo entre conduítes, escritos uma vez só.
+
+   A BAIA ENTRA NA CONTA DA COLUNA. Escrevendo `G` para a largura da grade,
+   ela cobre quatro colunas, quatro vãos e a baia — `G = 4c + 4·vão + baia` —,
+   e é daí que sai o `c` abaixo. Com a baia valendo um vão a expressão
+   devolve os mesmos 236,25px que o grid da fileira dá às colunas, que é a
+   condição para a grade e o console coincidirem no fim. */
 .page #recursos .rec-grade {
-  --g-col: calc((100% - 4 * var(--vao)) / 4);
+  --g-col: calc((100% - var(--corpo-larg) - 4 * var(--vao)) / 4);
   --g-passo: calc(var(--g-col) + var(--vao));
 }
 
@@ -1520,11 +1647,18 @@
   inset: 0;
   transform: scaleX(var(--asa-s));
 }
+/* O DESLOCAMENTO DA ASA DIREITA é a baia. Os conduítes de cada asa guardam
+   entre si o passo de sempre (coluna + vão); o que separa as duas asas é a
+   largura do corpo, e ela entra uma vez só, como offset de tudo que mora na
+   asa de lá. Sem isto os conduítes 3 e 4 pousariam uma baia à esquerda dos
+   do console. */
 .page #recursos .rec-grade__asa--esq {
   transform-origin: left center;
+  --g-off: 0px;
 }
 .page #recursos .rec-grade__asa--dir {
   transform-origin: right center;
+  --g-off: var(--corpo-larg);
 }
 
 .page #recursos .rec-grade__v,
@@ -1546,7 +1680,7 @@
   top: 0;
   bottom: 0;
   width: var(--espessura);
-  left: calc(var(--k) * var(--g-passo));
+  left: calc(var(--k) * var(--g-passo) + var(--g-off, 0px));
   transform: scaleX(calc(1 / var(--g-s) / var(--asa-s)));
 }
 
@@ -1584,7 +1718,7 @@
 .page #recursos .rec-grade__seg {
   position: absolute;
   height: var(--espessura);
-  left: calc(var(--k) * var(--g-passo));
+  left: calc(var(--k) * var(--g-passo) + var(--g-off, 0px));
   width: calc(var(--vao) / 2 + var(--g-col));
 }
 /* O último fecha no quinto conduíte, e não na borda da coluna — mesma regra
@@ -1614,17 +1748,24 @@
    ============================================================ */
 .page #recursos .rec-grade__corpo {
   position: absolute;
-  /* Entre as arestas internas das asas, que ficam em `0,5aG` e `G − 0,5aG`.
-     O recuo de cada lado É a aresta: `0,5a`, ou seja `a × 50%`. Escrito como
-     conta, e não como um `36%` fixo, para não haver dois números que PRECISAM
-     concordar sem nada avisando quando param de concordar.
+  /* ---- AS PAREDES SÃO AS ARESTAS INTERNAS DAS ASAS, SEMPRE ----
+     Cada asa leva três conduítes e escala em torno da borda de fora, então a
+     aresta interna da esquerda mora em `2·passo·a` e a da direita em
+     `G − 2·passo·a`. Escrever os dois recuos assim faz a caixa deste elemento
+     ser o vão entre elas em TODO instante — não uma curva calibrada para
+     parecer que acompanha, a mesma conta.
 
-     A conta é do RECUO e não da largura, e a diferença já custou uma medida:
-     `left: x%; right: x%` deixa `100 − 2x` de largura, então pôr aqui a
-     metade da largura do corpo — `(1 − a)/2` — devolvia 72% de grade onde o
-     vão entre as asas tinha 28%. */
-  left: calc(var(--asa-min, 1) * 50%);
-  right: calc(var(--asa-min, 1) * 50%);
+     E é isso que dispensa o `scaleX` que estava aqui: o obturador sai de
+     graça do próprio `left`/`right`. De quebra, a cabeça, a base, o mastro e
+     a parabólica deixam de ser esticados e cisalhados junto — o corpo
+     estreita e a ferragem dele guarda a forma, que é como uma coisa que se
+     fecha se comporta.
+
+     No fim (`a = 1`) a largura vira `G − 4·passo`, que é exatamente
+     `--corpo-larg`: as paredes pousam sobre as duas linhas que o console
+     desenha ali (o conduíte do ROTEIRIZA e o `.quad--cria::after`). */
+  left: calc(2 * var(--g-passo) * var(--asa-s));
+  right: calc(2 * var(--g-passo) * var(--asa-s));
 
   /* Sai da caixa da grade por cima e por baixo — é o que dá silhueta de
      satélite em vez de mais uma célula, já que a caixa vai só do trilho ao
@@ -1645,30 +1786,18 @@
      então é o único que precisa. */
   --corpo-fora: var(--folga);
   --corpo-sai: calc(var(--corpo-fora) / var(--g-sy));
+  /* A largura mínima dos dois módulos, para eles continuarem lendo como
+     barramento depois que o corpo estreita até a baia. Fica abaixo da coluna
+     do instrumento (236px) de propósito: um módulo tão largo quanto um card
+     deixaria de ser peça do satélite e viraria uma quinta coluna. */
+  --corpo-modulo: clamp(80px, 6.4vw, 122px);
   top: calc(-1 * var(--corpo-sai));
   bottom: calc(-1 * var(--corpo-sai));
 
-  /* ---- O OBTURADOR ----
-     As asas convergem para o centro e fecham o corpo entre elas. Isto não é
-     uma curva calibrada para PARECER que acompanha — é a mesma conta.
-
-     O vão entre as arestas internas é `G − G×a`, e com `a = 0,6 + 0,4e` isso
-     dá `0,4G × (1 − e)`. A caixa deste elemento mede 0,40G (de 30% a 70%), e
-     `scaleX(1 − e)` a leva a `0,4G × (1 − e)`. Os dois são o mesmo número em
-     todo `e`, então as paredes do corpo e as arestas das asas são a mesma
-     linha do primeiro ao último quadro. */
-  transform: scaleX(calc(1 - var(--expande)));
-
-  /* NÃO leva contra-escala, ao contrário das verticais das asas — e este é o
-     único lugar da peça em que afinar é o efeito, não o defeito. O corpo é a
-     única coisa que SOME; sumir afinando é o que ele deve fazer. De quebra, é
-     o que dispensa o guarda contra a divisão por zero que uma contra-escala
-     exigiria aqui, onde a escala chega mesmo a 0.
-
-     E ele fica inteiro, sem deformação nenhuma, durante a órbita toda — que
-     é a parte longa: `--expande` só começa a andar depois da atracação. */
-  --corpo-vai: clamp(0, (var(--expande) - 0.5) / 0.4, 1);
-  opacity: calc(1 - var(--corpo-vai) * var(--corpo-vai) * (3 - 2 * var(--corpo-vai)));
+  /* ELE NÃO SAI. Nenhuma opacidade, nenhum relógio: o corpo é a peça que
+     sobrevive à troca e fica sendo a seção. O que ele faz do começo ao fim é
+     estreitar, da largura dobrada até a baia — e mesmo estreitado continua
+     lá, com o mastro, a parabólica e os dois módulos. */
 }
 
 /* A cabeça e a base: os dois módulos que fecham o corpo fora da caixa da
@@ -1681,9 +1810,30 @@
 .page #recursos .rec-grade__cabeca,
 .page #recursos .rec-grade__base {
   position: absolute;
-  left: 22%;
-  right: 22%;
-  height: var(--corpo-sai);
+  /* ---- LARGURA FIXA, E NÃO UMA FRAÇÃO DO CORPO ----
+     Eram um recuo percentual, e isso quebrou quando o corpo virou permanente:
+     implantado ele tem a largura da BAIA — 44px —, e 56% daquilo são 25px. O
+     módulo sumia justamente no estado que ficaria na tela.
+
+     Fixo é também o que lê melhor: um módulo é uma peça física, não um
+     desenho elástico. Do começo ao fim ele tem o mesmo tamanho, e é o corpo
+     que estreita em volta dele — que é o que faz os dois estados lerem como
+     o MESMO objeto em posições diferentes.
+
+     E eles podem ser mais largos que o corpo porque não moram no array: a
+     faixa acima do trilho e a abaixo do piso estão livres de ponta a ponta.
+     É essa liberdade que faz uma baia de 44px bastar.
+
+     CENTRALIZADO POR `translate`, e não por `margin: auto`: quando a largura
+     passa a do contêiner — que é o caso implantado, 122px num corpo de 44 —
+     as margens automáticas resolvem para zero e o módulo encosta à esquerda.
+     Medido: cabeça e base nascendo rentes à parede esquerda da baia. */
+  left: 50%;
+  width: var(--corpo-modulo);
+  transform: translateX(-50%);
+  /* METADE DA FAIXA, não a faixa inteira. O que sobra é onde o mastro e a
+     parabólica cabem sem passar do vão e entrar no título. */
+  height: calc(var(--corpo-sai) * 0.5);
   border: var(--espessura) solid var(--fio-forte);
   /* AS QUATRO BORDAS DESFAZEM A DOBRA, cada par no seu eixo. Sem isto elas
      chegam à tela mais finas que os conduítes e o trilho — que são
@@ -1695,12 +1845,21 @@
   border-top-width: calc(var(--espessura) / var(--g-sy));
   border-bottom-width: calc(var(--espessura) / var(--g-sy));
 }
+/* ---- ELES ENCOSTAM NO ARRAY, NÃO NA BORDA DA FAIXA ----
+   Meia faixa de recuo, e não zero. Com `top: 0` a cabeça grudava no alto do
+   vão e sobrava um buraco de meia folga entre ela e o trilho — pior, o mastro
+   e o prato saíam DELA para cima e entravam no título.
+
+   Descendo-a meia faixa, o quarto lado de cada módulo passa a ser o trilho (e
+   o piso, na base), que é o que faz eles lerem como parte do satélite e não
+   como caixas soltas. E a meia faixa que sobra em cima é exatamente onde o
+   mastro e o prato cabem. */
 .page #recursos .rec-grade__cabeca {
-  top: 0;
+  top: calc(var(--corpo-sai) * 0.5);
   border-bottom: 0;
 }
 .page #recursos .rec-grade__base {
-  bottom: 0;
+  bottom: calc(var(--corpo-sai) * 0.5);
   border-top: 0;
 }
 
@@ -1716,14 +1875,15 @@
   background: var(--fio-fraco);
 }
 
-/* O mastro, com a marca no topo. Mora acima da cabeça, no espaço que o
-   `bottom: 100%` abre para fora do corpo. */
+/* O mastro, com a marca no topo. Sobe da cabeça, e a altura é o que sobra da
+   faixa depois dela: meia folga para a cabeça, 0,45 para ele. A soma fica
+   abaixo de uma folga, que é onde a base do cabeçalho começa. */
 .page #recursos .rec-grade__mastro {
   position: absolute;
   left: 50%;
   bottom: 100%;
   width: var(--espessura);
-  height: calc(var(--corpo-fora) * 0.8);
+  height: calc(var(--corpo-fora) * 0.45);
   margin-left: calc(var(--espessura) / -2);
   background: var(--fio-forte);
   /* Desfaz as duas dobras, e a marca do topo vem junto por ser filha. A
@@ -1759,19 +1919,22 @@
    chegam e a faixa está livre. */
 .page #recursos .rec-grade__prato {
   position: absolute;
-  /* ENCOSTA NA CABEÇA, não na parede do corpo, e a diferença é que uma delas
-     existe onde o prato está. As paredes do corpo são as arestas internas
-     das asas, e asa nenhuma sobe acima do trilho — presa em `right: 100%` a
-     haste terminava no ar, a 32px de qualquer linha. A cabeça, sim, mora
-     toda nesta faixa. Os 78% são o complemento do recuo de 22% dela. */
-  right: 78%;
-  bottom: calc(100% - var(--corpo-sai));
+  /* ENCOSTA NA PAREDE DA CABEÇA, sendo filho dela: `right: 100%` o põe rente
+     ao lado esquerdo dela, onde quer que ela esteja. Antes ele se pendurava
+     no corpo, e isso quebrou de duas formas quando o corpo virou permanente —
+     a haste terminava no ar (as paredes do corpo são as arestas internas das
+     asas, e asa nenhuma sobe acima do trilho) e, com a baia em 44px, o prato
+     inteiro cabia por baixo da cabeça.
+
+     `bottom: 0` o pousa na base da cabeça, que É o trilho. Ele cresce para
+     cima e não desce para o array. */
+  right: 100%;
+  bottom: 0;
   width: calc(var(--corpo-fora) * 1.15);
-  /* MAIS ALTO QUE A CABEÇA de propósito: o prato passa dela por cima e é o
-     ponto mais alto da peça depois do mastro, como na referência. Só não
-     pode descer do trilho, e não desce — o `bottom` o pousa exatamente ali,
-     e ele cresce para cima. */
-  height: calc(var(--corpo-fora) * 1.4);
+  /* MAIS ALTO QUE A CABEÇA, e limitado pela faixa: a cabeça come meia folga e
+     o prato vai a 0,9 dela, então ele passa por cima da cabeça sem passar do
+     vão e entrar no título. */
+  height: calc(var(--corpo-fora) * 0.9);
   /* A CONTRA-ESCALA VAI NO INVÓLUCRO, e não em cada peça: desfeitas aqui as
      duas dobras, a borda, as facetas e a haste passam a viver em unidades de
      verdade lá dentro — inclusive os 33°, que sob dobra virariam outro
