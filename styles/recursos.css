@@ -2026,12 +2026,28 @@
      o pino não está mais. São o único acoplamento que sobrou entre a antena e o
      resto, e ele é de uma via só — o `viewBox` manda, isto obedece. */
   --pino-fundo: calc(var(--antena-alt) * 62 / 118);
+
+  /* ---- ONDE OS QUATRO ESTAIS SE ENCONTRAM ----
+     No MEIO do trecho que o pino percorre dentro do barramento, e não no fim
+     dele. Os estais chegaram encostando na ponta; encostando ali, a cintura
+     caía no ponto mais baixo possível e o desenho ficava com um triângulo
+     comprido ocupando quase toda a caixa.
+
+     "Meio do pino" aqui é o meio do que se vê DENTRO do corpo — o meio do
+     mastro inteiro cairia lá em cima, perto do prato, fora da caixa, e não há
+     estai que o alcance de dentro.
+
+     E o pino segue passando dela: ele cruza a cintura e termina uma metade
+     abaixo. É de propósito — mastro travado no meio, com a ponta livre, é o que
+     a peça sugere; travado na ponta, ele virava o vértice de um funil. */
+  --pino-cintura: calc(var(--pino-fundo) / 2);
 }
 
 /* ---- OS QUATRO ESTAIS ----
-   Dois grupos que se encontram no fim do pino: as pontas abertas do topo descem
-   até ele, e dele saem os outros dois até as pontas da base. O corpo ganha
-   cintura, e é o pino que a marca.
+   Dois grupos que se encontram na CINTURA — o meio do trecho que o pino faz
+   dentro do barramento (ver `--pino-cintura`). As pontas abertas do topo descem
+   até lá, e de lá saem os outros dois até as pontas da base. O pino cruza a
+   cintura e segue: ele não termina nela.
 
    ESTA REGRA É SÓ O QUE OS DOIS TÊM EM COMUM — a largura e o traço. O que os
    distingue é a faixa vertical, e ela mora nos dois modificadores logo abaixo.
@@ -2079,20 +2095,20 @@
   overflow: visible;
 }
 
-/* De cima: do topo aberto ao fim do pino. Aqui NÃO entra meia espessura no
+/* De cima: do topo aberto até a cintura. Aqui NÃO entra meia espessura no
    `top` — o corpo não tem borda em cima (ver `border-top`), então a caixa de
    padding já começa na aresta de fora e o estai nasce exatamente na ponta da
-   parede. A base da caixa é o fim do pino, sem folga: é onde os quatro se
-   encontram. */
+   parede. A base da caixa é a cintura, sem folga: é onde os quatro se
+   encontram, e é o mesmo valor que abre a caixa de baixo. */
 .page #recursos .rec-grade__estais--cima {
   top: 0;
-  height: var(--pino-fundo, 50%);
+  height: var(--pino-cintura, 50%);
 }
 
-/* De baixo: do fim do pino às duas pontas da base. */
+/* De baixo: da cintura às duas pontas da base. */
 .page #recursos .rec-grade__estais--baixo {
-  top: var(--pino-fundo, 50%);
-  height: calc(100% - var(--pino-fundo, 50%) + var(--espessura) / 2);
+  top: var(--pino-cintura, 50%);
+  height: calc(100% - var(--pino-cintura, 50%) + var(--espessura) / 2);
 }
 
 /* ---- `vector-effect` PRECISA VIR POR AQUI, E NÃO DO ATRIBUTO NO `<svg>` ----

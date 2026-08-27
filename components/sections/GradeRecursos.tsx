@@ -434,10 +434,11 @@ export function GradeRecursos() {
         </svg>
 
         {/* ---- OS QUATRO ESTAIS ----
-            Dois grupos, um de cada lado do fim do pino: as pontas abertas do
-            topo descem até ele, e dele saem os outros dois até as pontas da
-            base. O barramento passa a ter cintura, e o pino deixa de terminar
-            no ar — que era a única coisa sem resolver depois que os pés saíram.
+            Dois grupos, um de cada lado da CINTURA: as pontas abertas do topo
+            descem até ela, e dela saem os outros dois até as pontas da base. A
+            cintura é o meio do trecho que o pino faz dentro do barramento — não
+            o fim dele (ver `--pino-cintura` em recursos.css). O pino cruza a
+            cintura e segue, com a ponta livre.
 
             ELES NÃO PODEM MORAR NO `viewBox` DA ANTENA, e essa é a lição que
             acabou de custar os pés. A antena tem escala própria, tirada da
@@ -458,10 +459,9 @@ export function GradeRecursos() {
             quer. O que NÃO pode esticar é o traço, e é `vector-effect` que
             segura, aplicado por CSS aos filhos (ver recursos.css: no `<svg>` ele
             não vale, porque a propriedade não é herdada). */}
-        {/* De cima: as duas pontas abertas do barramento descem até o pino. É o
-            espelho do de baixo, e os dois juntos fazem a cintura — o corpo
-            estreita até o fim do pino e volta a abrir. O pino é o único ponto
-            definido em que os quatro estais podem se encontrar. */}
+        {/* De cima: as duas pontas abertas do barramento descem até a cintura.
+            É o espelho do de baixo, e os dois juntos é que a fazem — o corpo
+            estreita ali e volta a abrir. */}
         <svg
           className="rec-grade__estais rec-grade__estais--cima"
           viewBox="0 0 100 100"
@@ -475,7 +475,7 @@ export function GradeRecursos() {
           <line x1="100" y1="0" x2="50" y2="100" />
         </svg>
 
-        {/* De baixo: do pino às duas pontas da base. */}
+        {/* De baixo: da cintura às duas pontas da base. */}
         <svg
           className="rec-grade__estais rec-grade__estais--baixo"
           viewBox="0 0 100 100"
