@@ -310,7 +310,7 @@ export function GradeRecursos() {
             `preserveAspectRatio` padrão encaixota o desenho. */}
         <svg
           className="rec-grade__antena"
-          viewBox="0 0 170 118"
+          viewBox="0 0 190 118"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -320,11 +320,11 @@ export function GradeRecursos() {
         >
           {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
               ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
-          <ellipse cx="85" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
+          <ellipse cx="95" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
           {/* O mastro ATRAVESSA a tigela, do alto até o pé — é uma peça só, e
               desenhá-lo em dois pedaços (acima e abaixo do prato) deixaria uma
               junta visível bem no vértice da concha. */}
-          <line x1="85" y1="100" x2="85" y2="11" />
+          <line x1="95" y1="100" x2="95" y2="11" />
           {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
               O aro é o prato visto de viés; a concha é o que o faz ler como
               parábola em vez de anel. Mas os dois começam no MESMO par de
@@ -339,8 +339,8 @@ export function GradeRecursos() {
               Agora o aro fecha em 44 e a concha desce até 60 — 16 unidades. O
               vértice sai da conta da quadrática, não do olho:
                 B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
-          <ellipse cx="85" cy="34" rx="82" ry="10" />
-          <path d="M3 34 Q85 86 167 34" />
+          <ellipse cx="95" cy="34" rx="92" ry="10" />
+          <path d="M3 34 Q95 86 187 34" />
           {/* Os dois pés saem do PÉ DO MASTRO, e não do vértice da concha como
               antes: com o mastro longo, sair da concha os faria abrir num
               ângulo raso e a peça leria como tripé, não como antena sobre um
@@ -351,8 +351,8 @@ export function GradeRecursos() {
               37,7% a 62,3% da largura da peça — o que em unidades do `viewBox`
               (170 de largura) cai em 64 e 106. Alargar o `viewBox` sem refazer
               esta conta deixaria os pés pendurados fora do barramento. */}
-          <line x1="81" y1="100" x2="64" y2="118" />
-          <line x1="89" y1="100" x2="106" y2="118" />
+          <line x1="91" y1="100" x2="77" y2="118" />
+          <line x1="99" y1="100" x2="113" y2="118" />
         </svg>
       </div>
     </div>

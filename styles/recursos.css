@@ -1926,12 +1926,33 @@
      medido (ver `--g-ceu` em GradeRecursos.tsx): o vão entre o trilho e o braço
      de cima da moldura, descontado o quanto o corpo já sobe acima do trilho.
 
-     0,93 deixa 7% de respiro sob a moldura — medido, 12px a 1536px. Encostar
-     nela faria a antena ler como se estivesse pendurada no braço, e não
-     plantada no barramento, e é por isso que não vai a 1. O número subiu de
-     0,86 quando o pedido foi "aumenta um pouco mais": os 7 pontos são a última
-     coisa que a altura ainda tinha para dar. Daqui em diante, crescer é
-     alargar (ver o `viewBox`), não subir.
+     ---- 1,06 É MAIOR QUE 1, E ISSO É DE PROPÓSITO ----
+
+     O fator passou de 0,86 a 0,93 e agora a 1,06, e o último passo furou o que
+     eu tinha declarado como teto. A declaração é que estava errada: eu tratei
+     o braço de cima da moldura como uma linha, e ele NÃO É.
+
+     A moldura são CANTONEIRAS — oito gradientes formando quatro cantos, com
+     braços de `--canto` (28px). No topo, isso é 28px de fio em cada ponta e
+     NADA no meio. A antena sobe justamente pelo meio. Ela cruza a altura do
+     braço sem cruzar traço nenhum, porque ali não há traço.
+
+     O TETO DE VERDADE É A BARRA FLUTUANTE, e agora ele está medido em pixels
+     de tela, no repouso (1536×695, palco a 0,92):
+
+       barra, base .................. 89px
+       moldura, topo ................ 104px
+       antena, topo (com 0,93) ...... 117px
+       antena, topo (com 1,06) ...... 95px   ← 6px abaixo da barra
+
+     Os 6px são o respiro que sobra. Encostar na barra faria a antena ler como
+     se estivesse pendurada nela.
+
+     E A CONTA MUDA DE JANELA: `--g-ceu` é medido (ver GradeRecursos.tsx), então
+     o fator se aplica sobre um céu que já encolhe quando o H2 quebra em duas
+     linhas. O que não se ajusta sozinho é a barra — ela é fixa e o palco tem
+     degraus de `zoom`. Se alguém subir mais este número, meça de novo AQUI, na
+     tela, e não em coordenadas de layout: é a barra que decide.
 
      O QUE SAIU DAQUI, e por que não volta: um `--mergulho` que jogava o prato
      para DENTRO da baia, abaixo do trilho. Era a saída enquanto o título corria
@@ -1945,12 +1966,12 @@
      Reintroduzir o mergulho hoje devolveria o prato ao meio da fileira sem
      ganho nenhum. */
   bottom: 100%;
-  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 0.93);
+  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 1.06);
   height: var(--antena-alt);
-  /* 170/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx. Os
+  /* 190/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx. Os
      dois números PRECISAM andar juntos: divergindo, o `preserveAspectRatio`
      padrão passa a encaixotar o desenho e sobra faixa vazia dentro da caixa. */
-  width: calc(var(--antena-alt) * 170 / 118);
+  width: calc(var(--antena-alt) * 190 / 118);
   transform: translateX(-50%);
   stroke-width: var(--espessura);
   /* O aro do prato encosta nas bordas do `viewBox`; sem isto o traço dele é
