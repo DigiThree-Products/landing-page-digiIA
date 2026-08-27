@@ -433,11 +433,18 @@ export function GradeRecursos() {
               construção, e não precisa encontrar coisa nenhuma. */}
         </svg>
 
-        {/* ---- OS QUATRO ESTAIS ----
-            Dois grupos, um de cada lado da CINTURA: as pontas abertas do topo
-            descem até ela, e dela saem os outros dois até as pontas da base. A
-            cintura mora na BASE DO PINO, e onde ela cai é dial de desenho, não
-            de geometria — está em `--pino-cintura`, em recursos.css.
+        {/* ---- OS SEIS ESTAIS ----
+            Três parelhas, todas pegando o pino em alturas diferentes:
+
+              de fora   das pontas do topo do corpo PARA CIMA, até a amarra no
+                        vão livre do mastro — a única parelha acima da caixa
+              de cima   das MESMAS pontas para baixo, até a cintura
+              de baixo  da cintura às pontas da base do corpo
+
+            As duas primeiras nascem no mesmo par de cantos e abrem para lados
+            opostos; a cintura mora na base do pino. Onde amarra e cintura caem
+            é dial de desenho, não de geometria: `--pino-amarra` e
+            `--pino-cintura`, em recursos.css.
 
             ELES NÃO PODEM MORAR NO `viewBox` DA ANTENA, e essa é a lição que
             acabou de custar os pés. A antena tem escala própria, tirada da
@@ -458,9 +465,27 @@ export function GradeRecursos() {
             quer. O que NÃO pode esticar é o traço, e é `vector-effect` que
             segura, aplicado por CSS aos filhos (ver recursos.css: no `<svg>` ele
             não vale, porque a propriedade não é herdada). */}
+        {/* De fora: as mesmas pontas do topo, subindo até o mastro. É o único
+            grupo acima do barramento, e o único que pega o pino no vão livre em
+            vez de dentro da caixa. A amarra fica no meio entre o vértice da
+            concha e o topo do corpo (ver `--pino-amarra`). */}
+        <svg
+          className="rec-grade__estais rec-grade__estais--mastro"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="50" y1="0" x2="0" y2="100" />
+          <line x1="50" y1="0" x2="100" y2="100" />
+        </svg>
+
         {/* De cima: as duas pontas abertas do barramento descem até a cintura.
             É o espelho do de baixo, e os dois juntos é que a fazem — o corpo
-            estreita ali e volta a abrir. */}
+            estreita ali e volta a abrir. Nascem no MESMO par de cantos que os de
+            fora, e vão para o lado oposto. */}
         <svg
           className="rec-grade__estais rec-grade__estais--cima"
           viewBox="0 0 100 100"

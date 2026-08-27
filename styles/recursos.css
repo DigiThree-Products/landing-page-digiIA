@@ -2048,12 +2048,31 @@
      inteiro cairia perto do prato, fora da caixa — não há estai que o alcance
      de dentro. É a leitura errada mais provável desta nota. */
   --pino-cintura: var(--pino-fundo);
+
+  /* ---- A AMARRA: onde os estais de fora pegam o mastro ----
+     No meio do vão livre — entre o vértice da concha e o topo do barramento.
+     Em unidades do `viewBox` isso é o ponto médio de 60 e 118, ou seja 89; o
+     que esta medida guarda é a DISTÂNCIA dele até o topo do corpo, que é
+     (118 − 60) / 2 = 29.
+
+     ESTÁ ESCRITA COMO DISTÂNCIA, E NÃO COMO ALTURA, porque é isso que a caixa
+     dos estais de fora precisa: ela pousa no topo do corpo (`bottom: 100%`) e
+     sobe. Escrever 89 aqui obrigaria a subtrair em outro lugar.
+
+     OS DOIS NÚMEROS SÃO DO DESENHO e não podem divergir dele. O 60 é o vértice
+     da concha, que sai da Bézier (¼·34 + ½·86 + ¼·34 = 60), e o 118 é a altura
+     do `viewBox`. Mexer no ponto de controle da concha move o vértice e deixa
+     esta amarra fora do meio — sem que nada quebre visivelmente, porque as duas
+     diagonais continuam simétricas. É o mesmo tipo de erro silencioso que já
+     custou os pés da antena. */
+  --pino-amarra: calc(var(--antena-alt) * 29 / 118);
 }
 
-/* ---- OS QUATRO ESTAIS ----
-   Dois grupos que se encontram na CINTURA, hoje na base do pino (ver
-   `--pino-cintura`, que é o dial disso). As pontas abertas do topo descem até
-   lá, e de lá saem os outros dois até as pontas da base do corpo.
+/* ---- OS SEIS ESTAIS ----
+   Três parelhas que pegam o pino em alturas diferentes: `--mastro` sobe das
+   pontas do topo do corpo até a amarra, no vão livre; `--cima` desce das MESMAS
+   pontas até a cintura; `--baixo` vai da cintura às pontas da base. Amarra e
+   cintura estão em `--pino-amarra` e `--pino-cintura`.
 
    ESTA REGRA É SÓ O QUE OS DOIS TÊM EM COMUM — a largura e o traço. O que os
    distingue é a faixa vertical, e ela mora nos dois modificadores logo abaixo.
@@ -2115,6 +2134,25 @@
 .page #recursos .rec-grade__estais--baixo {
   top: var(--pino-cintura, 50%);
   height: calc(100% - var(--pino-cintura, 50%) + var(--espessura) / 2);
+}
+
+/* ---- DE FORA: as mesmas pontas do topo, agora subindo até o mastro ----
+   Este é o único grupo que mora ACIMA do barramento, e é o único que pega o
+   mastro no vão livre em vez de dentro da caixa. As pontas de baixo dele
+   coincidem com as pontas de cima do grupo `--cima`: as duas parelhas nascem
+   no mesmo par de cantos e vão para lados opostos.
+
+   `bottom: 100%` o assenta no topo do corpo, exatamente como faz com a antena.
+   Aqui também NÃO entra meia espessura: não há borda em cima, então a caixa de
+   padding já começa na aresta de fora.
+
+   E os dois eixos continuam dados como TAMANHO — `width` vem da regra base,
+   `height` daqui. É a mesma armadilha de razão intrínseca que fez os estais de
+   dentro saírem 246,8px curtos na primeira tentativa; um `top` no lugar do
+   `height` a traria de volta. */
+.page #recursos .rec-grade__estais--mastro {
+  bottom: 100%;
+  height: var(--pino-amarra, 20%);
 }
 
 /* ---- `vector-effect` PRECISA VIR POR AQUI, E NÃO DO ATRIBUTO NO `<svg>` ----
