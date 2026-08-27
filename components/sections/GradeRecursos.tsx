@@ -432,6 +432,43 @@ export function GradeRecursos() {
               dependência. O pino desce pelo EIXO, que coincide com o do corpo por
               construção, e não precisa encontrar coisa nenhuma. */}
         </svg>
+
+        {/* ---- OS DOIS ESTAIS ----
+            Ligam as duas pontas de baixo do barramento ao fim do pino. Fecham a
+            única coisa que ficava sem resolver quando os pés saíram: o pino
+            terminava no ar, no meio da caixa, sem tocar nada.
+
+            ELES NÃO PODEM MORAR NO `viewBox` DA ANTENA, e essa é a lição que
+            acabou de custar os pés. A antena tem escala própria, tirada da
+            altura dela; a base do corpo está a uma distância que vem do
+            CONTEÚDO da fileira (`--g-piso`). Escrever estas linhas em unidades
+            da antena seria refazer exatamente a dependência que a saída dos pés
+            desfez, e ela voltaria a errar quando a janela mudasse de altura.
+
+            DAÍ A CAIXA COMEÇAR NO FIM DO PINO. O `<svg>` vai de `--pino-fundo`
+            até a base do corpo e ocupa a largura dele, então o ápice é o topo do
+            meio (50,0) e as duas pontas são os cantos de baixo (0,100) e
+            (100,100) — números que não dependem de janela nenhuma, porque a
+            CAIXA é que carrega a geometria.
+
+            `preserveAspectRatio="none"` é o que permite isso: a caixa é alta e
+            estreita e o `viewBox` é quadrado, então o desenho estica. Reta
+            esticada continua reta — só o ângulo muda, que é justamente o que se
+            quer. O que NÃO pode esticar é o traço, e é `vector-effect` que
+            segura, aplicado por CSS aos filhos (ver recursos.css: no `<svg>` ele
+            não vale, porque a propriedade não é herdada). */}
+        <svg
+          className="rec-grade__estais"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="50" y1="0" x2="0" y2="100" />
+          <line x1="50" y1="0" x2="100" y2="100" />
+        </svg>
       </div>
     </div>
   )

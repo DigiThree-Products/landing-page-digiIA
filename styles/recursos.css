@@ -2004,6 +2004,92 @@
   --corpo-abaixo: calc(var(--folga) * 1.4);
   top: calc(-1 * var(--corpo-acima));
   bottom: calc(-1 * var(--corpo-abaixo));
+
+  /* ---- A ALTURA DA ANTENA MORA AQUI, E NÃO NELA ----
+     Ela vive no corpo porque agora tem DOIS leitores: a própria antena, que é
+     filha daqui e portanto herda, e os estais, que precisam saber onde o pino
+     termina. Declarada na antena, o segundo não a enxergaria — irmão não herda
+     de irmão.
+
+     O céu é medido (ver `--g-ceu` em GradeRecursos.tsx) e o 1,06 é o fator que
+     leva a ponta a 6px da barra flutuante; a nota inteira está na regra da
+     antena, logo abaixo. */
+  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 1.06);
+
+  /* ---- ONDE O PINO TERMINA, MEDIDO DO TOPO DO CORPO ----
+     O mastro é desenhado até y = 180 num `viewBox` de altura 118, e a caixa do
+     SVG termina no topo do barramento. Logo ele desce 62 unidades para dentro,
+     e uma unidade vale `--antena-alt ÷ 118`.
+
+     ESTES DOIS NÚMEROS SÃO OS DO DESENHO e não podem divergir dele: mexer no
+     `y1` do mastro sem mexer aqui deixa os estais apontando para um ponto onde
+     o pino não está mais. São o único acoplamento que sobrou entre a antena e o
+     resto, e ele é de uma via só — o `viewBox` manda, isto obedece. */
+  --pino-fundo: calc(var(--antena-alt) * 62 / 118);
+}
+
+/* ---- OS DOIS ESTAIS ----
+   Do fim do pino às duas pontas de baixo do barramento.
+
+   A CAIXA CARREGA A GEOMETRIA, e é por isso que o `viewBox` é 0 0 100 100 com
+   números redondos: começando no fim do pino e terminando na base do corpo, o
+   ápice é (50,0) e as pontas são (0,100) e (100,100) em qualquer janela. Nada
+   aqui precisa de medida — quem se ajusta é a caixa.
+
+   Foi assim de propósito. Escrever estas linhas dentro do `viewBox` da antena
+   teria sido mais curto e refaria a dependência que custou os pés: a antena tem
+   escala tirada da própria altura, e a base do corpo está a uma distância que
+   vem do conteúdo da fileira. Duas entradas independentes de novo.
+
+   OS RECUOS DE MEIA ESPESSURA levam as pontas ao MEIO das linhas do corpo. Sem
+   eles, `left: 0` cairia na face interna da parede — a caixa de um filho
+   absoluto é a de padding, e a borda fica de fora. Um pixel, mas é o pixel que
+   faz o estai encostar na parede em vez de parar rente a ela. */
+.page #recursos .rec-grade__estais {
+  position: absolute;
+  /* ---- OS DOIS LADOS SÃO DADOS COMO TAMANHO, NUNCA COMO SEGUNDO ENCOSTO ----
+     `<svg>` tem RAZÃO INTRÍNSECA, e isso muda como a caixa se resolve: com
+     `width`/`height` em `auto`, um par `left`+`right` (ou `top`+`bottom`) fica
+     sobredeterminado e o navegador descarta o segundo, tirando a medida da
+     razão do `viewBox`. Aqui a razão é 1:1, então a caixa vira um quadrado.
+
+     ISSO CUSTOU DUAS TENTATIVAS, e as duas erraram calado. Com `top`+`bottom`,
+     os estais saíram 246,8px curtos e terminaram no meio do barramento. Fixando
+     só a altura, a largura passou a sair dela e estourou 245,4px para fora do
+     corpo. Nas duas vezes as diagonais continuaram partindo do ápice certo e
+     continuaram simétricas — o desenho parecia bom, e só a medida contra as
+     bordas do corpo pegou.
+
+     Com os dois eixos dados como TAMANHO, a razão não tem o que decidir.
+
+     E O MEIA ESPESSURA APARECE TRÊS VEZES pelo mesmo motivo: a caixa de um
+     filho absoluto é a de PADDING, e a borda do corpo fica de fora dela. Sem o
+     recuo, os estais parariam rente à face interna das linhas em vez de pousar
+     no meio delas. O topo não precisa — o corpo não tem borda em cima, então
+     ali a caixa de padding já começa na borda de fora. */
+  left: calc(var(--espessura) / -2);
+  width: calc(100% + var(--espessura));
+  top: var(--pino-fundo, 50%);
+  height: calc(100% - var(--pino-fundo, 50%) + var(--espessura) / 2);
+  stroke-width: var(--espessura);
+  overflow: visible;
+}
+
+/* ---- `vector-effect` PRECISA VIR POR AQUI, E NÃO DO ATRIBUTO NO `<svg>` ----
+   Ele NÃO É HERDADO. Estava escrito no elemento `<svg>` da antena desde que ela
+   nasceu, com um comentário afirmando que congelava o traço — e computava
+   `none` em cada `<line>` lá dentro. Medido: o traço da antena saía a 2,67px
+   contra os 2,00px de todas as outras linhas da seção, porque o `viewBox` dela
+   escala 1,333 nesta janela. E variava com a tela: a 1536×639 a escala era
+   0,994 e o mesmo traço saía a 2,0px.
+
+   Este seletor entrega o efeito a quem desenha, que é onde ele vale. Para os
+   estais não é cosmético e sim condição: com `preserveAspectRatio="none"` a
+   caixa estica muito mais na vertical que na horizontal, e sem congelar o traço
+   as duas diagonais sairiam com espessura diferente da do resto do desenho. */
+.page #recursos .rec-grade__antena > *,
+.page #recursos .rec-grade__estais > * {
+  vector-effect: non-scaling-stroke;
 }
 
 /* ---- A ANTENA ----
@@ -2072,7 +2158,9 @@
      Reintroduzir o mergulho hoje devolveria o prato ao meio da fileira sem
      ganho nenhum. */
   bottom: 100%;
-  --antena-alt: calc((var(--g-ceu, 176px) - var(--corpo-acima)) * 1.06);
+  /* `--antena-alt` é declarada no `.rec-grade__corpo` e chega aqui por herança
+     — a antena é filha dele. Mora lá porque os estais também a leem, e irmão
+     não herda de irmão. */
   height: var(--antena-alt);
   /* 190/118 é a razão do `viewBox` — ver a nota dele em GradeRecursos.tsx. Os
      dois números PRECISAM andar juntos: divergindo, o `preserveAspectRatio`
