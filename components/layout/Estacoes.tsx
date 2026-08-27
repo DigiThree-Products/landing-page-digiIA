@@ -246,14 +246,26 @@ const RITMO_PADRAO: Ritmo = {
    e divide-se pelo pin —, senão aumentar a travessia estica a chegada junto,
    que é justamente o que não se quer:
 
-     chegada    1,35 tela → 1,35 / 3,4 = 0,3971   (igual às outras cinco)
-     revelação  0,90 tela → acumulado 2,25 / 3,4 = 0,6618
-     PARADA     0,80 tela → o vão até a partida
-     partida    0,35 tela → acumulado 3,05 / 3,4 = 0,8971
+     chegada    1,35 tela → 1,35 / 3,05 = 0,4426   (igual às outras cinco)
+     revelação  0,90 tela → acumulado 2,25 / 3,05 = 0,7377
+     PARADA     0,80 tela → daí até o fim do pin
+     partida    NENHUMA   → `partiu: 1`
 
-   Chegada e partida ficam do MESMO tamanho das outras estações, medidas em
-   tela de rolagem. O que a Estação 02 cobra a mais são a parada e a revelação
-   mais longa, e nada além disso.
+   ---- ELA NÃO PARTE, E ISSO NÃO É "PARTIDA DE DURAÇÃO ZERO" ----
+
+   As outras cinco saem de cena ANTES de o pin soltar: escalam além da tela e
+   apagam, e é por isso que a cauda do pin delas pode ser descontada do vão da
+   seguinte (ver `caudaAcima`). A Estação 02 não faz nada disso. Ela fica em
+   tamanho e brilho de leitura até o pin soltar e depois rola para fora
+   inteira, como uma seção comum.
+
+   `partiu: 1` é o que diz isso, e o `onUpdate` trata o caso: janela de saída
+   de comprimento zero vira `passagem = 0`, não `NaN`.
+
+   O PREÇO ESTÁ EM `caudaAcima`, e é consciente: sem partida não há o que
+   descontar, então volta a haver rolagem entre esta estação e a seguinte. A
+   nota de lá explica por que descontar mesmo assim seria pior — a seção
+   seguinte pinta fundo opaco, e seria ela cortando esta ao meio.
 
    ---- POR QUE A REVELAÇÃO NÃO ROUBOU DA PARADA ----
 
@@ -281,11 +293,11 @@ const RITMO_PADRAO: Ritmo = {
    Se alguém for mexer aqui achando que mexe na implantação: ela não existe
    mais. Cada um destes quatro números tem um dono diferente. */
 const RITMO_RECURSOS: Ritmo = {
-  travessia: 3.4,
-  chegou: 0.3971,
-  expandiu: 0.3971,
-  revelou: 0.6618,
-  partiu: 0.8971,
+  travessia: 3.05,
+  chegou: 0.4426,
+  expandiu: 0.4426,
+  revelou: 0.7377,
+  partiu: 1,
 }
 
 /**
@@ -413,6 +425,27 @@ function caudaAcima(secao: HTMLElement): { px: number; ehHero: boolean } {
     ? antes
     : antes.querySelector('.hero, .estacao')
   if (!(vizinho instanceof HTMLElement)) return { px: 0, ehHero: false }
+
+  /* ---- SÓ SE DESCONTA A CAUDA DE QUEM PARTE ----
+     O desconto inteiro se apoia numa premissa: naquele trecho o vizinho já
+     saiu de cena, "escalado além da tela e com opacidade zero". É por isso que
+     puxar a próxima seção para dentro dali não custa nada — não há nada ali.
+
+     Uma estação SEM PARTIDA quebra a premissa. Ela fica em tamanho e brilho de
+     leitura até o pin soltar e depois rola para fora inteira e opaca, o que
+     significa que a cauda dela é tempo em que ela ESTÁ em cena. Descontar isso
+     puxaria a seção seguinte para cima dela — e como a seguinte hoje pinta
+     fundo opaco, o resultado seria a estação sendo cortada ao meio por um
+     retângulo branco.
+
+     Custo de não descontar: volta a haver rolagem entre as duas, na ordem de
+     uma tela. É o preço de a estação sair por conta própria, e é o mesmo preço
+     que o `.fecho` já paga pela mesma razão (ver a nota do `.fecho` acima —
+     aquela tela "vazia" é pista, não desperdício). */
+  if (vizinho.classList.contains('estacao') && ritmoDa(vizinho).partiu >= 1) {
+    return { px: 0, ehHero: false }
+  }
+
   return { px: vizinho.offsetHeight, ehHero: vizinho.classList.contains('hero') }
 }
 
@@ -660,7 +693,14 @@ export function Estacoes() {
              a partida ficou sem ele até alguém medir. Derivada zero nas
              duas pontas: sai da leitura sem tranco e encosta no fim do
              pin sem tranco. */
-          const passagem = suave(limita((p - ritmo.partiu) / (1 - ritmo.partiu)))
+          /* `partiu` em 1 DESLIGA a partida, e o teste explícito é o mesmo
+             padrão do `janela` da expansão logo acima: `0/0` é `NaN`, e `NaN`
+             passando por `limita` e `suave` produziria lixo silencioso em vez
+             de erro. Sem partida a estação fica em tamanho e brilho de leitura
+             até o pin soltar, e depois rola para fora como qualquer seção. */
+          const janelaSaida = 1 - ritmo.partiu
+          const passagem =
+            janelaSaida > 0 ? suave(limita((p - ritmo.partiu) / janelaSaida)) : 0
           const escala = tamanho + (ESCALA_PASSA - 1) * passagem
           const opacidade = limita(OPACIDADE_LONGE + (1 - OPACIDADE_LONGE) * perto - passagem)
           /* Ida e volta por caminhos diferentes — a única coisa na seção
