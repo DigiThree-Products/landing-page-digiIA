@@ -215,46 +215,84 @@ const PARTIU = 0.841
  * a regra de como resolver os marcos. Vale a pena ler antes de declarar um ato
  * novo: eles são FRAÇÕES do pin, e essa é a pegadinha da conta.
  */
-type Ritmo = { travessia: number; chegou: number; expandiu: number; partiu: number }
+type Ritmo = {
+  travessia: number
+  chegou: number
+  expandiu: number
+  /* Onde a REVELAÇÃO termina — que não é onde a estação parte.
+     Igual a `partiu` significa "revela até o último instante e já vai embora",
+     que é o comportamento das cinco. Menor que `partiu` abre uma PARADA: o
+     texto acaba de nascer e a composição fica imóvel na tela até a partida. */
+  revelou: number
+  partiu: number
+}
 
 const RITMO_PADRAO: Ritmo = {
   travessia: TRAVESSIA,
   chegou: CHEGOU,
   expandiu: CHEGOU,
+  revelou: PARTIU,
   partiu: PARTIU,
 }
 
-/* O molde de um ritmo com ato do meio, guardado por ser o único exemplo de
-   como se declara um. Era o da Estação 02 até 27/08:
+/* ---- A ESTAÇÃO 02 PARA, E É SÓ NISSO QUE ELA FOGE DO PADRÃO ----
 
-     travessia 3,0 · chegou 0,45 · expandiu 0,7167 · partiu 0,8833
+   O pedido foi que o satélite completo, com os títulos, ficasse mais tempo na
+   tela. Ele mal ficava: a última cascata fecha aos 0,78 do relógio da
+   revelação, e com `revelou` colado em `partiu` sobravam 0,22 de uma travada
+   de 0,50 tela — 0,11 tela, uns 96px de rolagem, e a estação já ia embora.
 
    Os marcos saem RESOLVIDOS AO CONTRÁRIO — diz-se quantas telas cada ato dura
-   e divide-se pelo pin — senão aumentar a travessia estica a chegada junto:
+   e divide-se pelo pin —, senão aumentar a travessia estica a chegada junto,
+   que é justamente o que não se quer:
 
-     chegada     1,35 tela → 1,35 / 3,0 = 0,45
-     implantação 0,80 tela → acumulado 2,15 / 3,0 = 0,7167
-     revelação   0,50 tela → acumulado 2,65 / 3,0 = 0,8833
-     partida     0,35 tela → o resto
+     chegada    1,35 tela → 1,35 / 3,0 = 0,45      (igual às outras cinco)
+     revelação  0,50 tela → acumulado 1,85 / 3,0 = 0,6167
+     PARADA     0,80 tela → o vão até a partida
+     partida    0,35 tela → 2,65 / 3,0 = 0,8833
 
-   Repare que chegada e partida ficam do mesmo tamanho das outras estações,
-   medidas em tela de rolagem: o ato do meio cobra exatamente o que dura. */
+   Chegada, revelação e partida ficam do MESMO tamanho das outras estações,
+   medidas em tela de rolagem. O que a Estação 02 cobra a mais são exatamente
+   as 0,80 tela de parada, e nada além disso. A folga imóvel vai de 0,11 para
+   0,91 tela — sete vezes mais.
+
+   O PIN VOLTOU A 3,0 TELAS, e é a segunda vez que ele tem esse tamanho por
+   razões diferentes: até 27/08 as 0,80 extras pagavam o ATO DO MEIO, em que o
+   satélite chegava dobrado e implantava as asas. O ato saiu, o pin encolheu
+   para 2,2, e agora as mesmas 0,80 voltam comprando parada. Se alguém for
+   mexer aqui achando que está mexendo na implantação: ela não existe mais. */
+const RITMO_RECURSOS: Ritmo = {
+  travessia: 3.0,
+  chegou: 0.45,
+  expandiu: 0.45,
+  revelou: 0.6167,
+  partiu: 0.8833,
+}
 
 /**
- * AS SEIS ESTAÇÕES ANDAM NO MESMO RITMO, e voltaram a andar em 27/08.
+ * CINCO ESTAÇÕES NO RITMO PADRÃO, e a 02 com parada própria.
  *
- * A Estação 02 teve, por um tempo, um pin próprio de 3,0 telas: as 0,80 tela a
- * mais pagavam o ATO DO MEIO, em que o satélite chegava dobrado e implantava as
- * asas até virar o console. Esse ato saiu (ver GradeRecursos.tsx) e, com ele,
- * some a única razão que ela tinha para cobrar mais rolagem que as outras.
+ * O que a distingue não é a chegada nem a partida — as duas têm exatamente o
+ * mesmo tamanho das outras cinco, medidas em tela de rolagem. É a PARADA: 0,80
+ * tela em que o satélite completo, com os dois pedaços do título, fica imóvel
+ * antes de partir. Ver o bloco de `RITMO_RECURSOS` para a conta.
  *
- * A função fica, em vez de sumir junto: ela é o ponto de extensão onde um ato
- * próprio se declara, e apagá-la esconderia isso de quem vier depois. Quem for
- * reintroduzir um: o molde está no histórico deste arquivo, e a pegadinha é que
- * os marcos são FRAÇÕES do pin — aumentar a travessia sem remexer neles estica
- * a chegada junto, que é justamente o que não se quer.
+ * NO CELULAR ELA NÃO PARA, e cobrar por isso seria cobrar por nada: lá a
+ * camada do satélite inteira sai (styles/recursos.css esconde a `.rec-grade`)
+ * e a fileira vira carrossel. O que ficaria parado é um cabeçalho e um slide —
+ * o mesmo que as outras cinco têm, no ritmo delas.
+ *
+ * O breakpoint é o mesmo de recursos.css, onde a fileira vira carrossel.
+ *
+ * ENVELHECE NUMA MUDANÇA DE JANELA, até o próximo mount: o ritmo é lido uma
+ * vez, na criação do gatilho. Mesmo preço que `vaoDaEstacao` já paga e pela
+ * mesma razão — o caso real (girar o telefone) é raro o bastante para não
+ * valer um observador só para isto.
  */
-const ritmoDa = (_secao: HTMLElement): Ritmo => RITMO_PADRAO
+const ritmoDa = (secao: HTMLElement): Ritmo => {
+  if (secao.id !== 'recursos') return RITMO_PADRAO
+  return window.matchMedia('(max-width: 1023px)').matches ? RITMO_PADRAO : RITMO_RECURSOS
+}
 
 /**
  * Rolagem extra, em telas, antes de a estação começar a chegar — o vão em
@@ -659,10 +697,20 @@ export function Estacoes() {
           const janela = ritmo.expandiu - ritmo.chegou
           const expande = janela > 0 ? suave(limita((p - ritmo.chegou) / janela)) : 1
 
-          /* A revelação do texto começa onde a expansão termina, e não mais
-             onde a chegada termina. Nas cinco estações sem ato do meio os dois
-             pontos são o mesmo, então nada mudou para elas. */
-          const pousado = limita((p - ritmo.expandiu) / (ritmo.partiu - ritmo.expandiu))
+          /* A revelação começa onde a expansão termina e acaba em `revelou`,
+             que NÃO é necessariamente a partida.
+
+             É essa distinção que compra tempo parado. Antes o denominador era
+             `partiu`, e a consequência é que o relógio da revelação só chegava
+             a 1 no instante em que a estação começava a ir embora — a última
+             cascata fecha aos 0,78 dele, então sobravam 0,22 de tela imóvel e
+             nada mais. Com `revelou` separado, o relógio satura antes e FICA em
+             1 até a partida; o intervalo entre os dois é tempo em que tudo está
+             na tela e nada se move.
+
+             Nas cinco estações sem parada própria os dois valores são iguais e
+             a conta é idêntica à de antes. */
+          const pousado = limita((p - ritmo.expandiu) / (ritmo.revelou - ritmo.expandiu))
 
           el.style.transform = `translate3d(0, ${sobe.toFixed(3)}vh, 0) scale(${escala.toFixed(4)})`
           el.style.opacity = opacidade.toFixed(3)
