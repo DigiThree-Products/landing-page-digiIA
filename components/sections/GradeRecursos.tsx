@@ -351,8 +351,8 @@ export function GradeRecursos() {
               37,7% a 62,3% da largura da peça — o que em unidades do `viewBox`
               (170 de largura) cai em 64 e 106. Alargar o `viewBox` sem refazer
               esta conta deixaria os pés pendurados fora do barramento. */}
-          <line x1="91" y1="100" x2="77" y2="118" />
-          <line x1="99" y1="100" x2="113" y2="118" />
+          <line x1="91" y1="100" x2="60" y2="118" />
+          <line x1="99" y1="100" x2="130" y2="118" />
         </svg>
       </div>
     </div>

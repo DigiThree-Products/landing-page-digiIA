@@ -275,7 +275,7 @@
      faixa acima do trilho, que está livre de ponta a ponta, e é ela que dá o
      volume. Barramento fino com antena larga é silhueta de satélite, não
      concessão. */
-  --corpo-larg: calc(var(--vao) * 3.5);
+  --corpo-larg: calc(var(--vao) * 4.5);
 
   /* ---- A HASTE ----
      O vão de cada lado, entre a parede da baia e a parede do barramento. Sai
@@ -283,10 +283,23 @@
      que faz a silhueta — fixá-la em px daria um corpo relativamente mais gordo
      a cada janela em que a baia encolhe.
 
-     0,31 põe o corpo em 38% da baia, que é a proporção da referência (44 de
-     corpo para 36 de haste de cada lado). Medido a 1920: baia de 66px, corpo
-     de 25 e hastes de 20,5. */
-  --haste: calc(var(--corpo-larg) * 0.31);
+     ---- A FRAÇÃO CAIU DE 0,31 PARA 0,22, e o corpo é quem ganhou ----
+
+     0,31 era a proporção da referência (44 de corpo para 36 de haste de cada
+     lado). O problema é que ali o corpo é 41% da largura de um painel, e aqui
+     ele é 23% — os "painéis" são cards de 240px, não retângulos de 106. Copiar
+     a proporção interna da baia sem olhar a proporção EXTERNA dava um
+     barramento que sumia na fileira.
+
+     O sintoma foi o dono não ver diferença quando a antena cresceu: "não
+     visualizei aumento no componente central, somente na antena". Estava
+     certo — só a antena tinha crescido, porque só ela dependia de mim e não
+     da baia.
+
+     Com 0,22 o corpo fica com 56% da baia em vez de 38%, e a haste quase não
+     sente: medido, de 47px para 43. O corpo DOBRA (57 → 108) e o vão entre
+     painel e barramento continua lá, que é o que ele precisava ser. */
+  --haste: calc(var(--corpo-larg) * 0.22);
 
   /* ---- A COR DAS TRÊS LINHAS ----
      Tokens PRÓPRIOS da seção, e não os globais `--rule`/`--rule-hi`. A razão
@@ -541,6 +554,12 @@
    cresceu: o prato é a peça mais larga que passa por aqui e mede QUATRO VEZES o
    barramento — medido, 226px de aro contra 57 de corpo.
 
+   O MULTIPLICADOR CAIU DE 2,9 PARA 1,9, e não é recuo: a BAIA cresceu de 3,5
+   para 4,5 vãos, então o vão total ficou praticamente igual (275px contra
+   276). O que mudou foi de onde vem a largura — antes a maior parte era
+   respiro somado à baia, agora é a própria baia. Se alguém mexer na baia sem
+   olhar aqui, este número tem de ceder na mesma medida, senão a frase quebra.
+
    QUEM MANDA NO TETO É A METADE ESQUERDA DA FRASE, e não o calendário como eu
    supus a primeira vez. Medido a 1536px:
 
@@ -572,7 +591,7 @@
   line-height: 1.02;
   letter-spacing: -0.042em;
   display: grid;
-  grid-template-columns: 1fr calc(var(--corpo-larg) + 2.9 * var(--vao)) 1fr;
+  grid-template-columns: 1fr calc(var(--corpo-larg) + 1.9 * var(--vao)) 1fr;
   /* `baseline` e não `center`: as duas metades são a MESMA linha de texto,
      partida. Alinhadas pela caixa, um `em` de tamanho diferente as
      desnivelaria e a frase deixaria de ler como contínua. */
@@ -1893,9 +1912,19 @@
      atravessá-lo —, e cada ponto além disso é largura que o prato perde: ele é
      dimensionado pelo que sobra da faixa, e a largura dele sai da altura pela
      razão do `viewBox`. As duas medidas competem pela mesma faixa, e é o prato
-     que precisa dela. */
+     que precisa dela.
+
+     E 1,40 EMBAIXO ATRAVESSA O BRAÇO DE BAIXO, pela mesma razão que a antena
+     atravessa o de cima: a moldura são cantos, e o meio da base está tão aberto
+     quanto o meio do topo. Antes o corpo parava 12px ACIMA daquele braço, e o
+     rabo do satélite ficava contido dentro da caixa — o que faz o barramento
+     ler como célula comprida em vez de peça que atravessa a estação.
+
+     O teto aqui é mais generoso que o de cima porque não há barra flutuante
+     embaixo: o limite é o fim da seção. Medido a 1536×639, com 1,40 o corpo
+     termina 14px além do braço e ainda a 47px da borda da tela. */
   --corpo-acima: calc(var(--folga) * 0.09);
-  --corpo-abaixo: calc(var(--folga) * 0.62);
+  --corpo-abaixo: calc(var(--folga) * 1.4);
   top: calc(-1 * var(--corpo-acima));
   bottom: calc(-1 * var(--corpo-abaixo));
 }
