@@ -234,11 +234,12 @@
 /* O #recursos SAIU desta lista em 21/08 e não deve voltar: aquela seção
    chega como corpo único, sem cascata. Ver "O QUE ELA FAZ — a chegada sem
    cascata", mais abaixo. */
-.page #demo .demo-lado,
-.page #demo .demo-head .tag,
-.page #demo .demo-head h2,
-.page #demo .demo-head__sub,
-.page #demo .demo,
+.page #como-funciona .cf-head .tag,
+.page #como-funciona .cf-head h2,
+.page #como-funciona .cf-head__sub,
+.page #como-funciona .cf-anim,
+.page #como-funciona .cf-bloco,
+.page #como-funciona .cf-fecho,
 .page #dna .dna-head .tag,
 .page #dna .dna-head h2,
 .page #dna .dna-head__sub,
@@ -313,8 +314,7 @@
    ali. Eram valores órfãos e valor órfão é armadilha para quem vier
    procurar por que um ajuste não faz nada. */
 .page .approach-media,
-.page #demo .demo,
-.page #demo .demo-lado {
+.page #como-funciona .cf-anim {
   --sobe: 64px;
   --encolhe: 0.16;
 }
@@ -884,11 +884,12 @@
 
 /* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
        rosto que emerge e ela é a prova, o corpo mais pesado. --- */
-.page #demo .demo-lado { --de: 0; --dur: 0.22; }
-.page #demo .demo-head .tag { --de: 0.16; --dur: 0.12; }
-.page #demo .demo-head h2 { --de: 0.26; --dur: 0.16; }
-.page #demo .demo-head__sub { --de: 0.40; --dur: 0.14; }
-.page #demo .demo { --de: 0.54; --dur: 0.24; }
+.page #como-funciona .cf-head .tag  { --de: 0;    --dur: 0.12; }
+.page #como-funciona .cf-head h2    { --de: 0.12; --dur: 0.16; }
+.page #como-funciona .cf-head__sub  { --de: 0.26; --dur: 0.14; }
+.page #como-funciona .cf-anim       { --de: 0.34; --dur: 0.22; }
+.page #como-funciona .cf-bloco      { --de: 0.46; --dur: 0.20; }
+.page #como-funciona .cf-fecho      { --de: 0.74; --dur: 0.18; }
 
 /* --- Quem está por trás — 8 degraus. Eram 3 quando a seção era só um
        número e uma frase.
@@ -1017,11 +1018,12 @@
   .page #recursos .quad h3,
   .page #recursos .quad__lede,
   .page #recursos .quad__saida > *,
-  .page #demo .demo-lado,
-  .page #demo .demo-head .tag,
-  .page #demo .demo-head h2,
-  .page #demo .demo-head__sub,
-  .page #demo .demo,
+  .page #como-funciona .cf-head .tag,
+  .page #como-funciona .cf-head h2,
+  .page #como-funciona .cf-head__sub,
+  .page #como-funciona .cf-anim,
+  .page #como-funciona .cf-bloco,
+  .page #como-funciona .cf-fecho,
   .page .credibility-section .cred-head .tag,
   .page .credibility-section .cred-copy h2,
   .page .credibility-section .cred-manifesto,

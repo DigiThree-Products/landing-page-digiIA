@@ -3,130 +3,81 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * O SATÉLITE DA ESTAÇÃO 02 — o que orbita, atraca e se implanta no console.
+ * O SATÉLITE DA ESTAÇÃO 02 — a grade do console, mais a ferragem que a faz ler
+ * como satélite.
  *
- * O console já É um satélite visto de frente: quatro colunas por duas
- * fileiras são OITO CÉLULAS, e oito células são duas asas de painel de
- * quatro cada. O que esta camada faz não é inventar um desenho novo — é
- * desenhar ESSA MESMA grade podendo dobrá-la ao meio, coisa que as linhas
- * do console não conseguem fazer porque cada uma é um pseudo-elemento preso
- * ao seu quadrado no fluxo.
+ * O console já É um satélite visto de frente: quatro colunas por duas fileiras
+ * são OITO CÉLULAS, e oito células são dois arranjos de painel de quatro cada.
+ * Entre eles corre o barramento, na baia; em cima dele, a antena.
  *
- * A coreografia é: as quatro colunas chegam dobradas DUAS DE CADA LADO, com
- * o corpo do satélite entre elas; as asas se implantam; o corpo é fechado
- * por elas como um obturador; e no fim esta camada coincide exatamente com
- * o console e some. Como as duas grades são a mesma nos últimos quadros, a
- * troca não se vê.
+ * ---- ELE NÃO DOBRA MAIS, E ISSO É DE 27/08 ----
  *
- * ---- A DOBRA SÃO DOIS GRUPOS, E NÃO DOZE DESLOCAMENTOS ----
+ * Por um dia esta camada teve um ATO DO MEIO: chegava com os dois arranjos
+ * dobrados um sobre o outro, o corpo largo entre eles, e implantava as asas até
+ * coincidir com o console — 0,80 tela de rolagem, três movimentos simultâneos,
+ * e uma boa quantidade de álgebra para os cinco conduítes pousarem a 0,00px.
  *
- * A primeira ideia era dar a cada linha um deslocamento próprio que se
- * anulasse na abertura. Doze contas independentes, doze lugares para errar
- * um sinal, e nenhuma garantia estrutural de que todas terminassem no mesmo
- * lugar. A conta certa é outra: dobrar 2+2 é escalar cada METADE em torno
- * da própria borda de fora.
+ * O pedido foi tirar a dobra e deixar o satélite FIXO: ele chega inteiro, no
+ * tamanho final, e o que continua animado é só a revelação — ele aparece
+ * durante a viagem e o texto nasce depois que a estação atraca.
  *
- *   asa esquerda   escala em torno de x = 0   (a borda esquerda da grade)
- *   asa direita    escala em torno de x = G   (a borda direita)
+ * O QUE ISSO CUSTOU E O QUE PAGOU. Saíram as três razões de escala que esta
+ * camada publicava (`--g-min`, `--g-min-y`, `--asa-min`), as duas asas como
+ * grupos escaláveis, todas as contra-escalas que devolviam espessura às linhas,
+ * e as 0,80 tela do pin (ver `ritmoDa` em components/layout/Estacoes.tsx).
  *
- * Com `a` indo da dobra (ver `CORPO_DOBRADO`) a 1, o conduíte k da asa
- * esquerda cai em `k·passo·a` e o da direita em `G − (G − k·passo − baia)·a`.
- * Em `a = 1` os dois viram a posição do console — IDÊNTICA, por álgebra e não
- * por calibragem. É isso que preserva o trabalho de medida do PR anterior: as
- * verticais batendo a 0px e as horizontais a 0,4px.
+ * Pagou o que a dobra impedia: sem escala em cima do desenho, a ferragem pode
+ * ter CURVA e ÂNGULO de verdade. É por isso que a antena virou um `<svg>` — sob
+ * a dobra, um arco viraria elipse e um ângulo viraria outro ângulo, e era essa
+ * limitação que mantinha a parabólica facetada em três retas. Facetada e no
+ * tamanho que cabia, ela lia como um X riscado ao lado de uma caixinha, não
+ * como antena. O diagnóstico do dono foi direto: "não tem imagem nessa seção".
  *
- * De quebra, escalar o GRUPO encurta as horizontais junto, que é
- * exatamente o que se quer (as células dobradas são mais estreitas), sem
- * uma segunda conta para a largura de cada segmento.
+ * ---- O QUE ESTA CAMADA AINDA FAZ, JÁ QUE NÃO DOBRA ----
  *
- * ---- O CONDUÍTE DO MEIO APARECE DUAS VEZES ----
+ * Ela desenha a grade ANTES do console. As linhas de verdade (os conduítes de
+ * cada card, o trilho, os filetes) nascem no relógio da atracação, que só anda
+ * aos 0,78 da chegada; o satélite tem relógio próprio e mais cedo, 0,30 a 0,55,
+ * porque ele precisa estar no ar durante a órbita. Entre 0,30 e 0,78 é só esta
+ * camada que pinta a grade. Depois as duas coincidem — e como coincidem exatas,
+ * esta sai sem que a troca se veja.
  *
- * Quatro colunas em 2+2 pedem SEIS arestas verticais — três por asa — e o
- * console tem cinco conduítes. A do meio é a mesma linha fazendo dois
- * trabalhos: aresta interna da asa esquerda e da direita. Enquanto dobrado
- * são dois lugares diferentes, então são dois elementos; na implantação os
- * dois convergem para o mesmo x e se empilham.
- *
- * ISSO DOBRA O ALFA daquela linha no fim, e é um preço consciente: a
- * sobreposição só existe nos últimos quadros, quando a camada inteira já
- * está saindo (`--g-sai`) e as linhas de verdade já estão acesas por baixo.
- * Se aparecer como um conduíte central mais claro na troca, o conserto é
- * uma linha — afinar o gêmeo com `calc(1 - var(--expande))`. Não foi feito
- * às cegas porque um crossfade a mais custa mais do que resolve.
+ * A FERRAGEM NÃO SAI. Corpo, hastes e antena não têm substituto embaixo: eles
+ * são o que sobra sendo satélite depois que o console assume a grade.
  *
  * ---- POR QUE ISTO É UM COMPONENTE DE CLIENTE E NÃO SÓ CSS ----
  *
- * As posições HORIZONTAIS saem de graça em CSS: a fileira é
- * `repeat(4, 1fr)` com `gap: var(--vao)`, então a coluna vale
- * `(100% - 3 × --vao) / 4` e o conduíte k mora em `k × (coluna + vão) −
- * vão/2`. Nada a medir.
+ * As posições HORIZONTAIS saem de graça em CSS: a fileira é `repeat(4, 1fr)`
+ * com `gap: var(--vao)` e a baia no meio, então a coluna vale
+ * `(100% − baia − 4 × --vao) / 4` e o conduíte k mora em `k × (coluna + vão)`.
+ * Nada a medir.
  *
- * As VERTICAIS não. O filete cai no fim do bloco de texto e o piso no fim
- * do slot do artefato, e as duas alturas são de CONTEÚDO: `--cabeca` e
- * `--slot` são pisos mínimos, não as alturas reais (medido: `--cabeca`
- * 108px contra 120px de texto real). Nenhuma expressão CSS sabe dizer onde
- * eles caem.
+ * As VERTICAIS não. O filete cai no fim do bloco de texto e o piso no fim do
+ * slot do artefato, e as duas alturas são de CONTEÚDO: `--cabeca` e `--slot`
+ * são pisos mínimos, não as alturas reais (medido: `--cabeca` 108px contra
+ * 120px de texto real). Nenhuma expressão CSS sabe dizer onde eles caem.
  *
  * Daí as medidas publicadas aqui, e só elas:
- *   --g-y       (em cada segmento) y do filete e do piso daquele instrumento
- *   --g-piso    y do piso mais baixo dos quatro, que fecha a caixa da grade
- *   --g-topo    onde a caixa começa dentro do `.rec-layout`
- *   --g-base    quanto sobra dela até o fim do layout
- *   --g-min     razão entre a largura dobrada e a da grade implantada
- *   --g-min-y   a mesma razão na altura
- *   --asa-min   quanto cada asa recolhe, que também dita a largura do corpo
- *
- * As três últimas não são medidas — são constantes daqui. Passam pelo mesmo
- * canal porque saturam JUNTAS quando não há dobra a fazer (celular), e essa
- * decisão depende de uma medida.
- *
- * ---- POR QUE `scaleX` E NÃO LARGURA ----
- *
- * Animar a largura de verdade recalcularia o layout a cada quadro de
- * rolagem. Pior: em ~130px por coluna os títulos quebram em muito mais
- * linhas, a altura do bloco de texto cresce, e a geometria do satélite
- * passaria a depender do texto que ele deveria estar escondendo.
- *
- * Com `scaleX` nada disso acontece: a caixa não muda, só a pintura. O preço
- * é que a escala achataria a espessura das linhas verticais junto. Por isso
- * cada vertical leva a escala INVERSA das DUAS que a afetam (a da camada e
- * a da própria asa) em torno do próprio centro: a posição dobra, a
- * espessura não. As horizontais não precisam de nada, porque `scaleX` mexe
- * no comprimento delas, que é justamente o que se quer.
+ *   --g-y           (em cada segmento) y do filete e do piso daquele instrumento
+ *   --g-piso        y do piso mais baixo dos quatro, que fecha a caixa da grade
+ *   --g-topo        onde a caixa começa dentro do `.rec-layout`
+ *   --g-base        quanto sobra dela até o fim do layout
+ *   --g-junta       o filete mais alto dos quatro, onde as hastes cruzam
+ *   --g-ceu         o vão livre acima do trilho, que dimensiona a antena
+ *   --g-parede      x da parede esquerda do barramento, onde o trilho para
+ *   --g-parede-fim  x da parede direita, onde ele recomeça
  */
 
-/* Quanto o satélite dobrado é mais largo que alto — e o número sai de uma
-   conta, não do olho.
-
-   O corpo ocupa os 40% do meio (ver `--asa-s` em styles/recursos.css), então
-   cada asa fica com 30% da envergadura e, tendo duas colunas, cada coluna
-   vale 15% dela. Com envergadura 1 — o quadrado da versão anterior — a
-   coluna cairia para `0,15 × 379 ≈ 57px` numa janela de 1920, contra os
-   ≈95px que as quatro colunas tinham naquele mesmo quadrado. Ripas, não
-   painéis: o corpo teria saído do bolso das asas.
-
-   1,6 é a envergadura que devolve a coluna ao tamanho que ela já tinha
-   (≈91px) e paga o corpo com largura NOVA. Em 1920 isso dá ~606px dobrado
-   contra 1165 implantado. */
-const ENVERGADURA = 1.6
-
-/* QUANTO DO SATÉLITE DOBRADO É CORPO. É este o número que se escolhe a olho;
-   a dobra das asas sai dele, e não o contrário.
-
-   0,28 põe o corpo mais ESTREITO que cada asa (36%), que é a proporção da
-   referência: arranjos longos, barramento compacto. A 0,40, que foi a
-   primeira tentativa, a peça lia como um painel com uma caixa em cima.
-
-   POR QUE DERIVAR A DOBRA EM VEZ DE ESCREVÊ-LA: o corpo não fecha mais até
-   sumir — ele para na baia, que é uma medida de LAYOUT (`--corpo-larg`, em
-   styles/recursos.css) e muda de tamanho com a janela. Uma dobra fixa daria
-   uma proporção dobrada diferente a cada largura de tela. Fixando a
-   proporção e resolvendo a dobra, a silhueta é a mesma em todas elas. */
-const CORPO_DOBRADO = 0.28
-
-/* As duas asas, e quais conduítes e colunas cada uma leva. O conduíte 2
-   aparece nas duas de propósito — ver a nota do gêmeo no docblock. */
-const ASAS = [
+/* Os dois arranjos, e quais verticais e colunas cada um leva.
+ *
+ * SÃO SEIS VERTICAIS PARA QUATRO COLUNAS, e a conta fecha porque as duas do
+ * meio não são a mesma linha: são as duas PAREDES DA BAIA, separadas pela
+ * largura dela. O arranjo da direita carrega esse deslocamento em bloco
+ * (`--g-off`), então o k dele conta a partir da parede de lá.
+ *
+ * Eles não são mais grupos que escalam — viraram o agrupamento semântico do
+ * arranjo esquerdo e do direito, que é o que mantém o JSX legível. */
+const ARRANJOS = [
   { lado: 'esq', verticais: [0, 1, 2], colunas: [0, 1] },
   { lado: 'dir', verticais: [2, 3, 4], colunas: [2, 3] },
 ] as const
@@ -156,10 +107,7 @@ export function GradeRecursos() {
          avisa que o desalinhamento aparecendo é sinal de o número precisar
          subir). Corrigir aquele piso mínimo é outra conversa, de composição.
          O que a grade tem de fazer é copiar o console COMO ELE É, seja qual
-         for a copy — senão a troca no fim da abertura vira um salto.
-
-         Daí a medição por quadrado, escrita direto no elemento de cada
-         segmento. */
+         for a copy — senão a troca no fim da chegada vira um salto. */
 
       /* ---- `offset*` E NUNCA `getBoundingClientRect` AQUI ----
          O palco desta seção é escalado pelo GSAP a viagem inteira, de 0,16 até
@@ -167,7 +115,7 @@ export function GradeRecursos() {
          PINTADO, ou seja, multiplicado por essa escala — e como o
          ResizeObserver dispara durante a chegada, as medidas saíam do tamanho
          que a estação tinha no instante em que ele coube observar. Medido com
-         a versão anterior: `--g-piso` em 158px onde o valor de layout é 337.
+         uma versão anterior: `--g-piso` em 158px onde o valor de layout é 337.
 
          As famílias `offsetTop`/`offsetHeight` ignoram transformações e
          devolvem o layout, que é o que a grade precisa — ela vive DENTRO do
@@ -184,9 +132,9 @@ export function GradeRecursos() {
       })
 
       /* Cada segmento recebe o seu próprio y. Os quatro filetes vêm em ordem
-         de documento — os dois da asa esquerda e depois os dois da direita —
-         que é a mesma ordem dos quadrados, porque a asa esquerda leva as
-         colunas 0 e 1 e a direita as 2 e 3. */
+         de documento — os dois do arranjo esquerdo e depois os dois do
+         direito — que é a mesma ordem dos quadrados, porque o arranjo esquerdo
+         leva as colunas 0 e 1 e o direito as 2 e 3. */
       const filetes = grade.querySelectorAll<HTMLElement>('.rec-grade__seg--filete')
       const pisos = grade.querySelectorAll<HTMLElement>('.rec-grade__seg--piso')
       medidas.forEach((m, i) => {
@@ -196,13 +144,8 @@ export function GradeRecursos() {
 
       /* A CAIXA DA GRADE VAI ATÉ O PISO MAIS BAIXO. Com os quatro
          desalinhados, usar o do primeiro quadrado deixaria o de baixo para
-         fora — e é essa altura que define a envergadura do satélite. */
+         fora. */
       const piso = Math.max(...medidas.map((m) => m.piso))
-
-      /* A grade aberta é mais larga que a fileira: ela vai do primeiro
-         conduíte ao quinto, e os dois moram meio vão para fora. O `--vao`
-         precisa ser lido do CSS porque é um `clamp` responsivo. */
-      const vao = parseFloat(getComputedStyle(fileira).columnGap) || 0
 
       /* ---- A FOLGA VEM DO TRILHO, NÃO DO TOKEN ----
          `getComputedStyle().getPropertyValue('--folga')` NÃO resolve: custom
@@ -217,75 +160,71 @@ export function GradeRecursos() {
          `clamp` muda de faixa numa janela diferente. */
       const folga = -parseFloat(getComputedStyle(fileira, '::before').top) || 0
 
-      const largura = fileira.offsetWidth + vao
-      /* Do trilho (meio vão acima da fileira) até o piso. */
-      const altura = folga + piso
-
-      /* Onde a grade começa e termina dentro do `.rec-layout`. O topo dela é
-         o trilho, meio vão acima da fileira; a base é o piso. As cantoneiras
-         usam os dois para abraçar o satélite enquanto ele está dobrado. */
-      const topo = fileira.offsetTop - folga
-      const rodape = layout.offsetHeight - fileira.offsetTop - piso
-
+      /* Onde a grade começa e termina dentro do `.rec-layout`. O topo dela é o
+         trilho, meio vão acima da fileira; a base é o piso. As cantoneiras
+         usam os dois. */
       layout.style.setProperty('--g-piso', `${piso.toFixed(2)}px`)
-      layout.style.setProperty('--g-topo', `${topo.toFixed(2)}px`)
-      layout.style.setProperty('--g-base', `${rodape.toFixed(2)}px`)
-      /* Preso a 1 no teto porque uma estação mais alta que larga (celular)
-         não deve ESTICAR a grade além do console; ali ela já nasce
-         implantada e não há dobra para ver. */
-      const dobraX = Math.min(1, (altura * ENVERGADURA) / largura)
-      layout.style.setProperty('--g-min', dobraX.toFixed(4))
-
-      /* SATURAR É O QUE DESLIGA O SATÉLITE, e as três dobras saturam juntas.
-         No celular a estação é mais alta que larga, `dobraX` bate no teto de
-         1 e não há nada a dobrar; deixar as outras duas dobrarem ali daria um
-         console achatado que nunca foi satélite. */
-      const dobrou = dobraX < 1
-
-      /* ---- A BAIA, MEDIDA E NÃO LIDA ----
-         `--corpo-larg` é `var(--vao)`, que é um `clamp` — e custom property
-         comum não resolve em `getComputedStyle` (a nota da `--folga` acima
-         conta essa história). A baia sai da geometria: o vão entre CRIA e
-         ROTEIRIZA vale dois vãos mais a pista vazia, e a baia entre paredes é
-         isso menos um vão. */
-      const entreAsas =
-        quadrados[2].offsetLeft - (quadrados[1].offsetLeft + quadrados[1].offsetWidth)
-      const baia = Math.max(0, entreAsas - vao)
-
-      /* ---- A DOBRA DAS ASAS SAI DA PROPORÇÃO PEDIDA ----
-         Dobrado, o corpo mede `G − 4·passo·a` e as duas asas o resto, com
-         `4·passo = G − baia`. Pondo a fração do corpo em CORPO_DOBRADO:
-
-             1 − (1 − baia/G) × a = CORPO_DOBRADO
-             a = (1 − CORPO_DOBRADO) / (1 − baia/G)
-
-         Com a baia em 44px numa grade de 1165, isso dá 0,748. O teto de 1 é
-         o caso em que a baia já é mais larga que a proporção pedida: aí não
-         há asa a recolher, e recolher assim mesmo abriria um corpo maior do
-         que se pediu. */
-      const semBaia = 1 - baia / largura
-      const dobraAsa = semBaia > 0 ? Math.min(1, (1 - CORPO_DOBRADO) / semBaia) : 1
-      layout.style.setProperty('--asa-min', (dobrou ? dobraAsa : 1).toFixed(4))
-
-      /* ---- A DOBRA VERTICAL, com a célula dobrada QUADRADA como alvo ----
-         Cada asa mede `2·passo·a` e tem duas colunas, então a célula dobrada
-         tem `passo·a` de largura. Na vertical são duas fileiras dentro de
-         `dobra × altura`. Igualando, com `passo = (G − baia)/4` e a largura
-         dobrada valendo `altura × ENVERGADURA`:
-
-             dobra = 0,5 × a × ENVERGADURA × (1 − baia/G)
-
-         E o produto `a × (1 − baia/G)` é, por construção, `1 −
-         CORPO_DOBRADO` — a baia se cancela. Sobra uma constante:
-
-             dobra = ENVERGADURA × (1 − CORPO_DOBRADO) / 2 = 0,576
-
-         Ou seja: mexer na baia muda a dobra das asas e NÃO muda esta. É a
-         confirmação de que as duas contas falam da mesma silhueta. */
+      layout.style.setProperty('--g-topo', `${(fileira.offsetTop - folga).toFixed(2)}px`)
       layout.style.setProperty(
-        '--g-min-y',
-        (dobrou ? Math.min(1, (ENVERGADURA * (1 - CORPO_DOBRADO)) / 2) : 1).toFixed(4),
+        '--g-base',
+        `${(layout.offsetHeight - fileira.offsetTop - piso).toFixed(2)}px`,
       )
+
+      /* A ALTURA DO FILETE MAIS ALTO governa onde as hastes cruzam. Elas vão do
+         barramento ao arranjo, e chegam nele na altura em que ele já tem uma
+         junta — o filete — em vez de no meio de uma célula. Os quatro filetes
+         não caem juntos (ver a nota acima), então vale o de cima: é o único que
+         existe em todas as quatro colunas ao mesmo tempo. */
+      layout.style.setProperty(
+        '--g-junta',
+        `${Math.min(...medidas.map((m) => m.filete)).toFixed(2)}px`,
+      )
+
+      /* ---- O CÉU DA ANTENA ----
+         Quanto espaço livre existe acima do trilho, dele até o braço de cima
+         da moldura. É o teto da antena, e precisa ser MEDIDO porque o
+         cabeçalho tem altura de conteúdo: o H2 quebra em duas linhas numa
+         janela estreita e o céu encolhe junto.
+
+         A conta se reduz a um número só. O trilho fica uma folga acima da
+         fileira e a moldura uma folga acima do topo do layout, então o vão
+         entre os dois é `(fileira.offsetTop − folga) + folga` — as folgas se
+         cancelam e sobra o `offsetTop` da fileira, limpo.
+
+         SÓ EXISTE PORQUE O TÍTULO SE PARTIU. Enquanto a frase corria inteira, a
+         antena batia na base do H2 e o teto era uma `--folga`; com o vão aberto
+         no meio da frase, a coluna central ficou livre de ponta a ponta e o
+         teto subiu para cá. Medido a 1536px: 177px contra os 52 de antes. */
+      layout.style.setProperty('--g-ceu', `${fileira.offsetTop.toFixed(2)}px`)
+
+      /* ---- ONDE O TRILHO TEM DE PARAR ----
+         O trilho atravessava o barramento por dentro. Não se via enquanto o
+         corpo estava colado nele: a borda de topo do corpo cobria a linha. Ao
+         abrir a base do triângulo, o corpo subiu 14px e a linha ficou exposta,
+         cortando a peça central ao meio.
+
+         São DOIS trilhos a cortar, e eles têm de continuar idênticos: o desta
+         camada e o `.quads::before`, que é o do console. Se um ganhar o corte e
+         o outro não, a troca no fim da chegada — hoje invisível porque as duas
+         grades coincidem — vira um piscar.
+
+         E O CORTE NÃO SAI EM PORCENTAGEM. Os dois trilhos partem da MESMA borda
+         esquerda (ambos a meio vão para fora do `.rec-layout`, medido: x = 200
+         para os dois), mas não têm a mesma largura — o do console desconta uma
+         `--espessura` à direita, para terminar rente à última marca. Uma parada
+         escrita em % resolveria contra larguras diferentes e os dois cortes
+         cairiam a ~1px um do outro; ancorada à esquerda em px, é exata nos dois.
+
+         `offsetLeft` de novo, e não `getBoundingClientRect`: o palco leva
+         `zoom: 0.92` no repouso, e zoom entra no retângulo pintado. */
+      const corpo = grade.querySelector<HTMLElement>('.rec-grade__corpo')
+      if (corpo) {
+        layout.style.setProperty('--g-parede', `${corpo.offsetLeft}px`)
+        layout.style.setProperty(
+          '--g-parede-fim',
+          `${corpo.offsetLeft + corpo.offsetWidth}px`,
+        )
+      }
     }
 
     medir()
@@ -297,15 +236,20 @@ export function GradeRecursos() {
 
   return (
     <div className="rec-grade" ref={ref} aria-hidden="true">
-      {/* O TRILHO É A VIGA e fica FORA das asas: ele é a única horizontal
-          contínua do console (atravessa a fileira inteira, de conduíte a
-          conduíte), então não pode ser dobrado em duas sem virar dois
-          segmentos no instante da troca. Deixá-lo inteiro por cima das duas
-          asas transforma a limitação na peça certa: enquanto dobrado, é ele
-          que atravessa o satélite de ponta a ponta e sustenta as asas. */}
+      {/* O TRILHO É A VIGA: a horizontal que atravessa a fileira inteira, de
+          conduíte a conduíte. Fica fora dos dois arranjos porque é de ambos — é
+          ele que os liga.
+
+          E DESDE 27/08 ELE PARA NO BARRAMENTO em vez de atravessá-lo. Antes
+          dizia-se aqui que ele passava POR CIMA do corpo; na verdade passava POR
+          DENTRO, e só não se via porque a borda de topo do corpo cobria a linha.
+          Aberta a base do triângulo da antena, o corpo subiu 14px e o corte
+          apareceu. O corte de verdade agora é no trilho, entre `--g-parede` e
+          `--g-parede-fim` (ver a nota delas no efeito, e o gradiente
+          `--trilho-fio` em recursos.css, que os dois trilhos dividem). */}
       <i className="rec-grade__h rec-grade__h--trilho" />
 
-      {ASAS.map(({ lado, verticais, colunas }) => (
+      {ARRANJOS.map(({ lado, verticais, colunas }) => (
         <div key={lado} className={`rec-grade__asa rec-grade__asa--${lado}`}>
           {verticais.map((k) => (
             <i
@@ -315,10 +259,10 @@ export function GradeRecursos() {
             />
           ))}
           {/* Filetes e pisos são SEGMENTADOS, um por instrumento, e não uma
-              linha contínua — é assim que o console os desenha (cada um vai
-              do seu conduíte à borda direita da própria coluna, deixando a
-              calha aberta). Uma linha contínua aqui viraria quatro segmentos
-              no instante da troca, e a troca deixaria de ser invisível. */}
+              linha contínua — é assim que o console os desenha (cada um vai do
+              seu conduíte à borda direita da própria coluna, deixando a calha
+              aberta). Uma linha contínua aqui viraria quatro segmentos no
+              instante da troca, e a troca deixaria de ser invisível. */}
           {colunas.map((k) => (
             <i
               key={`f${k}`}
@@ -336,34 +280,238 @@ export function GradeRecursos() {
         </div>
       ))}
 
-      {/* O CORPO, entre as duas asas. Ele não desenha as próprias paredes
-          laterais: as arestas internas das asas já são elas, e desenhá-las
-          de novo dobraria o alfa das duas linhas mais visíveis do satélite.
-          O que é dele é só o que as asas não dão — a cabeça acima do trilho,
-          a base abaixo do piso, o cinturão, o mastro e a parabólica. */}
+      {/* ---- AS DUAS HASTES ----
+          O que separa um satélite de uma grade é o VÃO entre o barramento e os
+          arranjos: painel de satélite não encosta no corpo, ele fica na ponta
+          de uma haste. Até 27/08 as paredes do corpo ERAM as arestas internas
+          dos arranjos — economia de duas linhas que custava justamente esta
+          leitura, porque sem vão a peça inteira lê como uma grade só. */}
+      <i className="rec-grade__haste rec-grade__haste--esq" />
+      <i className="rec-grade__haste rec-grade__haste--dir" />
+
+      {/* ---- O BARRAMENTO ----
+          Uma caixa só, do topo acima do trilho até a base abaixo do piso. Foram
+          três peças (cabeça, base e cinturão) enquanto o corpo dobrava e
+          precisava de módulos que sobrevivessem ao obturador; fixo, ele é o que
+          a referência mostra — um retângulo contínuo com os arranjos pendurados
+          nele.
+
+          COM UMA DIFERENÇA PARA A REFERÊNCIA, DE 27/08: o topo é ABERTO. A
+          referência traz um retângulo fechado, mas ali a antena não pousa nele.
+          Aqui pousa, e a borda de cima era exatamente a base do triângulo dos
+          pés — fechada, a peça lia como telhado sobre muro. Ver `border-top` em
+          recursos.css, que explica por que tirar essa borda sozinha não bastava. */}
       <div className="rec-grade__corpo">
-        {/* O MASTRO E A PARABÓLICA SÃO FILHOS DA CABEÇA, e não do corpo, por
-            duas razões que só apareceram quando o corpo virou permanente.
+        {/* ---- A ANTENA ----
+            `<svg>` e não pseudo-elementos, e isso só passou a ser possível
+            quando a dobra saiu: o prato tem UM ARCO e os pés têm ângulo, e os
+            dois viviam sob duas escalas que os teriam distorcido. Facetada em
+            três retas, que era a solução sob dobra, a parabólica lia como um X
+            riscado.
 
-            A primeira é de ancoragem: implantado, o corpo tem a largura da
-            baia (44px), e a cabeça é MAIS LARGA que ele — ela mora na faixa
-            acima do trilho, que está livre. Pendurados no corpo, os dois
-            ficavam dentro daqueles 44px, ou seja, por baixo da cabeça.
+            `vector-effect: non-scaling-stroke` mantém o traço na espessura das
+            linhas da grade mesmo com o palco escalando de 0,16 a 1 durante a
+            viagem. Sem ele a antena seria a única peça da seção cuja espessura
+            muda com a chegada. */}
+        {/* ---- O PRATO É MAIS RASO QUE O DA REFERÊNCIA, DE PROPÓSITO ----
+            A referência tem `viewBox` de 400×260 com o aro em rx 46 — razão
+            1,23 entre a peça inteira e a altura dela. Aqui é 1,67, e a
+            diferença toda foi para a LARGURA DO ARO (rx 45 → 62); o mastro, a
+            ponta e os pés não mudaram de proporção.
 
-            A segunda é de altura: presos ao corpo eles subiam a partir do topo
-            dele e entravam no título da seção. Presos à cabeça, a pilha
-            inteira — cabeça, mastro, prato — cabe dentro de uma `--folga`, que
-            é a metade do vão entre o cabeçalho e a fileira. */}
-        <i className="rec-grade__cabeca">
-          <i className="rec-grade__mastro" />
-          <i className="rec-grade__prato">
-            <i className="rec-grade__prato-borda" />
-            <i className="rec-grade__prato-foco" />
-            <i className="rec-grade__prato-haste" />
-          </i>
-        </i>
-        <i className="rec-grade__base" />
-        <i className="rec-grade__cinturao" />
+            O motivo é o teto vertical. A antena é dimensionada pela faixa entre
+            o trilho e a base do H2, que vale uma `--folga` e não estica: a
+            largura sai da altura pela razão daqui. Alargar o `viewBox` é a
+            única forma de dar presença ao prato sem pedir altura que não
+            existe — e é fiel ao objeto, porque parabólica vista de viés é rasa
+            mesmo. A primeira versão desta peça errou para o outro lado: com a
+            profundidade quase igual à abertura, as retas fechavam um triângulo
+            e a coisa lia como botão de play.
+
+            E A RAZÃO É O QUE CASA COM O BARRAMENTO. Na referência o prato é
+            2,1× o corpo, e é esse contraste que o faz ler como antena em vez de
+            tampa: prato mais estreito que o próprio corpo não lê. Com a baia em
+            3,2 vãos e esta razão, a conta bate nos mesmos 2,1×. Mexer num dos
+            dois sem o outro desmancha a proporção. */}
+        {/* ---- O `viewBox` É UM DIAL DE DUAS PONTAS ----
+            A peça é dimensionada pela ALTURA disponível e a largura sai da
+            razão daqui. Isso faz do `viewBox` o lugar onde se escolhe QUAL das
+            duas cresce, e as duas mudanças de hoje usaram as duas pontas:
+
+            ALTURA 78 → 118, com a largura parada em 130. Os 40 pontos novos
+            foram todos para o mastro e os pés; nada do prato mudou de tamanho
+            aqui dentro. Foi assim que a antena subiu sem engordar — com a razão
+            antiga (1,67), esticar a altura teria levado a largura junto e o
+            prato passaria do vão que o título abriu.
+
+            LARGURA 130 → 170, com a altura parada em 118. Aqui é o inverso, e
+            atende ao "aumenta a largura dele também": o aro cresce de rx 62
+            para 82 e a peça alarga sem subir mais — que é bom, porque a altura
+            já está a 7% da moldura e não tem para onde ir.
+
+            A razão foi de 1,67 a 1,10 e voltou a 1,44. Quem for mexer: escolha
+            qual eixo quer e mexa SÓ no outro número. Mexer nos dois ao mesmo
+            tempo é o jeito de não entender o que mudou.
+
+            E o par tem de bater com o `width` em recursos.css, senão o
+            `preserveAspectRatio` padrão encaixota o desenho. */}
+        <svg
+          className="rec-grade__antena"
+          viewBox="0 0 190 118"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        >
+          {/* A ponta, CHEIA: é o único elemento sólido do desenho inteiro, e é
+              ele que fecha o alto da peça. Vazada, some contra o fundo preto. */}
+          <ellipse cx="95" cy="6" rx="4" ry="5.5" fill="currentColor" stroke="none" />
+          {/* ---- O PINO CENTRAL ----
+              Uma peça só, do alto até dentro do barramento. Desenhá-lo em
+              pedaços (acima e abaixo do prato) deixaria uma junta visível bem no
+              vértice da concha.
+
+              ELE PASSA DE 118, QUE É A ALTURA DO `viewBox`, E ISSO É DE
+              PROPÓSITO. A caixa do SVG termina no topo do barramento
+              (`bottom: 100%`), então tudo que se desenha além de 118 cai DENTRO
+              do corpo — é `overflow: visible` que deixa, o mesmo que já existia
+              para o aro não ser cortado nas laterais.
+
+              É assim que a antena se prende desde 27/08. Antes ela se apoiava em
+              dois pés que pousavam nas paredes do corpo, e aquilo não tinha
+              conserto por número: a largura da antena sai do CÉU MEDIDO e a
+              largura do corpo sai da LARGURA DO CONTAINER — duas entradas
+              independentes, então qualquer x fixo acerta em uma janela só.
+              Medido: os pés fechavam a 0,14px em 1536×695 e a 7,16px em
+              1536×639, sem uma linha de código mudar entre as duas. O pino não
+              tem esse problema porque não precisa encontrar nada: ele desce pelo
+              eixo, que é o mesmo do corpo por construção.
+
+              A PROFUNDIDADE ACOMPANHA A ANTENA, não o corpo: 62 unidades de
+              `viewBox` valem 62 × (altura da antena ÷ 118) em pixels, então o
+              pino encolhe junto com o prato quando a janela baixa. É o que se
+              quer — pino e prato são a mesma peça. */}
+          <line x1="95" y1="180" x2="95" y2="11" />
+          {/* ---- O ARO E A CONCHA PRECISAM DE DISTÂNCIA ----
+              O aro é o prato visto de viés; a concha é o que o faz ler como
+              parábola em vez de anel. Mas os dois começam no MESMO par de
+              pontos, e o arco de baixo do aro corre junto com a concha — se
+              ficarem perto, a concha vira só um engrossamento do aro.
+
+              Na primeira versão deste `viewBox` mais largo eles ficaram a 6
+              unidades um do outro e foi exatamente o que aconteceu: sumiu a
+              parábola. O desenho ficou mais raso que a referência (razão 1,67
+              contra 1,23), e nessa proporção a separação também precisa crescer.
+
+              Agora o aro fecha em 44 e a concha desce até 60 — 16 unidades. O
+              vértice sai da conta da quadrática, não do olho:
+                B(½) = ¼·34 + ½·86 + ¼·34 = 60 */}
+          <ellipse cx="95" cy="34" rx="92" ry="10" />
+          <path d="M3 34 Q95 86 187 34" />
+          {/* ---- E NÃO HÁ PÉS. O QUE ESTAVA AQUI, E POR QUE NÃO VOLTA ----
+              Dois `<line>` saindo do pé do mastro e pousando nas paredes do
+              barramento. Eles funcionavam, e não eram feios; o que não dava era
+              MANTÊ-LOS POUSADOS.
+
+              Para um pé encontrar uma parede, a largura da antena e a largura do
+              corpo têm de guardar uma razão fixa. Elas não guardam: a da antena
+              sai da altura, que sai do CÉU MEDIDO; a do corpo sai da LARGURA DO
+              CONTAINER. São duas entradas independentes, então qualquer x escrito
+              no `viewBox` está certo em exatamente uma janela.
+
+              Isso ficou medido, e é a razão de a nota ser longa: os pés fechavam
+              a 0,14px em 1536×695 e, sem uma linha de código mudar entre as duas
+              medições, a 7,16px em 1536×639 — pendurados no ar sobre o topo
+              aberto do corpo. Uma versão anterior desta nota já tinha apodrecido
+              do mesmo jeito, citando antena 231px, corpo 57 e `viewBox` 170,
+              nenhum dos três ainda válido.
+
+              A saída não foi um número melhor nem uma fórmula: foi tirar a
+              dependência. O pino desce pelo EIXO, que coincide com o do corpo por
+              construção, e não precisa encontrar coisa nenhuma. */}
+        </svg>
+
+        {/* ---- OS SEIS ESTAIS ----
+            Três parelhas, todas pegando o pino em alturas diferentes:
+
+              de fora   das pontas do topo do corpo PARA CIMA, até a amarra no
+                        vão livre do mastro — a única parelha acima da caixa
+              de cima   das MESMAS pontas para baixo, até a cintura
+              de baixo  da cintura às pontas da base do corpo
+
+            As duas primeiras nascem no mesmo par de cantos e abrem para lados
+            opostos; a cintura mora na base do pino. Onde amarra e cintura caem
+            é dial de desenho, não de geometria: `--pino-amarra` e
+            `--pino-cintura`, em recursos.css.
+
+            ELES NÃO PODEM MORAR NO `viewBox` DA ANTENA, e essa é a lição que
+            acabou de custar os pés. A antena tem escala própria, tirada da
+            altura dela; a base do corpo está a uma distância que vem do
+            CONTEÚDO da fileira (`--g-piso`). Escrever estas linhas em unidades
+            da antena seria refazer exatamente a dependência que a saída dos pés
+            desfez, e ela voltaria a errar quando a janela mudasse de altura.
+
+            DAÍ A CAIXA COMEÇAR NO FIM DO PINO. O `<svg>` vai de `--pino-fundo`
+            até a base do corpo e ocupa a largura dele, então o ápice é o topo do
+            meio (50,0) e as duas pontas são os cantos de baixo (0,100) e
+            (100,100) — números que não dependem de janela nenhuma, porque a
+            CAIXA é que carrega a geometria.
+
+            `preserveAspectRatio="none"` é o que permite isso: a caixa é alta e
+            estreita e o `viewBox` é quadrado, então o desenho estica. Reta
+            esticada continua reta — só o ângulo muda, que é justamente o que se
+            quer. O que NÃO pode esticar é o traço, e é `vector-effect` que
+            segura, aplicado por CSS aos filhos (ver recursos.css: no `<svg>` ele
+            não vale, porque a propriedade não é herdada). */}
+        {/* De fora: as mesmas pontas do topo, subindo até o mastro. É o único
+            grupo acima do barramento, e o único que pega o pino no vão livre em
+            vez de dentro da caixa. A amarra fica no meio entre o vértice da
+            concha e o topo do corpo (ver `--pino-amarra`). */}
+        <svg
+          className="rec-grade__estais rec-grade__estais--mastro"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="50" y1="0" x2="0" y2="100" />
+          <line x1="50" y1="0" x2="100" y2="100" />
+        </svg>
+
+        {/* De cima: as duas pontas abertas do barramento descem até a cintura.
+            É o espelho do de baixo, e os dois juntos é que a fazem — o corpo
+            estreita ali e volta a abrir. Nascem no MESMO par de cantos que os de
+            fora, e vão para o lado oposto. */}
+        <svg
+          className="rec-grade__estais rec-grade__estais--cima"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="0" y1="0" x2="50" y2="100" />
+          <line x1="100" y1="0" x2="50" y2="100" />
+        </svg>
+
+        {/* De baixo: da cintura às duas pontas da base. */}
+        <svg
+          className="rec-grade__estais rec-grade__estais--baixo"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="50" y1="0" x2="0" y2="100" />
+          <line x1="50" y1="0" x2="100" y2="100" />
+        </svg>
       </div>
     </div>
   )

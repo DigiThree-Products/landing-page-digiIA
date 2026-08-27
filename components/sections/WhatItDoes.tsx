@@ -78,8 +78,18 @@ export function WhatItDoes() {
               <b className="rec-estacao">Estação {F.estacao}</b>
               <span>{F.eyebrow}</span>
             </p>
+            {/* DUAS METADES COM O MASTRO NO MEIO. O `<span>` não é gancho de
+                estilo solto: cada um é uma célula do grid que abre o vão
+                central (ver `.rec-head h2` em styles/recursos.css). O espaço
+                entre eles é EXPLÍCITO porque o grid come o espaço em branco do
+                JSX, e no celular — onde a regra do grid não vale e as duas
+                voltam a correr na mesma linha — ele é o que separa as
+                palavras. */}
             <h2 id="recursos-titulo">
-              {F.title} <em>{F.titleHighlight}</em>
+              <span>{F.title}</span>{' '}
+              <span>
+                {F.titleDepois} <em>{F.titleHighlight}</em>
+              </span>
             </h2>
           </div>
         </div>

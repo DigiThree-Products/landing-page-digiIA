@@ -5,7 +5,7 @@ import { Nav } from '@/components/sections/Nav'
 import { Hero } from '@/components/sections/Hero'
 import { ApproachSection } from '@/components/sections/ApproachSection'
 import { WhatItDoes } from '@/components/sections/WhatItDoes'
-import { Demo } from '@/components/sections/Demo'
+import { ComoFunciona } from '@/components/sections/ComoFunciona'
 import { DnaEstrategico } from '@/components/sections/DnaEstrategico'
 import { Offer } from '@/components/sections/Offer'
 import { Credibility } from '@/components/sections/Credibility'
@@ -23,7 +23,7 @@ import { LANDING } from '@/content/landing'
  * A oferta é o destino: o site inteiro constrói o argumento até chegar nela,
  * por último, antes do rodapé. Mexer na ordem muda o argumento, não só o layout.
  *
- * O DNA fica ENTRE o Demo e a credibilidade, e as duas vizinhanças são
+ * O DNA fica ENTRE o Como funciona e a credibilidade, e as duas vizinhanças são
  * deliberadas. Antes dele, a pessoa acabou de ver a máquina produzindo — é
  * exatamente aí que nasce a objeção "IA faz conteúdo genérico". Depois dele, o
  * "+15 anos" deixa de ser um selo solto e vira a história de origem do DNA: o
@@ -35,7 +35,7 @@ import { LANDING } from '@/content/landing'
  * são as aulas. Em qualquer outro lugar da página ela lê como bônus solto.
  *
  * SEIS seções são estações e prendem a rolagem por ~2,2 telas cada: Approach,
- * WhatItDoes, Demo, Dna, Credibility e Faq. O Repertório entrou como seção
+ * WhatItDoes, ComoFunciona, Dna, Credibility e Faq. O Repertório entrou como seção
  * COMUM de propósito — mais uma estação cobraria duas telas de rolagem por um
  * argumento só (ver Repertorio.tsx).
  *
@@ -59,7 +59,7 @@ export default function Home() {
           <Hero />
           <ApproachSection />
           <WhatItDoes />
-          <Demo />
+          <ComoFunciona />
           <DnaEstrategico />
           <Credibility />
           <Repertorio />
