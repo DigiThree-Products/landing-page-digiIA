@@ -1888,6 +1888,23 @@
   right: calc(2 * var(--g-passo) + var(--haste));
   border: var(--espessura) solid var(--fio-forte);
 
+  /* ---- E O TOPO É ABERTO, DE 27/08 ----
+     A borda de cima saiu porque ela era a BASE DO TRIÂNGULO da antena: os dois
+     pés pousam nos cantos superiores do corpo, e era esta linha que ligava um ao
+     outro. Fechado, o triângulo lia como telhado — e como telhado apoiado num
+     muro, porque o trilho corre por trás dele de ponta a ponta do console.
+
+     ELA NÃO ERA A ÚNICA LINHA ALI, e é isso que faz desta mudança um par e não
+     uma. Havia TRÊS horizontais coincidentes naquela faixa, medidas a 1536:
+     esta borda (y 257,6), o trilho da `.rec-grade` (261,9) e o `.quads::before`,
+     que é o trilho do console de verdade (261,9). Apagar só esta, com o corpo
+     colado no trilho, não mudaria NADA na tela — os outros dois refechariam a
+     base 4px abaixo. Por isso `--corpo-acima` subiu junto.
+
+     Aberto, o que se vê é o que a peça é: duas pernas em Λ descendo do mastro e
+     virando as paredes do barramento, com o trilho do console passando atrás. */
+  border-top: 0;
+
   /* ---- ELE SAI DA CAIXA POR CIMA E POR BAIXO, E EM MEDIDAS DIFERENTES ----
      É o que dá silhueta de satélite em vez de mais uma célula, já que a caixa
      da grade vai só do trilho ao piso.
@@ -1907,12 +1924,25 @@
      `--g-base` = 0) e a faixa até a cantoneira de baixo está vazia. 0,62 dá ao
      rabo do corpo a massa que a referência tem ali sem encostar na moldura.
 
-     E 0,09 EM CIMA É O MENOR VALOR QUE AINDA LÊ. O topo do barramento precisa
-     aparecer acima do trilho — senão o corpo parece NASCER dele em vez de
-     atravessá-lo —, e cada ponto além disso é largura que o prato perde: ele é
-     dimensionado pelo que sobra da faixa, e a largura dele sai da altura pela
-     razão do `viewBox`. As duas medidas competem pela mesma faixa, e é o prato
-     que precisa dela.
+     0,30 EM CIMA É O QUE ABRE O TRIÂNGULO. Era 0,09 — o menor valor que ainda
+     deixava o topo do corpo aparecer acima do trilho —, e era pequeno de
+     propósito, porque cada ponto aqui é largura que o prato perde: a antena é
+     dimensionada pelo que sobra da faixa e a largura dela sai da altura pela
+     razão do `viewBox`. As duas medidas competem pela mesma faixa.
+
+     O QUE AQUELE MÍNIMO NÃO PREVIA É QUE 4px NÃO SEPARAM. Medido a 1536: borda
+     do corpo em 257,6 e trilho em 261,9 — na tela, uma linha só. O corpo não
+     atravessava a viga, parecia nascer dela, e a base do triângulo da antena
+     continuaria fechada mesmo depois de a borda de topo sair (ver a nota do
+     `border-top` acima). Com 0,30 são ~15,7px a 1536, e o trilho passa atrás,
+     legível como o que é.
+
+     O PRATO PAGA MENOS DO QUE PARECE, e a conta explica por quê. O topo da
+     antena é `trilho − 1,06·céu + 0,06·--corpo-acima`: subir o corpo empurra a
+     antena para cima e encolhe a altura dela na MESMA medida, então a ponta fica
+     onde estava — 11px a menos de altura movem o topo em 0,7px. Quem paga é a
+     LARGURA do prato, que sai da altura pela razão do `viewBox`; e é ela que
+     obriga a refazer o x dos pés (ver GradeRecursos.tsx, que traz a fórmula).
 
      E 1,40 EMBAIXO ATRAVESSA O BRAÇO DE BAIXO, pela mesma razão que a antena
      atravessa o de cima: a moldura são cantos, e o meio da base está tão aberto
@@ -1923,7 +1953,7 @@
      O teto aqui é mais generoso que o de cima porque não há barra flutuante
      embaixo: o limite é o fim da seção. Medido a 1536×639, com 1,40 o corpo
      termina 14px além do braço e ainda a 47px da borda da tela. */
-  --corpo-acima: calc(var(--folga) * 0.09);
+  --corpo-acima: calc(var(--folga) * 0.3);
   --corpo-abaixo: calc(var(--folga) * 1.4);
   top: calc(-1 * var(--corpo-acima));
   bottom: calc(-1 * var(--corpo-abaixo));

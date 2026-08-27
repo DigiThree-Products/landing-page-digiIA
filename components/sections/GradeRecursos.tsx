@@ -249,11 +249,17 @@ export function GradeRecursos() {
       <i className="rec-grade__haste rec-grade__haste--dir" />
 
       {/* ---- O BARRAMENTO ----
-          Uma caixa só, fechada nos quatro lados, do topo acima do trilho até a
-          base abaixo do piso. Foram três peças (cabeça, base e cinturão)
-          enquanto o corpo dobrava e precisava de módulos que sobrevivessem ao
-          obturador; fixo, ele é o que a referência mostra — um retângulo
-          contínuo com os arranjos pendurados nele. */}
+          Uma caixa só, do topo acima do trilho até a base abaixo do piso. Foram
+          três peças (cabeça, base e cinturão) enquanto o corpo dobrava e
+          precisava de módulos que sobrevivessem ao obturador; fixo, ele é o que
+          a referência mostra — um retângulo contínuo com os arranjos pendurados
+          nele.
+
+          COM UMA DIFERENÇA PARA A REFERÊNCIA, DE 27/08: o topo é ABERTO. A
+          referência traz um retângulo fechado, mas ali a antena não pousa nele.
+          Aqui pousa, e a borda de cima era exatamente a base do triângulo dos
+          pés — fechada, a peça lia como telhado sobre muro. Ver `border-top` em
+          recursos.css, que explica por que tirar essa borda sozinha não bastava. */}
       <div className="rec-grade__corpo">
         {/* ---- A ANTENA ----
             `<svg>` e não pseudo-elementos, e isso só passou a ser possível
@@ -346,13 +352,37 @@ export function GradeRecursos() {
               ângulo raso e a peça leria como tripé, não como antena sobre um
               barramento.
 
-              ELES POUSAM NAS PAREDES DO CORPO, e os números saem de conta, não
-              do olho: com a antena em 231px e o corpo em 57, o corpo ocupa de
-              37,7% a 62,3% da largura da peça — o que em unidades do `viewBox`
-              (170 de largura) cai em 64 e 106. Alargar o `viewBox` sem refazer
-              esta conta deixaria os pés pendurados fora do barramento. */}
-          <line x1="91" y1="100" x2="60" y2="118" />
-          <line x1="99" y1="100" x2="130" y2="118" />
+              ELES POUSAM NAS PAREDES DO CORPO — e desde 27/08 essas paredes são
+              o fim do desenho. A borda de topo do barramento saiu (ver
+              `border-top` em recursos.css) e o triângulo ficou ABERTO: duas
+              pernas em Λ que descem do mastro e viram as paredes, com o trilho
+              do console passando atrás. Fechado, ele lia como telhado.
+
+              O X SAI DE FÓRMULA, e ela fica escrita aqui porque já apodreceu uma
+              vez — a versão anterior desta nota citava antena 231px, corpo 57 e
+              `viewBox` 170, e nenhum dos três ainda valia:
+
+                x = 95 ± (B / 2) · 190 / A
+
+              com B a largura PINTADA do barramento, A a da antena e 190 a
+              largura do `viewBox`. A 1536px isso é B = 100 e A = 253,3, que dá
+              57,5 e 132,5.
+
+              QUALQUER MUDANÇA NA ALTURA DA ANTENA CAI AQUI. A largura A sai da
+              altura pela razão do `viewBox`, e a altura sai de
+              `--g-ceu − --corpo-acima`. Foi exatamente o que aconteceu ao abrir
+              a base: `--corpo-acima` foi de 0,09 para 0,30 da folga, a antena
+              encolheu 11px, A caiu de 271 para 253 — e os pés antigos (60 e 130)
+              passariam a pousar 3,4px DENTRO das paredes. Número velho aqui não
+              quebra nada visivelmente: continua desenhando um triângulo, só que
+              pendurado. Por isso a fórmula, e não só o resultado.
+
+              E A RAZÃO A/B NÃO É CONSTANTE ENTRE JANELAS: A depende do céu
+              medido (que encolhe quando o H2 quebra em duas linhas) e B da
+              largura do container. A fórmula fecha na janela em que se mede —
+              conferir nas pontas antes de dar por bom. */}
+          <line x1="91" y1="100" x2="57.5" y2="118" />
+          <line x1="99" y1="100" x2="132.5" y2="118" />
         </svg>
       </div>
     </div>
