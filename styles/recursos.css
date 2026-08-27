@@ -523,12 +523,51 @@
 
    No celular o bloco de `max-width: 1023px` devolve um teto de 16ch e o
    título volta a empilhar, que é o certo lá. */
+/* ---- O TÍTULO ABRE UM VÃO PARA O MASTRO ----
+   Três colunas: metade da frase, o vão, a outra metade. As duas laterais são
+   `1fr` iguais, e é isso que põe o vão no CENTRO exato do layout — que é onde
+   a baia mora, porque a fileira é simétrica (duas colunas, baia, duas
+   colunas). Nenhuma medida repetida: a simetria faz a conta.
+
+   AS DUAS METADES ANCORAM À ESQUERDA da própria coluna, e não uma contra a
+   outra. Alinhar a primeira à direita a arrastaria para perto do centro e ela
+   perderia a margem que compartilha com a linha "ESTAÇÃO 02 · O QUE ELA FAZ"
+   logo acima — que é a única coisa segurando as duas como um bloco de
+   cabeçalho. Assim a frase começa onde sempre começou; o que muda é onde ela
+   é interrompida.
+
+   O VÃO É A BAIA MAIS UM VÃO DE COLUNA. Só a baia deixaria o texto raspando o
+   prato, que tem 102px numa baia de 138 e é a peça mais larga que sobe ali. O
+   vão extra é a folga de cada lado.
+
+   POR QUE `1fr` E NÃO `auto` NAS LATERAIS: com `auto` a coluna encolhe até o
+   texto e o vão central escorrega para onde sobrar — deixa de ser centro e
+   passa a ser resto. Com `1fr` as duas laterais são iguais por construção, e
+   o vão não tem para onde ir.
+
+   `text-wrap: balance` SAIU, e não por descuido: ele existe para repartir uma
+   frase em linhas parecidas, e aqui não há mais uma frase — há duas metades em
+   células separadas, cada uma com largura própria. Mantê-lo faria cada metade
+   equilibrar as PRÓPRIAS quebras, o que na largura que elas têm significa
+   quebrar onde não precisava. Ele volta no celular, onde a frase volta a
+   correr inteira. */
 .page #recursos .rec-head h2 {
   margin: 14px 0 0;
   font-size: clamp(30px, 3vw, 40px);
   line-height: 1.02;
   letter-spacing: -0.042em;
-  text-wrap: balance;
+  display: grid;
+  grid-template-columns: 1fr calc(var(--corpo-larg) + var(--vao)) 1fr;
+  /* `baseline` e não `center`: as duas metades são a MESMA linha de texto,
+     partida. Alinhadas pela caixa, um `em` de tamanho diferente as
+     desnivelaria e a frase deixaria de ler como contínua. */
+  align-items: baseline;
+}
+/* A do meio é o vão — nada mora nela. As duas de fora recebem as metades, e a
+   terceira coluna precisa ser pedida explicitamente: sem isto o segundo
+   `<span>` cairia na coluna 2, dentro do vão, bem em cima do mastro. */
+.page #recursos .rec-head h2 > span:last-of-type {
+  grid-column: 3;
 }
 .page #recursos .rec-head h2 em {
   font-style: normal;
@@ -1377,9 +1416,22 @@
   .page #recursos .rec-head {
     margin: 0 var(--gutter) 20px;
   }
+  /* A FRASE VOLTA A CORRER INTEIRA. O vão do desktop existe para o mastro do
+     satélite passar, e aqui não há satélite — a camada inteira sai (ver a nota
+     do `.rec-grade` mais acima). Um vão de 180px no meio de um título de
+     celular seria buraco sem causa.
+
+     `display: block` devolve os dois `<span>` ao fluxo inline, e o espaço
+     explícito entre eles no JSX é o que separa "DigiThree," de "agora" — com
+     o grid ele era comido. `grid-column` some junto por não ter mais grid.
+
+     `text-wrap: balance` VOLTA aqui: com a frase inteira de novo, ele tem o
+     que equilibrar. */
   .page #recursos .rec-head h2 {
+    display: block;
     max-width: 16ch;
     font-size: clamp(28px, 5.8vw, 40px);
+    text-wrap: balance;
   }
 
   /* CARROSSEL: os quatro quadrados em deslize lateral, um por tela, com

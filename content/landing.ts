@@ -78,15 +78,31 @@ export const LANDING = {
      */
     estacao: '02',
     eyebrow: 'O que ela faz',
-    /* UMA LINHA SÓ.
-       Chegou a ser quebrada em duas ("O método da DigiThree," / "agora na
-       sua mão.") enquanto o cabeçalho dividia a tela com um 2×2 de cards à
-       direita e tinha ~435px de largura — a frase inteira não cabia.
+    /* DUAS METADES, E O SATÉLITE PASSA ENTRE ELAS.
+       O corte é o MESMO de sempre — "O método da DigiThree," / "agora na sua
+       mão." —, mas é a terceira vez que ele muda de razão, e vale registrar as
+       três para ninguém desfazer a de agora achando que desfaz uma das outras:
 
-       Com os cards de volta em fileira, o cabeçalho recuperou a largura
-       cheia e a quebra perdeu a razão de existir: medido, o texto ocupa
-       793px com a fonte no teto de 40px contra 1121px de cabeçalho. */
-    title: `O método da ${SITE.organizacaoMae}, agora`,
+       1. Partido, porque não cabia. O cabeçalho dividia a tela com um 2×2 de
+          cards à direita e tinha ~435px; a frase inteira não entrava.
+       2. Rejuntado, porque passou a caber. Com os cards de volta em fileira o
+          cabeçalho recuperou a largura cheia — medido, 793px de texto com a
+          fonte no teto de 40px contra 1121px de cabeçalho.
+       3. Partido de novo, por composição. A Estação 02 ganhou um satélite no
+          meio da fileira, e o mastro dele sobe bem no eixo central. Com a
+          frase inteira, o texto passa por cima: medido, ela cruza o centro do
+          layout (793px de texto contra 609px de meio). As duas metades abrem
+          o vão por onde o mastro sobe.
+
+       O TEXTO NÃO MUDOU uma letra em nenhuma das três vezes. O que muda é onde
+       ele pode quebrar. E "agora" trocou de lado no corte 3: ela pertence à
+       retomada depois do mastro, não ao fecho da primeira metade.
+
+       NO CELULAR AS DUAS VOLTAM A CORRER JUNTAS, porque lá não há satélite
+       (styles/recursos.css esconde a camada inteira) e portanto não há vão a
+       abrir — a regra que separa as metades é de desktop. */
+    title: `O método da ${SITE.organizacaoMae},`,
+    titleDepois: 'agora',
     titleHighlight: 'na sua mão.',
 
     /* PRIMEIRO QUADRADO, e a ordem não é decorativa: a dor que o dono do
