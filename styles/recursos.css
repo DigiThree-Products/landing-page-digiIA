@@ -2028,13 +2028,19 @@
   --pino-fundo: calc(var(--antena-alt) * 62 / 118);
 }
 
-/* ---- OS DOIS ESTAIS ----
-   Do fim do pino às duas pontas de baixo do barramento.
+/* ---- OS QUATRO ESTAIS ----
+   Dois grupos que se encontram no fim do pino: as pontas abertas do topo descem
+   até ele, e dele saem os outros dois até as pontas da base. O corpo ganha
+   cintura, e é o pino que a marca.
+
+   ESTA REGRA É SÓ O QUE OS DOIS TÊM EM COMUM — a largura e o traço. O que os
+   distingue é a faixa vertical, e ela mora nos dois modificadores logo abaixo.
 
    A CAIXA CARREGA A GEOMETRIA, e é por isso que o `viewBox` é 0 0 100 100 com
-   números redondos: começando no fim do pino e terminando na base do corpo, o
-   ápice é (50,0) e as pontas são (0,100) e (100,100) em qualquer janela. Nada
-   aqui precisa de medida — quem se ajusta é a caixa.
+   números redondos: cada caixa vai de uma ponta à outra da sua faixa, então o
+   ápice é (50,100) num e (50,0) no outro, e as pontas são (0,·) e (100,·) —
+   valores que valem em qualquer janela. Nada aqui precisa de medida; quem se
+   ajusta é a caixa.
 
    Foi assim de propósito. Escrever estas linhas dentro do `viewBox` da antena
    teria sido mais curto e refaria a dependência que custou os pés: a antena tem
@@ -2062,17 +2068,31 @@
 
      Com os dois eixos dados como TAMANHO, a razão não tem o que decidir.
 
-     E O MEIA ESPESSURA APARECE TRÊS VEZES pelo mesmo motivo: a caixa de um
+     E O MEIA ESPESSURA APARECE onde há borda, pelo mesmo motivo: a caixa de um
      filho absoluto é a de PADDING, e a borda do corpo fica de fora dela. Sem o
      recuo, os estais parariam rente à face interna das linhas em vez de pousar
-     no meio delas. O topo não precisa — o corpo não tem borda em cima, então
-     ali a caixa de padding já começa na borda de fora. */
+     no meio delas. Nas laterais e na base ele entra; no topo não, porque ali
+     não há borda e a caixa de padding já começa na aresta de fora. */
   left: calc(var(--espessura) / -2);
   width: calc(100% + var(--espessura));
-  top: var(--pino-fundo, 50%);
-  height: calc(100% - var(--pino-fundo, 50%) + var(--espessura) / 2);
   stroke-width: var(--espessura);
   overflow: visible;
+}
+
+/* De cima: do topo aberto ao fim do pino. Aqui NÃO entra meia espessura no
+   `top` — o corpo não tem borda em cima (ver `border-top`), então a caixa de
+   padding já começa na aresta de fora e o estai nasce exatamente na ponta da
+   parede. A base da caixa é o fim do pino, sem folga: é onde os quatro se
+   encontram. */
+.page #recursos .rec-grade__estais--cima {
+  top: 0;
+  height: var(--pino-fundo, 50%);
+}
+
+/* De baixo: do fim do pino às duas pontas da base. */
+.page #recursos .rec-grade__estais--baixo {
+  top: var(--pino-fundo, 50%);
+  height: calc(100% - var(--pino-fundo, 50%) + var(--espessura) / 2);
 }
 
 /* ---- `vector-effect` PRECISA VIR POR AQUI, E NÃO DO ATRIBUTO NO `<svg>` ----
