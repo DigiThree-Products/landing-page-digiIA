@@ -21,10 +21,15 @@ const C = LANDING.comoFunciona
  * o LiquidPortrait em 27/08/2026: o shader anterior ondulava o material de
  * UMA pose e não conseguia virar a cabeça, que era o que o pedido exigia.
  *
- * As poses vêm do atlas public/assets/digi-ia-olhar.webp: 55 quadros de uma
+ * As poses vêm do atlas public/assets/digi-ia-olhar.webp: 50 quadros de uma
  * ÚNICA tomada contínua do vídeo de origem, do frontal ao perfil. O eixo
  * horizontal escolhe o quadro, o vertical inclina em CSS — por que assim, e
  * não com poses de cima e de baixo, está medido e documentado lá dentro.
+ *
+ * Dizia 55 até 28/08/2026, quando o atlas foi medido: 3600×2305 numa grade
+ * de 10×5 são 50 células. E a razão de o vertical ser CSS vale para a tomada
+ * de julho — o material de 27/08 em `componentes/` tem vertical de verdade,
+ * mas não emenda com esta. O cabeçalho do componente explica.
  */
 export function ComoFunciona() {
   return (

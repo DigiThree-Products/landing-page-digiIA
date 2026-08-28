@@ -1484,8 +1484,11 @@ body::after {
 /* O RETRATO QUE OLHA — ver components/ui/RetratoQueOlha.tsx.
    Substituiu o LiquidPortrait na célula central em 27/08/2026, quando o dono
    pediu que ela acompanhasse o cursor. O shader anterior ondulava o material
-   de UMA pose; este percorre 55 poses de uma virada contínua recortada do
-   vídeo, e resolve o eixo vertical em transform. */
+   de UMA pose; este percorre 50 poses de uma virada contínua recortada do
+   vídeo, e resolve o eixo vertical em transform.
+
+   Dizia 55 até 28/08/2026: o atlas mede 3600×2305 numa grade de 10×5, ou
+   seja 50 células de 360×461. Conferido no arquivo. */
 .page #como-funciona .olhar {
   --olha-x: 0;
   --olha-y: 0;

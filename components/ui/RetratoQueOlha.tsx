@@ -33,19 +33,44 @@ import { useEffect, useRef } from 'react'
  *
  * Daí o desenho atual:
  *
- *   HORIZONTAL vem do sprite — 55 poses de uma virada contínua, quadros 84 a
- *   159 do vídeo, do frontal ao perfil fechado. Salto médio entre passos
- *   vizinhos 0,79, máximo 1,54, nenhuma fronteira. A versão anterior tinha 138
- *   quadros de cinco tomadas: salto 4,14 dentro das escadas e 25,26 nas
- *   emendas. Menos imagens, movimento dezesseis vezes mais liso no pior caso —
- *   porque fluidez vem de continuidade, não de quantidade.
+ *   HORIZONTAL vem do sprite — 50 poses de uma virada contínua, do frontal ao
+ *   perfil fechado. Salto médio entre passos vizinhos 0,79, máximo 1,54,
+ *   nenhuma fronteira. A versão anterior tinha 138 quadros de cinco tomadas:
+ *   salto 4,14 dentro das escadas e 25,26 nas emendas. Menos imagens,
+ *   movimento dezesseis vezes mais liso no pior caso — porque fluidez vem de
+ *   continuidade, não de quantidade.
  *
- *   VERTICAL vem do CSS. Não há pose de olhar para cima ou para baixo que
- *   preste, e mesmo que houvesse ela só serviria no eixo puro: um sprite não
- *   SOMA direções, e misturar "virada" com "erguida" dá dupla exposição, não
- *   uma terceira pose. Então a inclinação é contínua, com o ponto de giro
- *   embaixo do queixo para ler como aceno de cabeça e não como foto girando.
- *   Ver .olhar em styles/institutional.css.
+ *   (Este parágrafo dizia 55 poses até 28/08/2026. O atlas tem 3600×2305 numa
+ *   grade de 10×5, ou seja 50 células de 360×461 — conferido no arquivo, e é
+ *   o que COLUNAS × LINHAS abaixo sempre disse. Os cinco últimos quadros,
+ *   #45 a #49, são quase idênticos: ela já chegou ao perfil por volta do #45.
+ *   São 10% do atlas e da memória num trecho onde nada acontece.)
+ *
+ *   VERTICAL vem do CSS, porque nesta tomada não há pose de olhar para cima ou
+ *   para baixo que preste. Mesmo que houvesse, ela só serviria no eixo puro:
+ *   um sprite não SOMA direções, e misturar "virada" com "erguida" dá dupla
+ *   exposição, não uma terceira pose. Então a inclinação é contínua, com o
+ *   ponto de giro NA LINHA DOS OLHOS. Ver .olhar em styles/institutional.css,
+ *   onde está medido por que ali e não na base do quadro.
+ *
+ * ---- ATENÇÃO: OS PARÁGRAFOS ACIMA SÃO SOBRE A TOMADA DE JULHO ----
+ *
+ * Tudo o que este cabeçalho afirma sobre "não existe material vertical" é
+ * verdade sobre o vídeo de julho e FALSO sobre o de 27/08/2026, que está em
+ * `componentes/0827 (1).mp4` e foi medido em 28/08. Aquele tem um trecho
+ * inteiro dela olhando para CIMA de olhos ABERTOS, e vira para OS DOIS lados
+ * — a pele vai de +0,85 concentrada à direita a −0,38 à esquerda.
+ *
+ * São fatos sobre UMA GRAVAÇÃO, não sobre a atriz. Quem ler isto como fato
+ * sobre ela vai descartar o eixo vertical de novo sem abrir a pasta, que foi
+ * exatamente o que quase aconteceu.
+ *
+ * O QUE AQUELE MATERIAL AINDA NÃO DÁ, e é por isso que ele não entrou: o giro
+ * chega só a três-quartos de cada lado, não ao perfil, e vem ACOPLADO à
+ * inclinação — é um circuito contínuo pelo espaço de poses, não uma grade. A
+ * única varredura contígua que atravessa o giro inteiro acontece com ela
+ * olhando para cima. E as duas tomadas não se emendam: distância 4,2 entre
+ * tomadas contra 0,8 entre quadros vizinhas da mesma.
  *
  * O QUE FARIA ISTO MELHORAR de verdade não é mais quadro na varredura que já
  * existe: é filmagem nova, uma volta completa do olhar cobrindo os ângulos
@@ -58,8 +83,26 @@ const LINHAS = 5
 const N_POSES = 50
 
 /**
- * ELA SÓ VIRA PARA UM LADO no material: a varredura inteira gira para a
- * esquerda da imagem. O lado direito é a mesma escada espelhada.
+ * ELA SÓ VIRA PARA UM LADO NESTA TOMADA: a varredura inteira gira para a
+ * esquerda da imagem. O lado direito é a mesma escada espelhada. (De novo:
+ * é fato sobre a gravação de julho. A de 27/08 vira para os dois.)
+ *
+ * E O ESPELHO TEM UM PREÇO, medido em 28/08/2026 depois de o dono relatar que
+ * a troca "está quebrando a visualização". Distância visual entre imagens,
+ * mesma métrica dos números acima:
+ *
+ *   passo entre poses vizinhas, mediana .........  6,4
+ *   pior passo normal do percurso ............... 12,3
+ *   A TROCA DO ESPELHO .......................... 30,1
+ *
+ * Ou seja a maior descontinuidade do percurso inteiro, e no centro, que é
+ * onde o cursor mais passa. NÃO é descentramento: varrendo o recorte de −24
+ * a +24px, o resíduo de simetria é mínimo exatamente em zero. O corte já está
+ * no ótimo e o que salta é a assimetria real — cabelo e brilhos de um lado.
+ *
+ * Por isso existe agora uma dissolução POR TEMPO no instante da troca. Ver
+ * DISSOLVE_S, que explica por que ela não é a dissolução rejeitada aqui em
+ * baixo.
  *
  * A TROCA DE ESPELHO É UM CORTE SECO, e isso foi decidido medindo.
  *
@@ -226,9 +269,13 @@ function empilha(cantos: Camada[]): Camada[] {
  * estado provocaria uma re-renderização por movimento do mouse, e mousemove é
  * o evento mais frequente que existe numa página.
  *
- * QUATRO CAMADAS, sempre montadas, nunca criadas nem destruídas. As sobrando
- * ficam com opacidade zero. Criar e remover nós a cada movimento seria muito
- * mais caro que manter quatro elementos parados.
+ * AS CAMADAS DE MISTURA MAIS O VÉU, sempre montadas, nunca criadas nem
+ * destruídas. As sobrando ficam com opacidade zero. Criar e remover nós a
+ * cada movimento seria muito mais caro que manter elementos parados.
+ *
+ * (Dizia "QUATRO CAMADAS" e o código montava duas; hoje monta três. O número
+ * escrito por extenso envelheceu duas vezes, então saiu — quem manda é
+ * N_CAMADAS.)
  *
  * O CENTRO DO ELEMENTO É MEDIDO FORA DO mousemove. getBoundingClientRect()
  * força cálculo de layout, e chamá-lo a cada movimento faz o navegador
