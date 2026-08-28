@@ -233,13 +233,14 @@
 .page .approach-media,
 /* O #recursos SAIU desta lista em 21/08 e não deve voltar: aquela seção
    chega como corpo único, sem cascata. Ver "O QUE ELA FAZ — a chegada sem
-   cascata", mais abaixo. */
-.page #como-funciona .cf-head .tag,
-.page #como-funciona .cf-head h2,
-.page #como-funciona .cf-head__sub,
-.page #como-funciona .cf-anim,
-.page #como-funciona .cf-bloco,
-.page #como-funciona .cf-fecho,
+   cascata", mais abaixo.
+
+   A #como-funciona SAIU em 28/08, pelo mesmo desenho e a pedido do dono:
+   "não quero que eles apareçam e nem venham em cascata". Foram seis
+   seletores — rótulo, título, subtítulo, retrato, blocos e fecho — e as
+   seis janelas `--de`/`--dur` correspondentes saíram na mesma leva, lá
+   embaixo. AS DUAS LISTAS ANDAM JUNTAS: quem devolver uma sem a outra
+   fica com metade que não faz nada. Ver a nota no lugar das janelas. */
 .page #dna .dna-head .tag,
 .page #dna .dna-head h2,
 .page #dna .dna-head__sub,
@@ -299,11 +300,10 @@
 }
 
 /* Os corpos pesados vêm de mais longe e crescem mais que o texto, para a
-   chegada deles FECHAR a viagem em vez de só completar a lista: o vídeo
-   da estação, a janela da demo e o retrato.
+   chegada deles FECHAR a viagem em vez de só completar a lista.
 
-   DOIS SAÍRAM desta lista, por motivos diferentes e nenhum deles "deixou
-   de ser pesado":
+   HOJE SOBROU UM, a janela da demo. TRÊS SAÍRAM, por motivos diferentes e
+   nenhum deles "deixou de ser pesado":
 
    O cartão do DNA, porque a seção inteira passou a viajar por
    PROFUNDIDADE, e lá o "vem de mais longe" se escreve em `--longe`, não
@@ -312,9 +312,12 @@
    Os quadrados do #recursos, porque aquela seção deixou de ter cascata:
    sem `--t` por bloco, `--encolhe` e `--sobe` não são lidos por ninguém
    ali. Eram valores órfãos e valor órfão é armadilha para quem vier
-   procurar por que um ajuste não faz nada. */
-.page .approach-media,
-.page #como-funciona .cf-anim {
+   procurar por que um ajuste não faz nada.
+
+   O retrato da #como-funciona, em 28/08, pelo mesmo motivo dos quadrados:
+   aquela seção também perdeu a cascata, então não há `--t` por lá e estes
+   dois valores não teriam quem os lesse. */
+.page .approach-media {
   --sobe: 64px;
   --encolhe: 0.16;
 }
@@ -1043,14 +1046,23 @@
        `--t`, `opacity` e `transform`, lá em cima. Uma coisa não funciona
        sem a outra. Ver "O QUE ELA FAZ — a chegada sem cascata". --- */
 
-/* --- Como funciona — 5 degraus. O retrato abre, a janela fecha: ele é o
-       rosto que emerge e ela é a prova, o corpo mais pesado. --- */
-.page #como-funciona .cf-head .tag  { --de: 0;    --dur: 0.12; }
-.page #como-funciona .cf-head h2    { --de: 0.12; --dur: 0.16; }
-.page #como-funciona .cf-head__sub  { --de: 0.26; --dur: 0.14; }
-.page #como-funciona .cf-anim       { --de: 0.34; --dur: 0.22; }
-.page #como-funciona .cf-bloco      { --de: 0.46; --dur: 0.20; }
-.page #como-funciona .cf-fecho      { --de: 0.74; --dur: 0.18; }
+/* --- Como funciona — SEM CASCATA desde 28/08, a pedido do dono: "não
+       quero que eles apareçam e nem venham em cascata". A seção passou a
+       chegar como corpo único, igual ao #recursos.
+
+       As seis janelas que moravam aqui, para quem precisar reconstituir o
+       que existia: rótulo 0/0,12 · título 0,12/0,16 · subtítulo 0,26/0,14 ·
+       retrato 0,34/0,22 · os quatro blocos juntos 0,46/0,20 · fecho
+       0,74/0,18. Em rolagem real a 1536×695 isso nascia aos 71px e fechava
+       aos 751px, dentro de uma chegada de 939px.
+
+       A MESMA ARMADILHA DO #recursos, e agora ela vale para duas seções:
+       devolver janelas aqui não faz nada sozinho, porque os seletores da
+       #como-funciona também saíram da lista que define `--u`, `--t`,
+       `opacity` e `transform`, lá em cima. Uma não funciona sem a outra.
+
+       O gesto pesado do retrato (`--sobe: 64px`, `--encolhe: 0.16`) saiu
+       junto, pelo mesmo motivo — ver a nota naquele bloco. --- */
 
 /* --- Quem está por trás — 8 degraus. Eram 3 quando a seção era só um
        número e uma frase.
@@ -1179,12 +1191,11 @@
   .page #recursos .quad h3,
   .page #recursos .quad__lede,
   .page #recursos .quad__saida > *,
-  .page #como-funciona .cf-head .tag,
-  .page #como-funciona .cf-head h2,
-  .page #como-funciona .cf-head__sub,
-  .page #como-funciona .cf-anim,
-  .page #como-funciona .cf-bloco,
-  .page #como-funciona .cf-fecho,
+  /* A #como-funciona não entra mais aqui, desde 28/08: sem cascata não há
+     o que desligar, e os seis seletores dela eram exatamente isso. Se um
+     dia a revelação voltar, estas seis linhas voltam JUNTO — senão quem
+     pede menos movimento fica sem o conteúdo em vez de sem a animação,
+     que é o alerta escrito quatro linhas acima para o #recursos. */
   .page .credibility-section .cred-head .tag,
   .page .credibility-section .cred-copy h2,
   .page .credibility-section .cred-manifesto,
