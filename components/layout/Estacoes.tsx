@@ -225,6 +225,18 @@ type Ritmo = {
      texto acaba de nascer e a composição fica imóvel na tela até a partida. */
   revelou: number
   partiu: number
+  /* UM OVERRIDE DO PALCO, e ele existe porque as constantes que governam a
+     viagem são do MÓDULO e valem para as seis estações.
+
+     Sem ele, atender um pedido feito sobre UMA estação custaria mudar as
+     outras cinco de quebra — que é a mesma regressão silenciosa que a nota
+     do RITMO_RECURSOS descreve para o caso da parada.
+
+     Ausente, cai em OPACIDADE_LONGE. `??` e não `||` porque zero é valor
+     legítimo aqui: uma estação que quisesse nascer invisível escreveria
+     `opacidadeLonge: 0`, e `||` a devolveria para 0,1 por acaso. É o mesmo
+     cuidado que a nota do `janela` da expansão documenta para `0/0`. */
+  opacidadeLonge?: number
 }
 
 const RITMO_PADRAO: Ritmo = {
@@ -246,8 +258,8 @@ const RITMO_PADRAO: Ritmo = {
    e divide-se pelo pin —, senão aumentar a travessia estica a chegada junto,
    que é justamente o que não se quer:
 
-     chegada    1,35 tela → 1,35 / 3,05 = 0,4426   (igual às outras cinco)
-     revelação  0,90 tela → acumulado 2,25 / 3,05 = 0,7377
+     chegada    1,90 tela → 1,90 / 3,60 = 0,5278   (as cinco seguem em 1,35)
+     revelação  0,90 tela → acumulado 2,80 / 3,60 = 0,7778
      PARADA     0,80 tela → daí até o fim do pin
      partida    NENHUMA   → `partiu: 1`
 
@@ -287,17 +299,48 @@ const RITMO_PADRAO: Ritmo = {
    2,2 telas é o padrão. Ele foi a 3,0 duas vezes, por motivos diferentes: até
    27/08 as 0,80 extras pagavam o ATO DO MEIO (o satélite chegava dobrado e
    implantava as asas), o ato saiu e o pin voltou a 2,2, e depois as mesmas
-   0,80 voltaram comprando PARADA. Agora ele vai a 3,4, e as 0,40 novas são da
-   revelação.
+   0,80 voltaram comprando PARADA. Foi a 3,4 quando a revelação comprou 0,40,
+   e caiu para 3,05 no mesmo dia, quando a partida foi desligada e devolveu as
+   0,35 dela. Agora vai a 3,60, e as 0,55 novas são da CHEGADA.
+
+   (A prosa deste parágrafo ficou um commit atrás por um tempo: dizia "agora
+   ele vai a 3,4" depois de a partida já ter sido desligada, enquanto a tabela
+   logo acima já calculava com 3,05. Quando os dois discordarem de novo, a
+   tabela é a que está certa — ela é derivada dos mesmos números que o código.)
+
+   ---- POR QUE A CHEGADA FICOU 1,41× MAIS LENTA ----
+
+   Pedido do dono, 28/08: "o ritmo da chegada está rápido demais". Ela foi de
+   1,35 para 1,90 tela, e quem pagou foi o pin — de novo, e pelo mesmo motivo
+   de sempre: tirar de outro ato desfaria um pedido anterior em silêncio.
+
+   O GANHO REAL É MAIOR QUE 1,41×, e é a órbita que explica. O painel passa a
+   primeira parte da viagem parado no fundo em tombo cheio, e só depois começa
+   a se desenrolar (`--orbe` em styles/estacao.css). Medido em telas:
+
+                          antes      depois
+     espera torta         0,62       0,65
+     A ÓRBITA ANDANDO     0,73       1,25
+     chegada total        1,35       1,90
+
+   Ou seja, a espera quase não cresceu e o movimento cresceu 1,72×. Se a
+   desaceleração viesse só daqui, sem baixar o piso do `--orbe` junto, ela
+   compraria mais tempo olhando um ponto imóvel no fundo — que não é o que
+   "está rápido demais" quer dizer.
+
+   NÃO É AQUI que se mexe na direção da órbita nem em quanto ela transborda
+   da seção: isso é `--orbita` e `--raio`, em styles/estacao.css, e lá há
+   medições de recorte que precisam ser refeitas a cada mudança.
 
    Se alguém for mexer aqui achando que mexe na implantação: ela não existe
    mais. Cada um destes quatro números tem um dono diferente. */
 const RITMO_RECURSOS: Ritmo = {
-  travessia: 3.05,
-  chegou: 0.4426,
-  expandiu: 0.4426,
-  revelou: 0.7377,
+  travessia: 3.6,
+  chegou: 0.5278,
+  expandiu: 0.5278,
+  revelou: 0.7778,
   partiu: 1,
+  opacidadeLonge: 1,
 }
 
 /**
@@ -541,8 +584,12 @@ export function Estacoes() {
 
       /* Estado de repouso pelo JS, não pelo CSS: sem script a seção tem
          que continuar legível em tamanho normal. */
+      /* O repouso tem de nascer no MESMO valor que o `onUpdate` produziria
+         em p = 0, senão o primeiro quadro do pin pisca. Por isso o override
+         é resolvido uma vez aqui e reusado lá dentro. */
+      const opacidadeLonge = ritmo.opacidadeLonge ?? OPACIDADE_LONGE
       el.style.transform = `translate3d(0, ${SOBE_CHEGADA}vh, 0) scale(${ESCALA_LONGE})`
-      el.style.opacity = String(OPACIDADE_LONGE)
+      el.style.opacity = String(opacidadeLonge)
       el.dataset.escala = String(ESCALA_LONGE)
       /* Relógio da viagem para a coreografia interna do painel — ver
          styles/estacao.css. Zerado aqui junto com o resto do repouso:
@@ -702,7 +749,19 @@ export function Estacoes() {
           const passagem =
             janelaSaida > 0 ? suave(limita((p - ritmo.partiu) / janelaSaida)) : 0
           const escala = tamanho + (ESCALA_PASSA - 1) * passagem
-          const opacidade = limita(OPACIDADE_LONGE + (1 - OPACIDADE_LONGE) * perto - passagem)
+          /* SEM FADE NA VINDA para a Estação 02, e é override e não mudança
+             da constante porque `OPACIDADE_LONGE` vale para as seis.
+
+             Pedido do dono, 28/08: "sem a opacidade quando ela está vindo".
+             Com `opacidadeLonge: 1` os dois termos se cancelam — a conta vira
+             `1 - passagem` — e o satélite é sólido desde o fundo, quando
+             ainda mede 16% do tamanho final. Ele deixa de se materializar no
+             caminho e passa a só se aproximar.
+
+             O termo da PASSAGEM sobrevive de propósito: ele é da partida, não
+             da chegada, e nesta estação nem chega a rodar (`partiu: 1` zera
+             `passagem`). Fica porque a conta é a mesma para as seis. */
+          const opacidade = limita(opacidadeLonge + (1 - opacidadeLonge) * perto - passagem)
           /* Ida e volta por caminhos diferentes — a única coisa na seção
              que depende do sentido do scroll.
 

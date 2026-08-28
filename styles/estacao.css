@@ -673,8 +673,15 @@
      progresso do pin, então a mesma diferença rende distâncias bem diferentes
      conforme onde cai na faixa. Para converter, inverta o smoothstep
      (`t = 0,5 − sen(asen(1−2v)/3)`) e multiplique pelo trecho de chegada
-     (CHEGOU 0,614) e pelo pin (TRAVESSIA 2,2 telas). Medido assim, a 695px
-     de altura:
+     e pelo pin. Medido assim, a 695px de altura:
+
+     ATENÇÃO AO RITMO QUE SE USA NA CONTA. As colunas de tela e de px abaixo
+     saíram do RITMO_PADRÃO (CHEGOU 0,614 × TRAVESSIA 2,2 = 1,35 tela). Elas
+     valiam para esta estação por COINCIDÊNCIA: o ritmo próprio dela também
+     dava 1,35 tela de chegada. Desde 28/08 não dá mais — RITMO_RECURSOS traz
+     1,90 tela —, então para o #recursos multiplique as duas colunas por
+     1,90/1,35 = 1,407. A coluna da DIREITA não muda: o tamanho aparente é
+     função só de `--chegada`, e não de quanta rolagem leva para chegar lá.
 
        0,70 → 0,96   0,328 tela   228px    começa a assentar com 39% do tamanho
        0,62 → 0,99   0,487 tela   338px    33%
@@ -692,9 +699,29 @@
      O QUE LIMITA descer mais o piso é a coluna da direita. Quanto mais cedo o
      giro começa a se desfazer, menor a estação quando isso acontece — e
      abaixo de ~25% o gesto volta a acontecer num painel pequeno demais para
-     se ver girar, que foi o defeito da primeira versão. Mais lento do que a
-     tabela permite tem de vir de TRAVESSIA, em Estacoes.tsx, e aí desacelera
-     as seis estações de uma vez.
+     se ver girar, que foi o defeito da primeira versão.
+
+     MAIS LENTO DO QUE A TABELA PERMITE VEM DO RITMO DESTA ESTAÇÃO, e não das
+     seis. A frase que estava aqui dizia que só dava para vir de TRAVESSIA "e
+     aí desacelera as seis de uma vez" — verdade quando foi escrita, falsa
+     desde que a Estação 02 ganhou ritmo próprio: RITMO_PADRAO usa a constante
+     TRAVESSIA, RITMO_RECURSOS traz o próprio literal, e `ritmoDa` devolve o
+     segundo para o #recursos. As outras cinco não sentem.
+
+     O jeito certo é subir a travessia DESTA estação e recalcular os outros
+     marcos para segurarem a mesma contagem de telas — o método "resolvidos ao
+     contrário" documentado em Estacoes.tsx. Subir a travessia sozinha não
+     desacelera só o giro: desacelera os quatro atos, porque chegou, expandiu
+     e revelou são FRAÇÕES do pin.
+
+     Foi o que se fez em 28/08: a chegada foi de 1,35 para 1,90 tela por ali,
+     e o piso daqui FICOU EM 0,46 de propósito. Baixá-lo para 0,34 chegou a
+     ser proposto, para o giro ocupar mais da viagem; a coluna da direita
+     vetou — 0,34 põe o começo do tombo com o painel em 21% do tamanho final,
+     abaixo dos ~25% que esta nota já registrava como o limite. A janela ficou
+     igual e cresceu 1,41× junto com a chegada, que é a mesma proporção do
+     resto. `styles/recursos.css` cita este 0,46 pelo nome; mudá-lo é mudar lá
+     também.
 
      O FIM SUBIU DE 0,995 PARA 1 para comprar os últimos pixels de lentidão.
      Custa a folga que separava o fim do giro da atracação: agora os dois
@@ -821,25 +848,44 @@
    O pedido foi desacelerar a revelação, e só alargar os números daqui não
    resolvia: eles são frações da travada, então esticá-los dentro de uma
    travada fixa não desacelera nada — apenas rouba a folga imóvel do fim. A
-   travada cresceu junto, de 0,40 para 0,50 tela (PARTIU, em Estacoes.tsx).
+   travada cresceu junto, de 0,40 para 0,50 e daí para 0,90 tela.
 
-   Medido em telas de rolagem, o antes e o depois:
+   O DIAL É `revelou`, NÃO `partiu` — esta nota dizia "(PARTIU, em
+   Estacoes.tsx)" e mandava para a alavanca errada. Quem governa o
+   comprimento da travada é `revelou`; foi justamente separar os dois que
+   permitiu alargar a revelação sem comer a folga imóvel, e o comentário do
+   Estacoes.tsx diz isso com todas as letras. Hoje `partiu` vale 1, DESLIGA a
+   partida da Estação 02 e não é dial de duração nenhuma: mexer nele não
+   alarga janela, reativa a partida — e com ela volta a emenda com a seção
+   seguinte, porque `caudaAcima` só desconta cauda de vizinho que parte.
 
-                        antes                depois
-     travada            0,40 tela            0,50 tela
-     fim da cascata     0,67 → 0,268 tela    0,78 → 0,390 tela
-     folga imóvel       0,33 → 0,132 tela    0,22 → 0,110 tela
-     cada bloco         0,12 → 0,048 tela    0,15 → 0,075 tela
-     entre quadrados    0,10 → 0,040 tela    0,12 → 0,060 tela
+   Medido em telas de rolagem:
 
-   Ou seja: a sequência inteira ficou ~1,46× mais lenta e cada bloco
-   ~1,56×, e a folga imóvel do fim quase não foi cobrada (0,132 → 0,110)
-   porque quem pagou a conta foi a partida, não ela.
+                        antes    depois   HOJE
+     travada            0,40     0,50     0,90
+     fim da cascata     0,268    0,390    0,702   (0,78 da travada)
+     folga imóvel       0,132    0,110    0,198   (0,22 da travada)
+     cada bloco         0,048    0,075    0,135   (0,15 da travada)
+     entre quadrados    0,040    0,060    0,108   (0,12 da travada)
+
+   A COLUNA "HOJE" FALTAVA e a nota ficou mentindo por um commit: a travada
+   foi a 0,90 quando a revelação ficou 1,8× mais lenta, e as derivadas não
+   acompanharam — quem lesse "0,390 tela" estava lendo um número 1,8× menor
+   que a realidade. As FRAÇÕES nunca mudaram; só o que elas multiplicam.
+
+   Daí a regra para a próxima vez: as frações (0,78 / 0,22 / 0,15 / 0,12) são
+   o que este arquivo controla e o que se lê nos seletores abaixo. As telas
+   são derivadas de `revelou − expandiu` em Estacoes.tsx, e por isso envelhecem
+   sozinhas. Na dúvida entre as duas colunas, recalcule; não confie na tabela.
+
+   Ou seja: da primeira para a segunda calibragem a sequência ficou ~1,46×
+   mais lenta, e da segunda para hoje mais 1,8× — quem pagou a segunda conta
+   foi a partida, que foi desligada, e não a folga imóvel.
 
    O ÚLTIMO A NASCER fecha em 0,58 + 0,05 + 0,15 = 0,78 da travada. Subir
-   mais os `--quad-de` sem mexer de novo em PARTIU come a folga que sobra, e
-   sem ela o último mostrador ainda estaria acendendo quando o painel
-   arrancasse. */
+   mais os `--quad-de` sem alargar a travada em `revelou` come a folga que
+   sobra, e sem ela o último mostrador ainda estaria acendendo quando a
+   estação soltasse o pin. */
 .page #recursos .quad .verb,
 .page #recursos .quad h3,
 .page #recursos .quad__lede {
