@@ -119,8 +119,54 @@ const SEGUE_S = 0.1
  */
 const PARADO = 0.0004
 
-/** Quantas poses convivem na pilha: os dois degraus vizinhos. */
-const N_CAMADAS = 2
+/**
+ * Quantas camadas convivem: os dois degraus vizinhos da pose, mais uma em
+ * cima que segura a imagem ANTERIOR enquanto o espelho troca de lado.
+ *
+ * A terceira nasceu em 28/08/2026, e o número que a justifica está logo
+ * abaixo, em DISSOLVE_S.
+ */
+const N_CAMADAS = 3
+
+/**
+ * Quanto tempo a imagem anterior leva para apagar quando o espelho vira.
+ *
+ * ---- POR QUE UMA DISSOLUÇÃO EXISTE AQUI, SE ELA JÁ FOI REJEITADA ----
+ *
+ * O comentário de ESPELHA_QUANDO_POSITIVO conta que uma dissolução foi
+ * tentada e descartada por dar fantasma. Aquela era POR POSIÇÃO DO CURSOR:
+ * misturava os dois espelhos numa FAIXA em volta do centro, então bastava
+ * parar o cursor ali para ver dois rostos sobrepostos, permanentemente. A
+ * rejeição estava certa.
+ *
+ * Esta é POR TEMPO, e é outra coisa: dispara no instante da troca e some
+ * sozinha. Em repouso nunca há imagem dupla, em posição nenhuma — o que
+ * havia de errado na anterior não se aplica a esta.
+ *
+ * ---- E POR QUE ELA PASSOU A SER NECESSÁRIA ----
+ *
+ * O dono relatou que a troca "está quebrando a visualização". Medido no
+ * atlas, com a mesma métrica de distância visual que o cabeçalho usa:
+ *
+ *   passo entre poses vizinhas, mediana ........  6,4
+ *   pior passo normal do percurso .............. 12,3
+ *   A TROCA DO ESPELHO ......................... 30,1
+ *
+ * Ou seja 4,7× o passo mediano e 2,4× o pior passo normal — a MAIOR
+ * descontinuidade do percurso horizontal inteiro, e bem no centro, que é
+ * onde o cursor mais passa.
+ *
+ * NÃO É DESCENTRAMENTO, e isso foi verificado antes de culpar o recorte:
+ * varrendo o deslocamento horizontal do recorte de −24px a +24px, o resíduo
+ * de simetria é MÍNIMO em zero (30,1) e cresce para os dois lados. O corte
+ * do atlas já está no ótimo. O que salta é a assimetria real — o cabelo cai
+ * de um lado, os brilhos ficam de um lado, e isso inverte de uma vez.
+ *
+ * 120ms é curto o bastante para não parecer que a cabeça hesita, e longo o
+ * bastante para o salto deixar de ser um quadro só. Se ainda aparecer,
+ * suba; se a troca parecer preguiçosa, desça.
+ */
+const DISSOLVE_S = 0.12
 
 /** Posição do quadro dentro da grade, em porcentagem de background. */
 function posicao(indice: number): string {
@@ -293,6 +339,9 @@ export function RetratoQueOlha() {
     let precisaMedir = false
     let escritoX = ''
     let escritoY = ''
+    /* Instante em que o espelho virou, e 0 quando não há dissolução em
+       curso. Também é o que segura o laço aceso enquanto ela apaga. */
+    let trocaMs = 0
 
     const acorda = () => {
       if (quadro) return
@@ -426,15 +475,20 @@ export function RetratoQueOlha() {
         atualY = alvoY
       }
 
-      desenha()
+      desenha(agora)
 
-      if (!chegou) quadro = requestAnimationFrame(passo)
+      /* `trocaMs` é lido DEPOIS de desenhar, e de propósito: é o próprio
+         `desenha` que o acende ao detectar a virada do espelho. A pose pode
+         já ter chegado e a dissolução ainda estar apagando — nesse caso o
+         laço tem de continuar, senão a camada de cima congela no meio do
+         caminho e fica um rosto fantasma parado na tela. */
+      if (!chegou || trocaMs) quadro = requestAnimationFrame(passo)
     }
 
     /* TUDO O QUE VAI PARA A TELA SAI DAQUI, e sai do mesmo par de valores
        amortecidos. É esta função única que garante que o quadro do sprite, a
        mistura das camadas e a inclinação não possam discordar entre si. */
-    function desenha() {
+    function desenha(agora: number) {
       const sx = atualX.toFixed(3)
       const sy = atualY.toFixed(3)
       /* Reescrever a mesma string é trabalho de estilo por nada, e no fim de
@@ -452,11 +506,24 @@ export function RetratoQueOlha() {
          piscar é a imagem, e a imagem está no valor amortecido — decidir o
          espelho pelo cursor cru voltaria a trocar o lado antes de a cabeça
          ter passado do centro. */
+      const ladoAntes = paraPositivo
       if (atualX > HISTERESE) paraPositivo = true
       else if (atualX < -HISTERESE) paraPositivo = false
 
+      /* O ESPELHO ACABOU DE VIRAR: congela na camada de cima o que ainda
+         está na tela, ANTES de as camadas de baixo receberem a pose nova.
+         `nos[0]` ainda carrega o quadro do desenho anterior — é justamente
+         essa defasagem de um quadro que dá o material da dissolução, sem
+         precisar guardar índice nenhum. */
+      const veu = nos[2]
+      if (paraPositivo !== ladoAntes && trocaMs === 0) {
+        veu.style.backgroundPosition = nos[0].style.backgroundPosition
+        veu.style.transform = nos[0].style.transform
+        trocaMs = agora
+      }
+
       const pilha = empilha(camadas(atualX, paraPositivo))
-      for (let i = 0; i < N_CAMADAS; i++) {
+      for (let i = 0; i < 2; i++) {
         const no = nos[i]
         const c = pilha[i]
         if (!c) {
@@ -466,6 +533,19 @@ export function RetratoQueOlha() {
         no.style.opacity = c.opacidade.toFixed(3)
         no.style.backgroundPosition = posicao(c.indice)
         no.style.transform = c.espelha ? 'scaleX(-1)' : 'none'
+      }
+
+      /* A camada de cima apaga por cima da pose nova. Opaca no instante da
+         troca, transparente em DISSOLVE_S — uma dissolução cruzada comum,
+         só que disparada por um EVENTO e não por uma faixa de posição. */
+      if (trocaMs) {
+        const t = (agora - trocaMs) / (DISSOLVE_S * 1000)
+        if (t >= 1) {
+          trocaMs = 0
+          veu.style.opacity = '0'
+        } else {
+          veu.style.opacity = (1 - t).toFixed(3)
+        }
       }
     }
 
