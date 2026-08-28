@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { SITE, dadosEstruturados } from '@/config/site'
 import { AncoraSuave } from '@/components/layout/AncoraSuave'
+import { RolagemSuave } from '@/components/layout/RolagemSuave'
 import { Analytics } from '@/components/layout/Analytics'
 import '@fontsource-variable/sora'
 import '@fontsource-variable/instrument-sans'
@@ -63,6 +64,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
+        {/* Antes da âncora de propósito: `AncoraSuave` procura a instância
+            do Lenis para saltar, e quem a cria é este.
+
+            MAS NÃO ANTES DE `{children}`, e isso não é ajustável pela
+            ordem no JSX: os efeitos do React correm de dentro para fora,
+            então tudo que está na página monta antes daqui. Hoje é
+            inofensivo — ninguém lá dentro pede a rolagem, e o
+            ScrollTrigger não precisa dela para nascer. No dia em que
+            precisar, vai receber `null`, e o sintoma será silêncio e não
+            erro. Quem precisar da instância dentro da página tem de
+            esperá-la, não assumi-la. */}
+        <RolagemSuave />
         <AncoraSuave />
         <Analytics />
       </body>

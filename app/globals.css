@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+/* Antes dos nossos: o Lenis pede `height: auto` no html e no body e trata
+   `[data-lenis-prevent]`. São regras de infraestrutura da rolagem, e ficar
+   primeiro deixa qualquer folha nossa vencer se um dia precisar. */
+@import 'lenis/dist/lenis.css';
 @import '../styles/tokens.css';
 @import '../styles/base.css';
 @import '../styles/shell.css';
