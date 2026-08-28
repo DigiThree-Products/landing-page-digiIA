@@ -1076,7 +1076,17 @@ body::after {
   width: 100%;
   min-height: 100svh;
   margin: 0;
-  padding: clamp(84px, 10vh, 112px) var(--world-edge) clamp(48px, 6vh, 76px);
+  /* O TOPO CARREGA O CABEÇALHO, e é por isso que ele é bem maior que a base.
+     A seção centraliza o conteúdo na altura INTEIRA dela (`justify-content:
+     center`, logo abaixo), mas o cabeçalho é uma pílula FIXA que come os
+     primeiros 89px da janela — então o centro geométrico da seção não é o
+     centro do que a pessoa vê. Sem compensar, o conteúdo encosta no menu.
+
+     Medido a 1536×695 antes de corrigir: o rótulo pousava a 17px do
+     cabeçalho, contra 60 na credibilidade, 125 no DNA e 169 nas perguntas.
+     Era a única seção apertada da página, e as duas sessões chegaram ao
+     mesmo número por caminhos diferentes (17 e 16). */
+  padding: clamp(112px, 13vh, 150px) var(--world-edge) clamp(48px, 6vh, 76px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1341,8 +1351,21 @@ body::after {
    não há como escrever "encolha o quanto faltar". Mesmo molde de
    styles/recursos.css, na Estação 02. */
 @media (min-width: 1024px) and (max-height: 940px) {
+  /* O TOPO NÃO CEDE COM A ALTURA, e é a diferença entre este degrau e o de
+     cima. O padding de baixo encolhe à vontade — é só respiro. O de cima
+     paga o cabeçalho fixo, que mede os mesmos 89px numa janela de 1400 e
+     numa de 620: é altura de pílula, não fração de tela. Encolhê-lo junto
+     era o que empurrava o conteúdo para trás do menu justamente nas telas
+     baixas, onde já sobra menos espaço.
+
+     A conta do centramento, para quem for remexer:
+       topoConteudo = padTopo + (H - padTopo - padBase - C) / 2
+     Com H=695, C=495 e padBase=36 isso vira padTopo/2 + 82. O alvo era
+     ~145 (56px de respiro em cima, 55 embaixo), logo padTopo ~126 — que é
+     onde 18vh cai nessa janela. Antes eram 48px e o conteúdo pousava a
+     106, com 17px sobrando sob o cabeçalho. */
   .page #como-funciona {
-    padding-block: clamp(48px, 5.4vh, 72px) clamp(36px, 4vh, 52px);
+    padding-block: clamp(110px, 18vh, 150px) clamp(36px, 4vh, 52px);
   }
 
   .page #como-funciona .cf { gap: clamp(22px, 3vh, 36px); }
