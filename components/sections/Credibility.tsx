@@ -1,12 +1,15 @@
 import { LANDING } from '@/content/landing'
 
 /**
- * "Quem está por trás" — a estação da autoridade.
+ * "Quem está por trás" — a seção da autoridade.
  *
- * Estação: sem `Reveal` próprio. Quem revela é a chegada — ver a nota em
- * ApproachSection.tsx, que descreve por que uma segunda revelação por cima
- * da viagem briga com ela: são dois relógios para o mesmo conteúdo, e o do
- * `Reveal` roda por tempo enquanto o da estação roda por rolagem.
+ * NÃO É MAIS ESTAÇÃO desde 28/08/2026: perdeu a classe `estacao` junto com
+ * ComoFunciona, Dna e Faq, quando o dono pediu que elas parassem de vir de
+ * trás. Rola normal, sem pin e sem viagem. Ver o mapa em app/page.tsx.
+ *
+ * Continua sem `Reveal` próprio, e agora sem revelação nenhuma — o motivo
+ * antigo era que dois relógios brigavam (o do `Reveal` roda por tempo, o da
+ * estação rodava por rolagem); hoje não há relógio nenhum para brigar.
  *
  * A composição tem três andares, e a ordem é a do argumento: quem somos
  * (kicker), por que isso importa para o produto (título + manifesto, com o
@@ -16,15 +19,18 @@ import { LANDING } from '@/content/landing'
  * três formam o trilho. A divisão mora aqui, e não no conteúdo, porque é
  * decisão de apresentação: o conteúdo só declara quatro números em ordem.
  *
- * Os seis blocos recebem janelas próprias de chegada em styles/estacao.css e
- * nascem em cascata ao longo da viagem.
+ * SEM CASCATA desde 28/08/2026, a pedido do dono. Os seis blocos tinham
+ * janelas próprias de chegada em styles/estacao.css e nasciam um a um ao
+ * longo da viagem; hoje a seção chega inteira, e quem revela é só a
+ * aproximação do palco. As janelas antigas ficaram registradas lá, no lugar
+ * de onde saíram.
  */
 export function Credibility() {
   const { credibility } = LANDING
   const [estrela, ...provas] = credibility.stats
 
   return (
-    <section className="credibility-section estacao" aria-labelledby="cred-titulo">
+    <section className="credibility-section" aria-labelledby="cred-titulo">
       <div className="estacao-palco">
         <div className="cred">
           <header className="cred-head">

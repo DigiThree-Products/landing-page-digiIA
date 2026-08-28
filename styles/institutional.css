@@ -1076,7 +1076,17 @@ body::after {
   width: 100%;
   min-height: 100svh;
   margin: 0;
-  padding: clamp(84px, 10vh, 112px) var(--world-edge) clamp(48px, 6vh, 76px);
+  /* O TOPO CARREGA O CABEÇALHO, e é por isso que ele é bem maior que a base.
+     A seção centraliza o conteúdo na altura INTEIRA dela (`justify-content:
+     center`, logo abaixo), mas o cabeçalho é uma pílula FIXA que come os
+     primeiros 89px da janela — então o centro geométrico da seção não é o
+     centro do que a pessoa vê. Sem compensar, o conteúdo encosta no menu.
+
+     Medido a 1536×695 antes de corrigir: o rótulo pousava a 17px do
+     cabeçalho, contra 60 na credibilidade, 125 no DNA e 169 nas perguntas.
+     Era a única seção apertada da página, e as duas sessões chegaram ao
+     mesmo número por caminhos diferentes (17 e 16). */
+  padding: clamp(112px, 13vh, 150px) var(--world-edge) clamp(48px, 6vh, 76px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1341,8 +1351,21 @@ body::after {
    não há como escrever "encolha o quanto faltar". Mesmo molde de
    styles/recursos.css, na Estação 02. */
 @media (min-width: 1024px) and (max-height: 940px) {
+  /* O TOPO NÃO CEDE COM A ALTURA, e é a diferença entre este degrau e o de
+     cima. O padding de baixo encolhe à vontade — é só respiro. O de cima
+     paga o cabeçalho fixo, que mede os mesmos 89px numa janela de 1400 e
+     numa de 620: é altura de pílula, não fração de tela. Encolhê-lo junto
+     era o que empurrava o conteúdo para trás do menu justamente nas telas
+     baixas, onde já sobra menos espaço.
+
+     A conta do centramento, para quem for remexer:
+       topoConteudo = padTopo + (H - padTopo - padBase - C) / 2
+     Com H=695, C=495 e padBase=36 isso vira padTopo/2 + 82. O alvo era
+     ~145 (56px de respiro em cima, 55 embaixo), logo padTopo ~126 — que é
+     onde 18vh cai nessa janela. Antes eram 48px e o conteúdo pousava a
+     106, com 17px sobrando sob o cabeçalho. */
   .page #como-funciona {
-    padding-block: clamp(48px, 5.4vh, 72px) clamp(36px, 4vh, 52px);
+    padding-block: clamp(110px, 18vh, 150px) clamp(36px, 4vh, 52px);
   }
 
   .page #como-funciona .cf { gap: clamp(22px, 3vh, 36px); }
@@ -1461,8 +1484,11 @@ body::after {
 /* O RETRATO QUE OLHA — ver components/ui/RetratoQueOlha.tsx.
    Substituiu o LiquidPortrait na célula central em 27/08/2026, quando o dono
    pediu que ela acompanhasse o cursor. O shader anterior ondulava o material
-   de UMA pose; este percorre 55 poses de uma virada contínua recortada do
-   vídeo, e resolve o eixo vertical em transform. */
+   de UMA pose; este percorre 50 poses de uma virada contínua recortada do
+   vídeo, e resolve o eixo vertical em transform.
+
+   Dizia 55 até 28/08/2026: o atlas mede 3600×2305 numa grade de 10×5, ou
+   seja 50 células de 360×461. Conferido no arquivo. */
 .page #como-funciona .olhar {
   --olha-x: 0;
   --olha-y: 0;
@@ -1496,12 +1522,50 @@ body::after {
      dois mundos — o sprite trocava na hora e a inclinação chegava um quarto de
      segundo depois, discordando dele. A suavidade mora na mistura de quadros
      do componente, não aqui. */
+  /* ---- O EIXO VERTICAL FOI REDUZIDO EM 28/08/2026, e a razão é medida ----
+
+     Queixa do dono: "o movimento dela só está bom nos eixos horizontais,
+     quando começa a verticalizar ele fica quebrado". Ele está certo, e a
+     causa é que os dois eixos NÃO são a mesma coisa: o horizontal troca
+     fotografias de verdade — 50 poses da cabeça girando —, e o vertical
+     não tem material nenhum, então finge inclinando um plano CHATO em 3D.
+
+     UM PLANO CHATO SOB PERSPECTIVA VIRA TRAPÉZIO. A borda que se aproxima
+     é magnificada e a que se afasta encolhe, então o retângulo keystona.
+     Medido com o rotateX antigo de 19deg, no repouso a 1536×692: a largura
+     renderizada subia de 152,0px no centro para 160,5px no extremo, e as
+     bordas de cima e de baixo ficavam ~8% diferentes uma da outra. Cabeça
+     não faz isso; cartão faz. Era isso que se via.
+
+     O conserto tem duas partes e as duas são necessárias:
+
+     1. MENOS ÂNGULO, MAIS DESLOCAMENTO. Acenar já é, na tela, sobretudo
+        movimento vertical — então parte do que era rotação virou
+        translação, que não keystona nada. 19deg → 9deg, e o passeio
+        vertical de 9px → 14px.
+
+     2. PERSPECTIVA MAIS LONGE. 820px → 1100px. A lente mais longa achata
+        o keystone que sobra sem tirar a sensação de volume.
+
+        Juntas, as duas levam a diferença entre as bordas de ~8% para
+        ~2,8% — quase três vezes menos.
+
+     E A MÁSCARA ABAIXO É O QUE FECHA O CONSERTO. Enquanto as bordas do
+     quadro forem retas e opacas, qualquer inclinação é vista como um
+     retângulo se deformando. Com elas dissolvidas, a mesma inclinação lê
+     como sombra. Os dois são um conserto só: desfazer um faz o outro
+     parecer inútil.
+
+     O QUE RESOLVERIA DE VERDADE continua sendo o que o RetratoQueOlha.tsx
+     já diz no cabeçalho: filmagem nova, com o olhar percorrendo também a
+     vertical, de olhos abertos. Enquanto não houver, isto é um disfarce —
+     e o trabalho aqui foi deixá-lo honesto. */
   transform-origin: 50% 44%;
   transform:
-    perspective(820px)
-    rotateX(calc(var(--olha-y) * -19deg))
+    perspective(1100px)
+    rotateX(calc(var(--olha-y) * -9deg))
     rotateY(calc(var(--olha-x) * 3deg))
-    translate3d(calc(var(--olha-x) * 6px), calc(var(--olha-y) * 9px), 0);
+    translate3d(calc(var(--olha-x) * 6px), calc(var(--olha-y) * 14px), 0);
   will-change: transform;
 }
 
@@ -1509,7 +1573,49 @@ body::after {
    #f1f1f1 (cinza neutro) e o papel da seção é #f8f0ff (lilás claríssimo).
    São próximos, mas uma BORDA RETA entre os dois apareceria como um retângulo
    pousado na página. Com as bordas dissolvidas não há retângulo — o cinza
-   morre dentro do papel antes de encontrar uma linha. */
+   morre dentro do papel antes de encontrar uma linha.
+
+   ---- ELA NÃO DISSOLVIA NADA ATÉ 28/08/2026, e o parágrafo acima descrevia
+        uma intenção, não o que acontecia ----
+
+   A elipse anterior era `118% 104% at 50% 42%`, ou seja MAIOR que a caixa nos
+   dois eixos. Calculada a distância normalizada de cada ponto da caixa até o
+   centro dela, o ponto mais longe — os cantos de baixo — caía em 70% do
+   gradiente, e o trecho que de fato apaga (70% → 100%) ficava INTEIRO FORA do
+   elemento. O que sobrava dentro:
+
+     bordas esquerda, direita e de cima ....... opacidade 1,000
+     borda de baixo ........................... 0,971
+     cantos de cima ........................... 0,949
+     cantos de baixo .......................... 0,859   ← o mais transparente
+
+   Ou seja: o retângulo estava lá, com três bordas em opacidade cheia. Era
+   visível a olho nu contra o papel lilás, e ficava óbvio quando o retrato
+   inclinava — ver a nota do eixo vertical, logo acima. Os dois defeitos se
+   somavam: um plano que keystona só denuncia que é um plano se tiver borda
+   reta para mostrar.
+
+   A ELIPSE NOVA CABE DENTRO DA CAIXA (`56% 58% at 50% 47%`), que é o que faz
+   o trecho de apagar cair onde há pixel para apagar. Medido nos mesmos
+   pontos, com o rosto preservado inteiro:
+
+     rosto, olho e queixo ..................... 1,00   (intocados)
+     alto do cabelo ........................... 0,95
+     bordas esquerda e direita ................ 0,27   (era 1,00)
+     borda de baixo ........................... 0,23   (era 0,97)
+     borda de cima ............................ 0,50   (era 1,00)
+     os quatro cantos ......................... 0,00   (era 0,86–0,95)
+
+   O CENTRO DESCEU DE 42% PARA 47% de propósito: com ele em 42% a distância
+   até a borda de cima é curta demais e aquela borda ficava em 0,96 — ou seja,
+   uma linha reta continuava aparecendo justamente onde o cabelo encosta no
+   topo do quadro. Descer o centro reparte a folga entre as duas bordas.
+
+   COMO CONFERIR SE MEXEREM AQUI, sem depender de olho: a maior distância
+   normalizada de qualquer ponto da caixa até o centro da elipse tem de passar
+   de 100%, senão o gradiente nunca chega a `transparent` e a máscara não
+   dissolve — foi exatamente esse o defeito de antes. Para o ponto (fx, fy) em
+   fração da caixa: d = raiz( ((fx-0,5)/rx)² + ((fy-cy)/ry)² ). */
 .page #como-funciona .olhar__quadro {
   position: absolute;
   inset: 0;
@@ -1519,10 +1625,10 @@ body::after {
   /* 10 colunas x 5 linhas — casado com COLUNAS e LINHAS no componente. */
   background-size: 1000% 500%;
   background-position: 0% 0%;
-  -webkit-mask-image: radial-gradient(118% 104% at 50% 42%,
-      #000 52%, rgba(0, 0, 0, 0.86) 70%, transparent 100%);
-  mask-image: radial-gradient(118% 104% at 50% 42%,
-      #000 52%, rgba(0, 0, 0, 0.86) 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(56% 58% at 50% 47%,
+      #000 40%, rgba(0, 0, 0, 0.95) 64%, transparent 100%);
+  mask-image: radial-gradient(56% 58% at 50% 47%,
+      #000 40%, rgba(0, 0, 0, 0.95) 64%, transparent 100%);
 }
 
 

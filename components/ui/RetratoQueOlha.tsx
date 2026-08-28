@@ -33,19 +33,44 @@ import { useEffect, useRef } from 'react'
  *
  * Daí o desenho atual:
  *
- *   HORIZONTAL vem do sprite — 55 poses de uma virada contínua, quadros 84 a
- *   159 do vídeo, do frontal ao perfil fechado. Salto médio entre passos
- *   vizinhos 0,79, máximo 1,54, nenhuma fronteira. A versão anterior tinha 138
- *   quadros de cinco tomadas: salto 4,14 dentro das escadas e 25,26 nas
- *   emendas. Menos imagens, movimento dezesseis vezes mais liso no pior caso —
- *   porque fluidez vem de continuidade, não de quantidade.
+ *   HORIZONTAL vem do sprite — 50 poses de uma virada contínua, do frontal ao
+ *   perfil fechado. Salto médio entre passos vizinhos 0,79, máximo 1,54,
+ *   nenhuma fronteira. A versão anterior tinha 138 quadros de cinco tomadas:
+ *   salto 4,14 dentro das escadas e 25,26 nas emendas. Menos imagens,
+ *   movimento dezesseis vezes mais liso no pior caso — porque fluidez vem de
+ *   continuidade, não de quantidade.
  *
- *   VERTICAL vem do CSS. Não há pose de olhar para cima ou para baixo que
- *   preste, e mesmo que houvesse ela só serviria no eixo puro: um sprite não
- *   SOMA direções, e misturar "virada" com "erguida" dá dupla exposição, não
- *   uma terceira pose. Então a inclinação é contínua, com o ponto de giro
- *   embaixo do queixo para ler como aceno de cabeça e não como foto girando.
- *   Ver .olhar em styles/institutional.css.
+ *   (Este parágrafo dizia 55 poses até 28/08/2026. O atlas tem 3600×2305 numa
+ *   grade de 10×5, ou seja 50 células de 360×461 — conferido no arquivo, e é
+ *   o que COLUNAS × LINHAS abaixo sempre disse. Os cinco últimos quadros,
+ *   #45 a #49, são quase idênticos: ela já chegou ao perfil por volta do #45.
+ *   São 10% do atlas e da memória num trecho onde nada acontece.)
+ *
+ *   VERTICAL vem do CSS, porque nesta tomada não há pose de olhar para cima ou
+ *   para baixo que preste. Mesmo que houvesse, ela só serviria no eixo puro:
+ *   um sprite não SOMA direções, e misturar "virada" com "erguida" dá dupla
+ *   exposição, não uma terceira pose. Então a inclinação é contínua, com o
+ *   ponto de giro NA LINHA DOS OLHOS. Ver .olhar em styles/institutional.css,
+ *   onde está medido por que ali e não na base do quadro.
+ *
+ * ---- ATENÇÃO: OS PARÁGRAFOS ACIMA SÃO SOBRE A TOMADA DE JULHO ----
+ *
+ * Tudo o que este cabeçalho afirma sobre "não existe material vertical" é
+ * verdade sobre o vídeo de julho e FALSO sobre o de 27/08/2026, que está em
+ * `componentes/0827 (1).mp4` e foi medido em 28/08. Aquele tem um trecho
+ * inteiro dela olhando para CIMA de olhos ABERTOS, e vira para OS DOIS lados
+ * — a pele vai de +0,85 concentrada à direita a −0,38 à esquerda.
+ *
+ * São fatos sobre UMA GRAVAÇÃO, não sobre a atriz. Quem ler isto como fato
+ * sobre ela vai descartar o eixo vertical de novo sem abrir a pasta, que foi
+ * exatamente o que quase aconteceu.
+ *
+ * O QUE AQUELE MATERIAL AINDA NÃO DÁ, e é por isso que ele não entrou: o giro
+ * chega só a três-quartos de cada lado, não ao perfil, e vem ACOPLADO à
+ * inclinação — é um circuito contínuo pelo espaço de poses, não uma grade. A
+ * única varredura contígua que atravessa o giro inteiro acontece com ela
+ * olhando para cima. E as duas tomadas não se emendam: distância 4,2 entre
+ * tomadas contra 0,8 entre quadros vizinhas da mesma.
  *
  * O QUE FARIA ISTO MELHORAR de verdade não é mais quadro na varredura que já
  * existe: é filmagem nova, uma volta completa do olhar cobrindo os ângulos
@@ -58,8 +83,26 @@ const LINHAS = 5
 const N_POSES = 50
 
 /**
- * ELA SÓ VIRA PARA UM LADO no material: a varredura inteira gira para a
- * esquerda da imagem. O lado direito é a mesma escada espelhada.
+ * ELA SÓ VIRA PARA UM LADO NESTA TOMADA: a varredura inteira gira para a
+ * esquerda da imagem. O lado direito é a mesma escada espelhada. (De novo:
+ * é fato sobre a gravação de julho. A de 27/08 vira para os dois.)
+ *
+ * E O ESPELHO TEM UM PREÇO, medido em 28/08/2026 depois de o dono relatar que
+ * a troca "está quebrando a visualização". Distância visual entre imagens,
+ * mesma métrica dos números acima:
+ *
+ *   passo entre poses vizinhas, mediana .........  6,4
+ *   pior passo normal do percurso ............... 12,3
+ *   A TROCA DO ESPELHO .......................... 30,1
+ *
+ * Ou seja a maior descontinuidade do percurso inteiro, e no centro, que é
+ * onde o cursor mais passa. NÃO é descentramento: varrendo o recorte de −24
+ * a +24px, o resíduo de simetria é mínimo exatamente em zero. O corte já está
+ * no ótimo e o que salta é a assimetria real — cabelo e brilhos de um lado.
+ *
+ * Por isso existe agora uma dissolução POR TEMPO no instante da troca. Ver
+ * DISSOLVE_S, que explica por que ela não é a dissolução rejeitada aqui em
+ * baixo.
  *
  * A TROCA DE ESPELHO É UM CORTE SECO, e isso foi decidido medindo.
  *
@@ -90,11 +133,83 @@ const ESPELHA_QUANDO_POSITIVO = true
  */
 const HISTERESE = 0.02
 
-/** Intervalo mínimo entre duas leituras do cursor. */
-const PASSO_MS = 16
+/**
+ * Constante de tempo da perseguição, em segundos.
+ *
+ * É O ÚNICO NÚMERO A GIRAR se o movimento parecer mole ou seco. Ele é o
+ * tempo que o retrato leva para cobrir ~63% da distância até onde o cursor
+ * pediu; em cerca de 3× isto, chegou para todos os efeitos.
+ *
+ *   menor (0,05)  responde quase junto com o mouse, e o tranco do mouse
+ *                 volta a aparecer
+ *   maior (0,20)  fica muito liso e começa a parecer que a cabeça está
+ *                 atrasada em relação à mão
+ *
+ * NÃO É UM FATOR POR QUADRO, e a diferença importa: a conta no laço é
+ * `k = 1 - e^(-dt/SEGUE_S)`, então este valor significa a mesma coisa a 60Hz
+ * e a 144Hz. Um `atual += (alvo - atual) * 0,2` escrito por quadro pareceria
+ * equivalente e perseguiria duas vezes mais rápido numa tela de 144Hz.
+ */
+const SEGUE_S = 0.1
 
-/** Quantas poses convivem na pilha: os dois degraus vizinhos. */
-const N_CAMADAS = 2
+/**
+ * Onde a perseguição é dada por chegada, e o laço para.
+ *
+ * Perseguição exponencial nunca alcança o alvo, só se aproxima — sem um
+ * limiar o `requestAnimationFrame` correria para sempre por distâncias que
+ * já não existem na tela. O corte é uma ordem de grandeza abaixo da precisão
+ * com que os valores são escritos (três casas), então nada visível se perde.
+ */
+const PARADO = 0.0004
+
+/**
+ * Quantas camadas convivem: os dois degraus vizinhos da pose, mais uma em
+ * cima que segura a imagem ANTERIOR enquanto o espelho troca de lado.
+ *
+ * A terceira nasceu em 28/08/2026, e o número que a justifica está logo
+ * abaixo, em DISSOLVE_S.
+ */
+const N_CAMADAS = 3
+
+/**
+ * Quanto tempo a imagem anterior leva para apagar quando o espelho vira.
+ *
+ * ---- POR QUE UMA DISSOLUÇÃO EXISTE AQUI, SE ELA JÁ FOI REJEITADA ----
+ *
+ * O comentário de ESPELHA_QUANDO_POSITIVO conta que uma dissolução foi
+ * tentada e descartada por dar fantasma. Aquela era POR POSIÇÃO DO CURSOR:
+ * misturava os dois espelhos numa FAIXA em volta do centro, então bastava
+ * parar o cursor ali para ver dois rostos sobrepostos, permanentemente. A
+ * rejeição estava certa.
+ *
+ * Esta é POR TEMPO, e é outra coisa: dispara no instante da troca e some
+ * sozinha. Em repouso nunca há imagem dupla, em posição nenhuma — o que
+ * havia de errado na anterior não se aplica a esta.
+ *
+ * ---- E POR QUE ELA PASSOU A SER NECESSÁRIA ----
+ *
+ * O dono relatou que a troca "está quebrando a visualização". Medido no
+ * atlas, com a mesma métrica de distância visual que o cabeçalho usa:
+ *
+ *   passo entre poses vizinhas, mediana ........  6,4
+ *   pior passo normal do percurso .............. 12,3
+ *   A TROCA DO ESPELHO ......................... 30,1
+ *
+ * Ou seja 4,7× o passo mediano e 2,4× o pior passo normal — a MAIOR
+ * descontinuidade do percurso horizontal inteiro, e bem no centro, que é
+ * onde o cursor mais passa.
+ *
+ * NÃO É DESCENTRAMENTO, e isso foi verificado antes de culpar o recorte:
+ * varrendo o deslocamento horizontal do recorte de −24px a +24px, o resíduo
+ * de simetria é MÍNIMO em zero (30,1) e cresce para os dois lados. O corte
+ * do atlas já está no ótimo. O que salta é a assimetria real — o cabelo cai
+ * de um lado, os brilhos ficam de um lado, e isso inverte de uma vez.
+ *
+ * 120ms é curto o bastante para não parecer que a cabeça hesita, e longo o
+ * bastante para o salto deixar de ser um quadro só. Se ainda aparecer,
+ * suba; se a troca parecer preguiçosa, desça.
+ */
+const DISSOLVE_S = 0.12
 
 /** Posição do quadro dentro da grade, em porcentagem de background. */
 function posicao(indice: number): string {
@@ -154,9 +269,13 @@ function empilha(cantos: Camada[]): Camada[] {
  * estado provocaria uma re-renderização por movimento do mouse, e mousemove é
  * o evento mais frequente que existe numa página.
  *
- * QUATRO CAMADAS, sempre montadas, nunca criadas nem destruídas. As sobrando
- * ficam com opacidade zero. Criar e remover nós a cada movimento seria muito
- * mais caro que manter quatro elementos parados.
+ * AS CAMADAS DE MISTURA MAIS O VÉU, sempre montadas, nunca criadas nem
+ * destruídas. As sobrando ficam com opacidade zero. Criar e remover nós a
+ * cada movimento seria muito mais caro que manter elementos parados.
+ *
+ * (Dizia "QUATRO CAMADAS" e o código montava duas; hoje monta três. O número
+ * escrito por extenso envelheceu duas vezes, então saiu — quem manda é
+ * N_CAMADAS.)
  *
  * O CENTRO DO ELEMENTO É MEDIDO FORA DO mousemove. getBoundingClientRect()
  * força cálculo de layout, e chamá-lo a cada movimento faz o navegador
@@ -179,6 +298,13 @@ export function RetratoQueOlha() {
     if (!el || nos.length !== N_CAMADAS) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     if (window.matchMedia('(pointer: coarse)').matches) return
+
+    /* Apelido já estreitado para não-nulo. As funções do laço abaixo são
+       DECLARAÇÕES, e declaração é içada — o TypeScript não leva o
+       estreitamento de `el` para dentro delas, porque em tese poderiam ser
+       chamadas antes da guarda acima. Uma constante resolve sem espalhar
+       `!` pelo arquivo. */
+    const raiz: HTMLDivElement = el
 
     let centroX = 0
     let centroY = 0
@@ -205,51 +331,246 @@ export function RetratoQueOlha() {
     }
     medir()
 
-    let ultimoMs = 0
     /* De que lado o espelho está agora. Guardado entre um movimento e outro
        porque a troca tem histerese — ver HISTERESE lá em cima. */
     let paraPositivo = false
 
+    /* ---- O DESENHO SAIU DO EVENTO DE MOUSE, EM 28/08/2026 ----
+
+       Pedido do dono: "preciso que o movimento fique o mais fluido possível".
+
+       A versão anterior lia `clientX`, calculava a pose e escrevia no DOM
+       DENTRO do `mousemove`. Isso amarra a fluidez do retrato à fluidez do
+       mouse, e ela nunca é boa: o navegador entrega os eventos em intervalos
+       irregulares, e um safanão de dedo vira um salto grande da cabeça.
+
+       O `PASSO_MS = 16` que existia aqui parecia ajudar e ATRAPALHAVA. Ele
+       não interpolava nada — DESCARTAVA eventos chegados antes de 16ms.
+       Descartar por limiar de tempo deixa os sobreviventes irregularmente
+       espaçados, e irregularidade é exatamente o que o olho lê como tranco.
+       Um afogador só seria neutro se o intervalo resultante fosse constante,
+       e ele não é.
+
+       Agora há duas grandezas: o ALVO, que o cursor pede, e o ATUAL, onde o
+       retrato está. O `mousemove` só anota onde o cursor está — duas
+       atribuições, nada mais. Quem desenha é um laço de `requestAnimationFrame`,
+       que corre na cadência da tela e persegue o alvo com amortecimento.
+
+       O AMORTECIMENTO É INDEPENDENTE DA TAXA DE QUADROS, e isso não é
+       preciosismo: `atual += (alvo - atual) * 0,2` a cada quadro produz uma
+       perseguição DUAS VEZES mais rápida a 144Hz do que a 60Hz. Com
+       `k = 1 - e^(-dt/TAU)` o tempo de resposta é o mesmo em qualquer tela,
+       porque quem manda é o relógio e não a contagem de quadros.
+
+       E ISTO CONSERTA, PELO LADO CERTO, O QUE A NOTA DO CSS RESOLVEU PELO
+       LADO ERRADO. Lá em styles/institutional.css está escrito que a
+       transição de 260ms da inclinação foi removida porque "o sprite trocava
+       na hora e a inclinação chegava um quarto de segundo depois". A causa
+       real não era a suavização — era que só UM dos dois eixos era suavizado.
+       Agora o quadro do sprite, as opacidades e a inclinação saem todos do
+       MESMO par de valores amortecidos, no mesmo quadro. Nada pode discordar
+       de nada.
+
+       O LAÇO PARA QUANDO CHEGA, e volta ao próximo movimento. Um rAF eterno
+       numa página parada é custo por quadro sem nada na tela — e esta seção
+       divide o relógio com o GSAP e o Lenis. */
+    let cursorX = 0
+    let cursorY = 0
+    let temCursor = false
+    let alvoX = 0
+    let alvoY = 0
+    let atualX = 0
+    let atualY = 0
+    let quadro = 0
+    let ultimoQuadroMs = 0
+    let precisaMedir = false
+    let escritoX = ''
+    let escritoY = ''
+    /* Instante em que o espelho virou, e 0 quando não há dissolução em
+       curso. Também é o que segura o laço aceso enquanto ela apaga. */
+    let trocaMs = 0
+
+    const acorda = () => {
+      if (quadro) return
+      /* Zerado para o primeiro `dt` do laço não medir o tempo em que a
+         página esteve parada — senão o primeiro passo salta o percurso
+         inteiro e o amortecimento não teria servido para nada. */
+      ultimoQuadroMs = 0
+      quadro = requestAnimationFrame(passo)
+    }
+
     const aoMover = (e: MouseEvent) => {
-      if (e.timeStamp - ultimoMs < PASSO_MS) return
-      ultimoMs = e.timeStamp
+      cursorX = e.clientX
+      cursorY = e.clientY
+      temCursor = true
+      acorda()
+    }
 
-      /* Remede de vez em quando: fonte que carrega, imagem que chega, estação
-         que se move sem rolagem. Uma leitura de layout a cada 250ms é
-         desprezível; uma a cada movimento do mouse não seria. */
-      if (e.timeStamp - ultimaMedida > 250) {
-        ultimaMedida = e.timeStamp
-        medir()
-      }
+    /* O ALVO É RECALCULADO NO LAÇO, e não aqui, porque ele depende de ONDE O
+       RETRATO ESTÁ e não só de onde o cursor está. Com a página rolando sob
+       um cursor imóvel, a estação move o retrato na tela e a pose tem de
+       acompanhar. Guardar o alvo já resolvido no `mousemove` congelaria a
+       pose até o próximo movimento do mouse. */
+    function calculaAlvo() {
+      const vx = cursorX - centroX
+      const vy = cursorY - centroY
 
-      const vx = e.clientX - centroX
-      const vy = e.clientY - centroY
-
-      /* CADA EIXO É NORMALIZADO PELA SUA PRÓPRIA BORDA, e aqui isso é a conta
-         certa — não o remendo que era antes.
+      /* O HORIZONTAL É NORMALIZADO PELA SUA PRÓPRIA BORDA, cada lado pela
+         sua, e aqui isso é a conta certa — não o remendo que era antes.
 
          Na versão de setores havia um raio único, medido ao longo do raio até
          a borda, porque ângulo e distância eram duas grandezas do mesmo vetor.
          Aqui os dois eixos são INDEPENDENTES: o horizontal escolhe a pose, o
-         vertical inclina. Um não interfere no outro, e cada um deve responder
-         à borda que lhe diz respeito. */
+         vertical inclina. Um não interfere no outro.
+
+         O horizontal PODE ter uma borda por lado sem estranheza porque o que
+         ele controla é POSE, e pose satura: o fim do percurso é o perfil
+         fechado dos dois lados, então chegar lá com velocidades diferentes
+         não se percebe — o destino é o mesmo desenho. */
       const hx = Math.max(
         -1,
         Math.min(1, vx / (vx < 0 ? centroX || 1 : window.innerWidth - centroX || 1)),
       )
-      const hy = Math.max(
-        -1,
-        Math.min(1, vy / (vy < 0 ? centroY || 1 : window.innerHeight - centroY || 1)),
-      )
 
-      el.style.setProperty('--olha-x', hx.toFixed(3))
-      el.style.setProperty('--olha-y', hy.toFixed(3))
+      /* O VERTICAL, NÃO — e essa diferença foi corrigida em 28/08/2026.
 
-      if (hx > HISTERESE) paraPositivo = true
-      else if (hx < -HISTERESE) paraPositivo = false
+         Ele controla INCLINAÇÃO CONTÍNUA, e inclinação não satura em desenho
+         nenhum: cada grau a mais é visível. Com uma borda por lado, o mesmo
+         gesto de mouse produzia inclinações diferentes conforme a direção.
 
-      const pilha = empilha(camadas(hx, paraPositivo))
-      for (let i = 0; i < N_CAMADAS; i++) {
+         Medido no repouso a 1536×692: o retrato fica em y=407, então há 407px
+         de curso para cima e apenas 285px para baixo. Descer o mouse inclinava
+         1,43× mais rápido que subir a mesma distância — o eixo tinha uma
+         "marcha" a mais num sentido que no outro.
+
+         O ALCANCE É METADE DA JANELA, FIXO — e não a distância até a borda
+         mais próxima, que foi a primeira tentativa e estava errada.
+
+         Usar `min(acima, abaixo)` iguala o ganho, mas amarra o ganho à
+         POSIÇÃO do retrato na tela. E a posição muda: durante a chegada o
+         palco sobe 36vh (SOBE_CHEGADA, em Estacoes.tsx), então o retrato
+         passa perto da borda de baixo. Ali aquele mínimo colapsa para
+         algumas dezenas de pixels e o eixo satura em ±1 ao primeiro
+         movimento. Medido: com a estação a meio caminho, `--olha-y` ficava
+         travado em -1 para QUALQUER posição do cursor — o eixo inteiro
+         morria durante a chegada.
+
+         Metade da janela é uma referência que não depende de onde o retrato
+         está, então o ganho em graus por pixel é o mesmo nas duas direções E
+         o mesmo em qualquer ponto da viagem. O preço é que, quando o retrato
+         está descentrado, um dos lados satura antes de o cursor alcançar a
+         borda — e isso é barato, porque ali ele já está no extremo da
+         inclinação de qualquer forma.
+
+         Ver também a nota do eixo vertical em styles/institutional.css: a
+         amplitude em graus foi reduzida na mesma leva, pelo mesmo motivo de
+         fundo — este eixo não tem fotografia por trás, ele é um disfarce, e
+         disfarce só funciona enquanto não chama atenção para si. */
+      const alcanceY = window.innerHeight / 2 || 1
+      const hy = Math.max(-1, Math.min(1, vy / alcanceY))
+
+      alvoX = hx
+      alvoY = hy
+    }
+
+    /* O PASSO, na cadência da tela.
+
+       A ORDEM DAS QUATRO ETAPAS NÃO É ARBITRÁRIA: primeiro a leitura de
+       layout, depois o alvo, depois a perseguição, e só então as escritas.
+       Ler no começo é barato — o navegador já resolveu o layout deste quadro
+       e nada nosso o sujou ainda. Ler DEPOIS de escrever forçaria um
+       recálculo de layout por quadro, que é justamente o custo que o resto
+       deste arquivo evita com tanto cuidado. */
+    function passo(agora: number) {
+      quadro = 0
+
+      /* Teto de 100ms para o `dt`: se a aba ficou em segundo plano ou o
+         quadro demorou, o amortecimento não deve saltar o percurso inteiro
+         de uma vez. É a mesma ideia do `lagSmoothing` do GSAP, e pelo mesmo
+         motivo — só que aqui a animação é por TEMPO e não por posição de
+         rolagem, então descartar o excesso é o comportamento certo. */
+      const dt = ultimoQuadroMs ? Math.min(0.1, (agora - ultimoQuadroMs) / 1000) : 1 / 60
+      ultimoQuadroMs = agora
+
+      /* Remede de vez em quando: fonte que carrega, imagem que chega,
+         estação que se move sem o cursor andar. `precisaMedir` vem da
+         rolagem e do redimensionamento; os 250ms cobrem o resto.
+
+         ISTO TAMBÉM TIROU UMA LEITURA DE LAYOUT POR QUADRO: antes o `medir`
+         estava pendurado direto no evento de `scroll`, e desde que o Lenis
+         entrou a rolagem dispara TODO quadro. Ninguém notou porque o custo
+         chegou junto com um ganho maior. Aqui a bandeira só pede a medida, e
+         quem decide quando lê é o laço. */
+      if (precisaMedir || agora - ultimaMedida > 250) {
+        precisaMedir = false
+        ultimaMedida = agora
+        medir()
+      }
+
+      if (temCursor) calculaAlvo()
+
+      const k = 1 - Math.exp(-dt / SEGUE_S)
+      atualX += (alvoX - atualX) * k
+      atualY += (alvoY - atualY) * k
+
+      /* Perseguição exponencial nunca CHEGA, só se aproxima. Sem um limiar o
+         laço correria para sempre a distâncias que nem existem na tela — o
+         corte está abaixo da precisão com que os valores são escritos. */
+      const chegou = Math.abs(alvoX - atualX) < PARADO && Math.abs(alvoY - atualY) < PARADO
+      if (chegou) {
+        atualX = alvoX
+        atualY = alvoY
+      }
+
+      desenha(agora)
+
+      /* `trocaMs` é lido DEPOIS de desenhar, e de propósito: é o próprio
+         `desenha` que o acende ao detectar a virada do espelho. A pose pode
+         já ter chegado e a dissolução ainda estar apagando — nesse caso o
+         laço tem de continuar, senão a camada de cima congela no meio do
+         caminho e fica um rosto fantasma parado na tela. */
+      if (!chegou || trocaMs) quadro = requestAnimationFrame(passo)
+    }
+
+    /* TUDO O QUE VAI PARA A TELA SAI DAQUI, e sai do mesmo par de valores
+       amortecidos. É esta função única que garante que o quadro do sprite, a
+       mistura das camadas e a inclinação não possam discordar entre si. */
+    function desenha(agora: number) {
+      const sx = atualX.toFixed(3)
+      const sy = atualY.toFixed(3)
+      /* Reescrever a mesma string é trabalho de estilo por nada, e no fim de
+         cada perseguição o valor arredondado se repete por vários quadros. */
+      if (sx !== escritoX) {
+        raiz.style.setProperty('--olha-x', sx)
+        escritoX = sx
+      }
+      if (sy !== escritoY) {
+        raiz.style.setProperty('--olha-y', sy)
+        escritoY = sy
+      }
+
+      /* A HISTERESE LÊ O VALOR AMORTECIDO, não o do cursor. Quem não pode
+         piscar é a imagem, e a imagem está no valor amortecido — decidir o
+         espelho pelo cursor cru voltaria a trocar o lado antes de a cabeça
+         ter passado do centro. */
+      const ladoAntes = paraPositivo
+      if (atualX > HISTERESE) paraPositivo = true
+      else if (atualX < -HISTERESE) paraPositivo = false
+
+      /* O ESPELHO ACABOU DE VIRAR: congela na camada de cima o que ainda
+         está na tela, ANTES de as camadas de baixo receberem a pose nova.
+         `nos[0]` ainda carrega o quadro do desenho anterior — é justamente
+         essa defasagem de um quadro que dá o material da dissolução, sem
+         precisar guardar índice nenhum. */
+      const veu = nos[2]
+      if (paraPositivo !== ladoAntes && trocaMs === 0) {
+        veu.style.backgroundPosition = nos[0].style.backgroundPosition
+        veu.style.transform = nos[0].style.transform
+        trocaMs = agora
+      }
+
+      const pilha = empilha(camadas(atualX, paraPositivo))
+      for (let i = 0; i < 2; i++) {
         const no = nos[i]
         const c = pilha[i]
         if (!c) {
@@ -260,15 +581,38 @@ export function RetratoQueOlha() {
         no.style.backgroundPosition = posicao(c.indice)
         no.style.transform = c.espelha ? 'scaleX(-1)' : 'none'
       }
+
+      /* A camada de cima apaga por cima da pose nova. Opaca no instante da
+         troca, transparente em DISSOLVE_S — uma dissolução cruzada comum,
+         só que disparada por um EVENTO e não por uma faixa de posição. */
+      if (trocaMs) {
+        const t = (agora - trocaMs) / (DISSOLVE_S * 1000)
+        if (t >= 1) {
+          trocaMs = 0
+          veu.style.opacity = '0'
+        } else {
+          veu.style.opacity = (1 - t).toFixed(3)
+        }
+      }
+    }
+
+    /* Rolar e redimensionar mudam ONDE O RETRATO ESTÁ, então mudam o alvo
+       mesmo com o cursor parado. Só acorda o laço se já houver cursor
+       conhecido: sem ele não há pose a recalcular, e uma página rolando não
+       deve ligar um laço de animação por nada. */
+    const aoRolar = () => {
+      precisaMedir = true
+      if (temCursor) acorda()
     }
 
     window.addEventListener('mousemove', aoMover, { passive: true })
-    window.addEventListener('scroll', medir, { passive: true })
-    window.addEventListener('resize', medir)
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    window.addEventListener('resize', aoRolar)
     return () => {
+      if (quadro) cancelAnimationFrame(quadro)
       window.removeEventListener('mousemove', aoMover)
-      window.removeEventListener('scroll', medir)
-      window.removeEventListener('resize', medir)
+      window.removeEventListener('scroll', aoRolar)
+      window.removeEventListener('resize', aoRolar)
     }
   }, [])
 

@@ -6,15 +6,17 @@
    que a IA cria — aula gravada por gente não é criação da IA.
 
    NÃO É ESTAÇÃO, e a folha reflete isso: nada de `100svh`, nada de
-   `.estacao-palco`, nada de janela de `--chegada`. Ela rola normal, entre
-   duas seções que são presas (a credibilidade antes, as perguntas depois).
-   O porquê está em components/sections/Repertorio.tsx: a página já tem seis
-   estações, e mais uma cobraria duas telas de rolagem por um argumento só.
+   `.estacao-palco`, nada de janela de `--chegada`. O porquê está em
+   components/sections/Repertorio.tsx: mais uma estação cobraria duas telas
+   de rolagem por um argumento só.
 
-   Por não ser estação, ela também é o RESPIRO entre duas chegadas — a
-   única parte daquele trecho da página em que a rolagem anda sem nada
-   preso. Encurtá-la demais devolve o efeito de "cauda colada" que a
-   função `caudaAcima` em Estacoes.tsx existe para evitar.
+   ELA ERA O RESPIRO ENTRE DUAS CHEGADAS até 28/08/2026 — a única parte
+   daquele trecho da página em que a rolagem andava sem nada preso, com a
+   credibilidade antes e as perguntas depois, as duas presas. Em 28/08 as
+   duas vizinhas deixaram de ser estações a pedido do dono, e o trecho
+   inteiro passou a rolar normal. O papel de respiro deixou de ser só dela,
+   mas a decisão de não ser estação continua valendo pelo motivo original,
+   que nunca foi o respiro.
    ============================================================ */
 
 .page #repertorio {
