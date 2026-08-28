@@ -225,22 +225,59 @@ export function RetratoQueOlha() {
       const vx = e.clientX - centroX
       const vy = e.clientY - centroY
 
-      /* CADA EIXO É NORMALIZADO PELA SUA PRÓPRIA BORDA, e aqui isso é a conta
-         certa — não o remendo que era antes.
+      /* O HORIZONTAL É NORMALIZADO PELA SUA PRÓPRIA BORDA, cada lado pela
+         sua, e aqui isso é a conta certa — não o remendo que era antes.
 
          Na versão de setores havia um raio único, medido ao longo do raio até
          a borda, porque ângulo e distância eram duas grandezas do mesmo vetor.
          Aqui os dois eixos são INDEPENDENTES: o horizontal escolhe a pose, o
-         vertical inclina. Um não interfere no outro, e cada um deve responder
-         à borda que lhe diz respeito. */
+         vertical inclina. Um não interfere no outro.
+
+         O horizontal PODE ter uma borda por lado sem estranheza porque o que
+         ele controla é POSE, e pose satura: o fim do percurso é o perfil
+         fechado dos dois lados, então chegar lá com velocidades diferentes
+         não se percebe — o destino é o mesmo desenho. */
       const hx = Math.max(
         -1,
         Math.min(1, vx / (vx < 0 ? centroX || 1 : window.innerWidth - centroX || 1)),
       )
-      const hy = Math.max(
-        -1,
-        Math.min(1, vy / (vy < 0 ? centroY || 1 : window.innerHeight - centroY || 1)),
-      )
+
+      /* O VERTICAL, NÃO — e essa diferença foi corrigida em 28/08/2026.
+
+         Ele controla INCLINAÇÃO CONTÍNUA, e inclinação não satura em desenho
+         nenhum: cada grau a mais é visível. Com uma borda por lado, o mesmo
+         gesto de mouse produzia inclinações diferentes conforme a direção.
+
+         Medido no repouso a 1536×692: o retrato fica em y=407, então há 407px
+         de curso para cima e apenas 285px para baixo. Descer o mouse inclinava
+         1,43× mais rápido que subir a mesma distância — o eixo tinha uma
+         "marcha" a mais num sentido que no outro.
+
+         O ALCANCE É METADE DA JANELA, FIXO — e não a distância até a borda
+         mais próxima, que foi a primeira tentativa e estava errada.
+
+         Usar `min(acima, abaixo)` iguala o ganho, mas amarra o ganho à
+         POSIÇÃO do retrato na tela. E a posição muda: durante a chegada o
+         palco sobe 36vh (SOBE_CHEGADA, em Estacoes.tsx), então o retrato
+         passa perto da borda de baixo. Ali aquele mínimo colapsa para
+         algumas dezenas de pixels e o eixo satura em ±1 ao primeiro
+         movimento. Medido: com a estação a meio caminho, `--olha-y` ficava
+         travado em -1 para QUALQUER posição do cursor — o eixo inteiro
+         morria durante a chegada.
+
+         Metade da janela é uma referência que não depende de onde o retrato
+         está, então o ganho em graus por pixel é o mesmo nas duas direções E
+         o mesmo em qualquer ponto da viagem. O preço é que, quando o retrato
+         está descentrado, um dos lados satura antes de o cursor alcançar a
+         borda — e isso é barato, porque ali ele já está no extremo da
+         inclinação de qualquer forma.
+
+         Ver também a nota do eixo vertical em styles/institutional.css: a
+         amplitude em graus foi reduzida na mesma leva, pelo mesmo motivo de
+         fundo — este eixo não tem fotografia por trás, ele é um disfarce, e
+         disfarce só funciona enquanto não chama atenção para si. */
+      const alcanceY = window.innerHeight / 2 || 1
+      const hy = Math.max(-1, Math.min(1, vy / alcanceY))
 
       el.style.setProperty('--olha-x', hx.toFixed(3))
       el.style.setProperty('--olha-y', hy.toFixed(3))
