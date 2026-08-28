@@ -632,26 +632,118 @@
 
      Ou seja, a volta COMPLETA que a leitura literal do pedido sugere é
      geometricamente incompatível com não recortar. Meia volta é o máximo
-     que cabe, e ela já lê como órbita. */
+     que cabe, e ela já lê como órbita.
+
+     (Ressalva sobre a tabela acima: são PONTOS, e eu não sei de qual
+     `--chegada` saíram. Um transbordo medido num instante não é o orçamento
+     da viagem — ver a tabela do parágrafo seguinte, que é varredura. Se
+     alguém for reabrir os ângulos, remede em curva antes de confiar nela.)
+
+     ---- O SINAL E A MAGNITUDE ESCOLHEM O EIXO DO TRANSBORDO ----
+
+     Isto não estava escrito em lugar nenhum e é a restrição de verdade:
+     `--orbita` não regula QUANTO o painel sai do quadro, regula PARA ONDE.
+
+     O termo é `rotate(θ) translateX(R)`, com θ varrendo de `--orbita` a 0.
+     A distância do desvio é sempre `--resta × --raio`, independente de θ; o
+     ângulo só escolhe a direção. Em `--resta = 1` (começo da viagem) θ vale
+     a órbita cheia, e é ali que o desvio é máximo:
+
+       ±180°  aponta para a ESQUERDA — desvio puramente HORIZONTAL
+        ±90°  aponta para BAIXO/CIMA — desvio puramente VERTICAL
+
+     E a seção tem 1521px de LARGURA contra 640px de ALTURA. Ou seja, meia
+     volta é a única configuração em que o pior desvio cai no eixo onde há
+     espaço para gastá-lo. Medido (varredura de 401 amostras, 1536×695,
+     medição da sessão par):
+
+       -180°  (atual)   pior base    162,9 px
+       +180°  (invertida)            560,3 px
+       +120°                         860,5 px
+        +90°                         968,4 px
+
+     A intuição natural — "um arco menor sai menos do quadro" — está
+     INVERTIDA, e eu a segui antes de medir. Encolher o ângulo não encurta o
+     desvio; gira-o para o eixo curto. Quem quiser menos transbordo mexe no
+     `--raio`, que é o que de fato encurta, e não no ângulo.
+
+     Isso também responde de uma vez ao pedido recorrente de a estação chegar
+     "do lado da poeira", subindo pela base: geometricamente ela não cabe. */
   --orbita: -180deg;
   /* O RAIO É EM ESPAÇO LOCAL, e é por isso que ele parece absurdo para um
      quadro de 1440: o GSAP encolhe o palco por fora, e durante a órbita a
      estação está entre 0,16 e ~0,5 do tamanho final. O deslocamento que
-     chega à tela é `--resta × --raio × escala do palco`, então os 1238px
-     que 86vw rende no desktop chegam como ~200 a 380px — que é o arco que
-     se vê. Medido no pico, o centro do painel varre 533px de tela.
+     chega à tela é `--resta × --raio × escala do palco`, então os 867px que
+     60,2vw rende num quadro de 1440 chegam como ~140 a 265px — que é o arco
+     que se vê. Medido no pico, o centro do painel varre ~373px de tela.
+
+     OS NÚMEROS DAS DUAS NOTAS ABAIXO SÃO DO RAIO CHEIO (86vw / 300px / 1380px),
+     de antes do corte para 70% documentado logo adiante. Ficam porque o que
+     eles provam é a RELAÇÃO entre os três termos, e essa relação sobreviveu:
+     os três foram multiplicados pelo mesmo 0,7, então cada um continua no
+     mesmo lugar relativo. Quem for remedir, remede os três.
 
      O MÍNIMO DO CLAMP É O DIAL DO CELULAR, e ele não pode subir junto com
-     o resto. Num quadro de 390px o `86vw` vale 335px e cai dentro da
-     faixa; se o mínimo subir para 760px (que foi o valor que eu tinha
-     escolhido olhando só para o desktop), o celular passa a orbitar com um
-     raio maior que a própria tela e 73% do painel sai do quadro — medido.
-     Com 300px de piso, sobram 2%.
+     o resto. Num quadro de 390px o `86vw` valia 335px e caía dentro da
+     faixa; se o mínimo subisse para 760px (que foi o valor que eu tinha
+     escolhido olhando só para o desktop), o celular passaria a orbitar com
+     um raio maior que a própria tela e 73% do painel sairia do quadro —
+     medido. Com 300px de piso, sobravam 2%.
 
-     O TETO DE 86vw também é medido, e quem o dita é o celular: a 110vw o
-     mobile já perde 19% do painel para fora, e a 140vw perde 40%. No
-     desktop qualquer um dos três caberia; é o quadro estreito que manda. */
-  --raio: clamp(300px, 86vw, 1380px);
+     Depois do corte para 70%, o piso é 210px e ele CONTINUA sem atuar: a
+     390px de largura, 60,2vw dá 235px, acima dele. E a preocupação registrada
+     aqui é com raio GRANDE demais no quadro estreito, então reduzir anda no
+     sentido seguro — o celular não foi remedido porque o corte só pode
+     melhorar o que esta nota temia.
+
+     O TETO também é medido, e quem o dita é o celular: a 110vw o mobile já
+     perdia 19% do painel para fora, e a 140vw perdia 40%. No desktop qualquer
+     um dos três caberia; é o quadro estreito que manda. */
+  /* ---- 70% DO QUE ERA, e quem pagou foi o arco ----
+
+     Pedido do dono, 28/08, olhando o preview: "ela está sendo revelada muito
+     por cima e está passando por trás do header o que dificulta a
+     visualização". Diagnóstico: o header é uma pílula FIXA e CENTRALIZADA
+     (`.site-header`, z-index 80, do y=18 ao y=76, fundo 88% opaco com blur),
+     e a órbita varre justamente pelo topo central. No pico da subida o painel
+     perdia as duas pontas de uma vez — o que passava de y=0 era recortado
+     pelo `overflow: hidden` da seção, e a faixa logo abaixo ficava atrás da
+     pílula.
+
+     OS TRÊS TERMOS foram multiplicados por 0,7, e não só o do meio. Não é
+     capricho de simetria: escalar os três pelo MESMO fator preserva os
+     pontos de virada do clamp exatamente.
+
+       piso engata abaixo de    348,8px   antes e depois
+       teto engata acima de    1604,7px   antes e depois
+
+     Ou seja, o comportamento responsivo não muda em nada — só a magnitude.
+     Mexer só no 60,2 faria os dois pontos andarem, e o clamp passaria a
+     atuar em larguras diferentes: efeito colateral invisível, do tipo que
+     não aparece na janela em que se está olhando. Quem for reajustar, ajusta
+     os três.
+
+     MEDIDO (varredura de 401 amostras de `--chegada`, a 1536×695):
+
+                        raio cheio    70%
+       folga no topo       1,1 px    30,1 px
+       entra inteiro em   ch 0,74    ch 0,595
+       folga na base      49,5 px    43,9 px
+
+     Duas coisas melhoram juntas, e a SEGUNDA é a que atende o pedido: ele
+     sobe menos, e fica inteiro na tela bem mais cedo na viagem. A folga do
+     topo era dívida conhecida e aceita; a oclusão pelo header foi o que
+     cobrou a dívida.
+
+     O CUSTO É O ARCO: o centro do painel varria 533px de tela e passa a
+     varrer ~373px. A órbita fica menos grandiosa, e isso foi decisão do dono
+     com o número na mão. Se um dia ela parecer curta demais, é AQUI que se
+     volta — e aí a oclusão pelo header volta junto.
+
+     70% é o ponto da tabela em que nenhum dos quatro lados fica apertado.
+     Abaixo de 65% a conta inverte e a BASE começa a cobrar: em 55% a folga
+     dela cai para 0,2px, que é o mesmo aperto de antes trocado de lado. */
+  --raio: clamp(210px, 60.2vw, 966px);
   /* -45° é o pedido do dono do produto, e termina em 0 pela própria estrutura:
      o ângulo é `--resta × --giro`, e `--resta` fecha em zero na atracação.
 
