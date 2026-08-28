@@ -793,8 +793,8 @@
      saíram do RITMO_PADRÃO (CHEGOU 0,614 × TRAVESSIA 2,2 = 1,35 tela). Elas
      valiam para esta estação por COINCIDÊNCIA: o ritmo próprio dela também
      dava 1,35 tela de chegada. Desde 28/08 não dá mais — RITMO_RECURSOS traz
-     1,90 tela —, então para o #recursos multiplique as duas colunas por
-     1,90/1,35 = 1,407. A coluna da DIREITA não muda: o tamanho aparente é
+     2,40 tela —, então para o #recursos multiplique as duas colunas por
+     2,40/1,35 = 1,778. A coluna da DIREITA não muda: o tamanho aparente é
      função só de `--chegada`, e não de quanta rolagem leva para chegar lá.
 
        0,70 → 0,96   0,328 tela   228px    começa a assentar com 39% do tamanho
@@ -828,7 +828,8 @@
      desacelera só o giro: desacelera os quatro atos, porque chegou, expandiu
      e revelou são FRAÇÕES do pin.
 
-     Foi o que se fez em 28/08: a chegada foi de 1,35 para 1,90 tela por ali,
+     Foi o que se fez em 28/08, duas vezes: a chegada foi de 1,35 a 1,90 e
+     depois a 2,40 tela por ali (a segunda para o giro ter mais fluidez),
      e o piso daqui FICOU EM 0,46 de propósito. Baixá-lo para 0,34 chegou a
      ser proposto, para o giro ocupar mais da viagem; a coluna da direita
      vetou — 0,34 põe o começo do tombo com o painel em 21% do tamanho final,

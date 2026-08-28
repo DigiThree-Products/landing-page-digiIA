@@ -24,7 +24,15 @@
      `{children}`, antes de `RolagemSuave` montar, porque os efeitos do
      React correm de dentro para fora. Silenciar por JavaScript perde essa
      corrida por construção. Declaração `!important` de folha vence estilo
-     inline normal, então esta regra vence sem depender de ordem. */
+     inline normal, então esta regra vence sem depender de ordem.
+
+     ESTA REGRA PARECE SUPÉRFLUA LOGO APÓS O LOAD, E NÃO É. Antes da
+     primeira rolagem o inline ainda vale `auto`, porque o ScrollTrigger só
+     restaura o valor memorizado ao FIM de uma rolagem programática. Quem
+     medir nesse instante conclui que dá para apagar isto. MEÇA DEPOIS DE
+     ROLAR: sem esta regra, o computado volta a `smooth` e a página fica
+     com duas suavizações em série. Foi assim que o defeito passou por mim
+     na primeira verificação. */
   html.lenis {
     scroll-behavior: auto !important;
   }
