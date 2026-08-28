@@ -24,9 +24,11 @@ solto em worktree, stash ou máquina local: o branch remoto e o local batem
 exatamente (verificado com `git rev-list --left-right --count`, resultado
 `0 0`).
 
-O servidor de desenvolvimento sobe na porta definida pelo `package.json`.
-Nesta máquina ele estava em `3005` — o próprio `next dev` imprime o
-endereço ao subir.
+O script é `next dev` puro, sem porta fixada, então num clone limpo ele
+sobe em **3000**. O `3005` que aparece no histórico desta rodada foi
+passado à mão nesta máquina, não vem do repositório — ver 3000 não é sinal
+de que clonaste errado. De qualquer modo, o `next dev` imprime o endereço
+ao subir.
 
 ---
 
@@ -186,8 +188,10 @@ Nada aqui está quebrado. São coisas vistas e adiadas de propósito.
   e `Faq` perderam a classe `estacao`. **Devolver a classe devolve a
   estação inteira** (pin, viagem e tudo): é o único mecanismo, e o
   `.estacao-palco` continua na marcação de propósito.
-- `app/page.tsx` — o mapa de quem é estação. Hoje são **duas**:
-  `ApproachSection` (o vídeo) e `WhatItDoes` (o satélite).
+- `app/page.tsx` — o comentário que explica quais seções são estações e
+  por quê. **A classe em si não está aqui**: vive em cada componente de
+  seção. Hoje são **duas**, `ApproachSection` (o vídeo, linha 24) e
+  `WhatItDoes` (o satélite, linha 64).
 - `styles/institutional.css` — o respiro de Como funciona: 55px em cima e
   55 embaixo, em vez dos 17px que encostavam no cabeçalho.
 - `components/ui/RetratoQueOlha.tsx` — o retrato. As constantes de ajuste
