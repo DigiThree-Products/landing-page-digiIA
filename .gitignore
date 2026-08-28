@@ -37,3 +37,8 @@ next-env.d.ts
 # O .env.example fica versionado; os valores reais, não.
 .env
 .env*.local
+
+# Snapshots e logs que o Playwright MCP grava na raiz a cada navegação.
+# Some e volta sozinho; numa árvore com duas sessões, arquivo não rastreado
+# não tem dono e vira ruído no `git status` de quem não o criou.
+.playwright-mcp/

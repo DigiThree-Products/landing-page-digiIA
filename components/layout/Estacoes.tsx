@@ -258,8 +258,8 @@ const RITMO_PADRAO: Ritmo = {
    e divide-se pelo pin —, senão aumentar a travessia estica a chegada junto,
    que é justamente o que não se quer:
 
-     chegada    1,90 tela → 1,90 / 3,60 = 0,5278   (as cinco seguem em 1,35)
-     revelação  0,90 tela → acumulado 2,80 / 3,60 = 0,7778
+     chegada    2,40 tela → 2,40 / 4,10 = 0,5854   (as cinco seguem em 1,35)
+     revelação  0,90 tela → acumulado 3,30 / 4,10 = 0,8049
      PARADA     0,80 tela → daí até o fim do pin
      partida    NENHUMA   → `partiu: 1`
 
@@ -301,32 +301,44 @@ const RITMO_PADRAO: Ritmo = {
    implantava as asas), o ato saiu e o pin voltou a 2,2, e depois as mesmas
    0,80 voltaram comprando PARADA. Foi a 3,4 quando a revelação comprou 0,40,
    e caiu para 3,05 no mesmo dia, quando a partida foi desligada e devolveu as
-   0,35 dela. Agora vai a 3,60, e as 0,55 novas são da CHEGADA.
+   0,35 dela. Foi a 3,60 quando a chegada comprou 0,55, e a 4,10 quando ela
+   comprou mais 0,50. As 1,05 telas novas são todas da CHEGADA.
 
    (A prosa deste parágrafo ficou um commit atrás por um tempo: dizia "agora
    ele vai a 3,4" depois de a partida já ter sido desligada, enquanto a tabela
    logo acima já calculava com 3,05. Quando os dois discordarem de novo, a
    tabela é a que está certa — ela é derivada dos mesmos números que o código.)
 
-   ---- POR QUE A CHEGADA FICOU 1,41× MAIS LENTA ----
+   ---- A CHEGADA FOI DESACELERADA DUAS VEZES NO MESMO DIA ----
 
-   Pedido do dono, 28/08: "o ritmo da chegada está rápido demais". Ela foi de
-   1,35 para 1,90 tela, e quem pagou foi o pin — de novo, e pelo mesmo motivo
-   de sempre: tirar de outro ato desfaria um pedido anterior em silêncio.
+   Primeiro pedido, 28/08: "o ritmo da chegada está rápido demais". 1,35 →
+   1,90 tela. Segundo, depois de o Lenis entrar: "quero deixar ela um pouco
+   mais lenta e mais suave para que o movimento de rotação tenha mais
+   fluidez". 1,90 → 2,40.
 
-   O GANHO REAL É MAIOR QUE 1,41×, e é a órbita que explica. O painel passa a
-   primeira parte da viagem parado no fundo em tombo cheio, e só depois começa
-   a se desenrolar (`--orbe` em styles/estacao.css). Medido em telas:
+   As duas vezes quem pagou foi o pin, pelo mesmo motivo: tirar de outro ato
+   desfaria um pedido anterior em silêncio.
 
-                          antes      depois
-     espera torta         0,62       0,65
-     A ÓRBITA ANDANDO     0,73       1,25
-     chegada total        1,35       1,90
+   COMO O TEMPO SE REPARTE. O painel passa a primeira parte da viagem parado
+   no fundo em tombo cheio e só depois começa a se desenrolar — o `--orbe`
+   de styles/estacao.css abre em `--chegada` 0,46, o que dá 52,6% da chegada
+   gastos em espera e 47,4% em órbita andando. Em telas:
 
-   Ou seja, a espera quase não cresceu e o movimento cresceu 1,72×. Se a
-   desaceleração viesse só daqui, sem baixar o piso do `--orbe` junto, ela
-   compraria mais tempo olhando um ponto imóvel no fundo — que não é o que
-   "está rápido demais" quer dizer.
+                        1,35      1,90      2,40
+     espera torta       0,640     0,900     1,137
+     A ÓRBITA ANDANDO   0,710     0,999     1,263
+     chegada total      1,35      1,90      2,40
+
+   A proporção NÃO muda — os dois crescem juntos, porque o piso do `--orbe`
+   é fração da chegada. Isso é o que "mais fluidez no giro" pede: o mesmo
+   número de graus distribuído em mais rolagem, logo mais quadros por grau.
+
+   (Correção de uma tabela que esteve aqui e mentia: ela dizia espera
+   0,62 → 0,65 e órbita 0,73 → 1,25, números que pressupunham baixar o piso
+   do `--orbe` de 0,46 para 0,34. Essa mudança foi PROPOSTA e VETADA no mesmo
+   dia — 0,34 põe o começo do tombo com o painel em 21% do tamanho final,
+   abaixo do limite de ~25% que a nota de estacao.css registra. A tabela foi
+   escrita antes do veto e não acompanhou.)
 
    NÃO É AQUI que se mexe na direção da órbita nem em quanto ela transborda
    da seção: isso é `--orbita` e `--raio`, em styles/estacao.css, e lá há
@@ -335,10 +347,10 @@ const RITMO_PADRAO: Ritmo = {
    Se alguém for mexer aqui achando que mexe na implantação: ela não existe
    mais. Cada um destes quatro números tem um dono diferente. */
 const RITMO_RECURSOS: Ritmo = {
-  travessia: 3.6,
-  chegou: 0.5278,
-  expandiu: 0.5278,
-  revelou: 0.7778,
+  travessia: 4.1,
+  chegou: 0.5854,
+  expandiu: 0.5854,
+  revelou: 0.8049,
   partiu: 1,
   opacidadeLonge: 1,
 }
