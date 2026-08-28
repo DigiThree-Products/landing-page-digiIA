@@ -90,8 +90,34 @@ const ESPELHA_QUANDO_POSITIVO = true
  */
 const HISTERESE = 0.02
 
-/** Intervalo mínimo entre duas leituras do cursor. */
-const PASSO_MS = 16
+/**
+ * Constante de tempo da perseguição, em segundos.
+ *
+ * É O ÚNICO NÚMERO A GIRAR se o movimento parecer mole ou seco. Ele é o
+ * tempo que o retrato leva para cobrir ~63% da distância até onde o cursor
+ * pediu; em cerca de 3× isto, chegou para todos os efeitos.
+ *
+ *   menor (0,05)  responde quase junto com o mouse, e o tranco do mouse
+ *                 volta a aparecer
+ *   maior (0,20)  fica muito liso e começa a parecer que a cabeça está
+ *                 atrasada em relação à mão
+ *
+ * NÃO É UM FATOR POR QUADRO, e a diferença importa: a conta no laço é
+ * `k = 1 - e^(-dt/SEGUE_S)`, então este valor significa a mesma coisa a 60Hz
+ * e a 144Hz. Um `atual += (alvo - atual) * 0,2` escrito por quadro pareceria
+ * equivalente e perseguiria duas vezes mais rápido numa tela de 144Hz.
+ */
+const SEGUE_S = 0.1
+
+/**
+ * Onde a perseguição é dada por chegada, e o laço para.
+ *
+ * Perseguição exponencial nunca alcança o alvo, só se aproxima — sem um
+ * limiar o `requestAnimationFrame` correria para sempre por distâncias que
+ * já não existem na tela. O corte é uma ordem de grandeza abaixo da precisão
+ * com que os valores são escritos (três casas), então nada visível se perde.
+ */
+const PARADO = 0.0004
 
 /** Quantas poses convivem na pilha: os dois degraus vizinhos. */
 const N_CAMADAS = 2
@@ -180,6 +206,13 @@ export function RetratoQueOlha() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     if (window.matchMedia('(pointer: coarse)').matches) return
 
+    /* Apelido já estreitado para não-nulo. As funções do laço abaixo são
+       DECLARAÇÕES, e declaração é içada — o TypeScript não leva o
+       estreitamento de `el` para dentro delas, porque em tese poderiam ser
+       chamadas antes da guarda acima. Uma constante resolve sem espalhar
+       `!` pelo arquivo. */
+    const raiz: HTMLDivElement = el
+
     let centroX = 0
     let centroY = 0
     /* MEDE O PAI, NUNCA O PRÓPRIO ELEMENTO, e isto conserta um laço de
@@ -205,25 +238,86 @@ export function RetratoQueOlha() {
     }
     medir()
 
-    let ultimoMs = 0
     /* De que lado o espelho está agora. Guardado entre um movimento e outro
        porque a troca tem histerese — ver HISTERESE lá em cima. */
     let paraPositivo = false
 
+    /* ---- O DESENHO SAIU DO EVENTO DE MOUSE, EM 28/08/2026 ----
+
+       Pedido do dono: "preciso que o movimento fique o mais fluido possível".
+
+       A versão anterior lia `clientX`, calculava a pose e escrevia no DOM
+       DENTRO do `mousemove`. Isso amarra a fluidez do retrato à fluidez do
+       mouse, e ela nunca é boa: o navegador entrega os eventos em intervalos
+       irregulares, e um safanão de dedo vira um salto grande da cabeça.
+
+       O `PASSO_MS = 16` que existia aqui parecia ajudar e ATRAPALHAVA. Ele
+       não interpolava nada — DESCARTAVA eventos chegados antes de 16ms.
+       Descartar por limiar de tempo deixa os sobreviventes irregularmente
+       espaçados, e irregularidade é exatamente o que o olho lê como tranco.
+       Um afogador só seria neutro se o intervalo resultante fosse constante,
+       e ele não é.
+
+       Agora há duas grandezas: o ALVO, que o cursor pede, e o ATUAL, onde o
+       retrato está. O `mousemove` só anota onde o cursor está — duas
+       atribuições, nada mais. Quem desenha é um laço de `requestAnimationFrame`,
+       que corre na cadência da tela e persegue o alvo com amortecimento.
+
+       O AMORTECIMENTO É INDEPENDENTE DA TAXA DE QUADROS, e isso não é
+       preciosismo: `atual += (alvo - atual) * 0,2` a cada quadro produz uma
+       perseguição DUAS VEZES mais rápida a 144Hz do que a 60Hz. Com
+       `k = 1 - e^(-dt/TAU)` o tempo de resposta é o mesmo em qualquer tela,
+       porque quem manda é o relógio e não a contagem de quadros.
+
+       E ISTO CONSERTA, PELO LADO CERTO, O QUE A NOTA DO CSS RESOLVEU PELO
+       LADO ERRADO. Lá em styles/institutional.css está escrito que a
+       transição de 260ms da inclinação foi removida porque "o sprite trocava
+       na hora e a inclinação chegava um quarto de segundo depois". A causa
+       real não era a suavização — era que só UM dos dois eixos era suavizado.
+       Agora o quadro do sprite, as opacidades e a inclinação saem todos do
+       MESMO par de valores amortecidos, no mesmo quadro. Nada pode discordar
+       de nada.
+
+       O LAÇO PARA QUANDO CHEGA, e volta ao próximo movimento. Um rAF eterno
+       numa página parada é custo por quadro sem nada na tela — e esta seção
+       divide o relógio com o GSAP e o Lenis. */
+    let cursorX = 0
+    let cursorY = 0
+    let temCursor = false
+    let alvoX = 0
+    let alvoY = 0
+    let atualX = 0
+    let atualY = 0
+    let quadro = 0
+    let ultimoQuadroMs = 0
+    let precisaMedir = false
+    let escritoX = ''
+    let escritoY = ''
+
+    const acorda = () => {
+      if (quadro) return
+      /* Zerado para o primeiro `dt` do laço não medir o tempo em que a
+         página esteve parada — senão o primeiro passo salta o percurso
+         inteiro e o amortecimento não teria servido para nada. */
+      ultimoQuadroMs = 0
+      quadro = requestAnimationFrame(passo)
+    }
+
     const aoMover = (e: MouseEvent) => {
-      if (e.timeStamp - ultimoMs < PASSO_MS) return
-      ultimoMs = e.timeStamp
+      cursorX = e.clientX
+      cursorY = e.clientY
+      temCursor = true
+      acorda()
+    }
 
-      /* Remede de vez em quando: fonte que carrega, imagem que chega, estação
-         que se move sem rolagem. Uma leitura de layout a cada 250ms é
-         desprezível; uma a cada movimento do mouse não seria. */
-      if (e.timeStamp - ultimaMedida > 250) {
-        ultimaMedida = e.timeStamp
-        medir()
-      }
-
-      const vx = e.clientX - centroX
-      const vy = e.clientY - centroY
+    /* O ALVO É RECALCULADO NO LAÇO, e não aqui, porque ele depende de ONDE O
+       RETRATO ESTÁ e não só de onde o cursor está. Com a página rolando sob
+       um cursor imóvel, a estação move o retrato na tela e a pose tem de
+       acompanhar. Guardar o alvo já resolvido no `mousemove` congelaria a
+       pose até o próximo movimento do mouse. */
+    function calculaAlvo() {
+      const vx = cursorX - centroX
+      const vy = cursorY - centroY
 
       /* O HORIZONTAL É NORMALIZADO PELA SUA PRÓPRIA BORDA, cada lado pela
          sua, e aqui isso é a conta certa — não o remendo que era antes.
@@ -279,13 +373,89 @@ export function RetratoQueOlha() {
       const alcanceY = window.innerHeight / 2 || 1
       const hy = Math.max(-1, Math.min(1, vy / alcanceY))
 
-      el.style.setProperty('--olha-x', hx.toFixed(3))
-      el.style.setProperty('--olha-y', hy.toFixed(3))
+      alvoX = hx
+      alvoY = hy
+    }
 
-      if (hx > HISTERESE) paraPositivo = true
-      else if (hx < -HISTERESE) paraPositivo = false
+    /* O PASSO, na cadência da tela.
 
-      const pilha = empilha(camadas(hx, paraPositivo))
+       A ORDEM DAS QUATRO ETAPAS NÃO É ARBITRÁRIA: primeiro a leitura de
+       layout, depois o alvo, depois a perseguição, e só então as escritas.
+       Ler no começo é barato — o navegador já resolveu o layout deste quadro
+       e nada nosso o sujou ainda. Ler DEPOIS de escrever forçaria um
+       recálculo de layout por quadro, que é justamente o custo que o resto
+       deste arquivo evita com tanto cuidado. */
+    function passo(agora: number) {
+      quadro = 0
+
+      /* Teto de 100ms para o `dt`: se a aba ficou em segundo plano ou o
+         quadro demorou, o amortecimento não deve saltar o percurso inteiro
+         de uma vez. É a mesma ideia do `lagSmoothing` do GSAP, e pelo mesmo
+         motivo — só que aqui a animação é por TEMPO e não por posição de
+         rolagem, então descartar o excesso é o comportamento certo. */
+      const dt = ultimoQuadroMs ? Math.min(0.1, (agora - ultimoQuadroMs) / 1000) : 1 / 60
+      ultimoQuadroMs = agora
+
+      /* Remede de vez em quando: fonte que carrega, imagem que chega,
+         estação que se move sem o cursor andar. `precisaMedir` vem da
+         rolagem e do redimensionamento; os 250ms cobrem o resto.
+
+         ISTO TAMBÉM TIROU UMA LEITURA DE LAYOUT POR QUADRO: antes o `medir`
+         estava pendurado direto no evento de `scroll`, e desde que o Lenis
+         entrou a rolagem dispara TODO quadro. Ninguém notou porque o custo
+         chegou junto com um ganho maior. Aqui a bandeira só pede a medida, e
+         quem decide quando lê é o laço. */
+      if (precisaMedir || agora - ultimaMedida > 250) {
+        precisaMedir = false
+        ultimaMedida = agora
+        medir()
+      }
+
+      if (temCursor) calculaAlvo()
+
+      const k = 1 - Math.exp(-dt / SEGUE_S)
+      atualX += (alvoX - atualX) * k
+      atualY += (alvoY - atualY) * k
+
+      /* Perseguição exponencial nunca CHEGA, só se aproxima. Sem um limiar o
+         laço correria para sempre a distâncias que nem existem na tela — o
+         corte está abaixo da precisão com que os valores são escritos. */
+      const chegou = Math.abs(alvoX - atualX) < PARADO && Math.abs(alvoY - atualY) < PARADO
+      if (chegou) {
+        atualX = alvoX
+        atualY = alvoY
+      }
+
+      desenha()
+
+      if (!chegou) quadro = requestAnimationFrame(passo)
+    }
+
+    /* TUDO O QUE VAI PARA A TELA SAI DAQUI, e sai do mesmo par de valores
+       amortecidos. É esta função única que garante que o quadro do sprite, a
+       mistura das camadas e a inclinação não possam discordar entre si. */
+    function desenha() {
+      const sx = atualX.toFixed(3)
+      const sy = atualY.toFixed(3)
+      /* Reescrever a mesma string é trabalho de estilo por nada, e no fim de
+         cada perseguição o valor arredondado se repete por vários quadros. */
+      if (sx !== escritoX) {
+        raiz.style.setProperty('--olha-x', sx)
+        escritoX = sx
+      }
+      if (sy !== escritoY) {
+        raiz.style.setProperty('--olha-y', sy)
+        escritoY = sy
+      }
+
+      /* A HISTERESE LÊ O VALOR AMORTECIDO, não o do cursor. Quem não pode
+         piscar é a imagem, e a imagem está no valor amortecido — decidir o
+         espelho pelo cursor cru voltaria a trocar o lado antes de a cabeça
+         ter passado do centro. */
+      if (atualX > HISTERESE) paraPositivo = true
+      else if (atualX < -HISTERESE) paraPositivo = false
+
+      const pilha = empilha(camadas(atualX, paraPositivo))
       for (let i = 0; i < N_CAMADAS; i++) {
         const no = nos[i]
         const c = pilha[i]
@@ -299,13 +469,23 @@ export function RetratoQueOlha() {
       }
     }
 
+    /* Rolar e redimensionar mudam ONDE O RETRATO ESTÁ, então mudam o alvo
+       mesmo com o cursor parado. Só acorda o laço se já houver cursor
+       conhecido: sem ele não há pose a recalcular, e uma página rolando não
+       deve ligar um laço de animação por nada. */
+    const aoRolar = () => {
+      precisaMedir = true
+      if (temCursor) acorda()
+    }
+
     window.addEventListener('mousemove', aoMover, { passive: true })
-    window.addEventListener('scroll', medir, { passive: true })
-    window.addEventListener('resize', medir)
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    window.addEventListener('resize', aoRolar)
     return () => {
+      if (quadro) cancelAnimationFrame(quadro)
       window.removeEventListener('mousemove', aoMover)
-      window.removeEventListener('scroll', medir)
-      window.removeEventListener('resize', medir)
+      window.removeEventListener('scroll', aoRolar)
+      window.removeEventListener('resize', aoRolar)
     }
   }, [])
 
