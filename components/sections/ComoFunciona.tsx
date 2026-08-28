@@ -28,7 +28,7 @@ const C = LANDING.comoFunciona
  */
 export function ComoFunciona() {
   return (
-    <section id="como-funciona" className="estacao" aria-labelledby="como-funciona-titulo">
+    <section id="como-funciona" aria-labelledby="como-funciona-titulo">
       <div className="estacao-palco">
         <div className="cf">
           <header className="cf-head">

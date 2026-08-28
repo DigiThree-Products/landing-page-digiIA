@@ -7,8 +7,9 @@ function PlusIcon() {
 /**
  * "Perguntas".
  *
- * Estação: sem `Reveal` próprio, pelo mesmo motivo das outras — ver
- * ApproachSection.tsx.
+ * NÃO É MAIS ESTAÇÃO desde 28/08/2026: perdeu a classe `estacao` quando o
+ * dono pediu que estas seções parassem de vir de trás. Sem pin, sem viagem.
+ * Continua sem `Reveal` próprio. Ver o mapa em app/page.tsx.
  *
  * SEM CASCATA desde 28/08/2026, a pedido do dono: as seis perguntas nascem
  * prontas junto com a seção, em vez de cada uma na sua vez.
@@ -23,7 +24,7 @@ function PlusIcon() {
  */
 export function Faq() {
   return (
-    <section id="faq" className="estacao">
+    <section id="faq">
       <div className="estacao-palco">
         <div className="sec-head"><p className="tag">{LANDING.faq.eyebrow}</p><h2>{LANDING.faq.title}</h2></div>
         <div className="faq">

@@ -34,15 +34,29 @@ import { LANDING } from '@/content/landing'
  * seção anterior acaba de estabelecer os 15 anos, e esta abre dizendo de quem
  * são as aulas. Em qualquer outro lugar da página ela lê como bônus solto.
  *
- * SEIS seções são estações e prendem a rolagem por ~2,2 telas cada: Approach,
- * WhatItDoes, ComoFunciona, Dna, Credibility e Faq. O Repertório entrou como seção
- * COMUM de propósito — mais uma estação cobraria duas telas de rolagem por um
- * argumento só (ver Repertorio.tsx).
+ * DUAS seções são estações e prendem a rolagem por ~2,2 telas cada: Approach
+ * (o vídeo) e WhatItDoes (o satélite). Só elas.
  *
- * Ele fica ENTRE duas estações, e isso é caso previsto, não descuido:
- * `caudaAcima` em components/layout/Estacoes.tsx devolve 0 quando o vizinho
- * de cima não é uma estação presa. Na prática o Repertório passa a ser a
- * separação natural entre a cauda da credibilidade e a chegada das perguntas.
+ * ERAM SEIS até 28/08/2026. ComoFunciona, Dna, Credibility e Faq deixaram de
+ * ser, a pedido do dono — primeiro ele tirou a revelação de conteúdo delas
+ * ("não quero que eles apareçam e nem venham em cascata"), depois viu que a
+ * seção inteira ainda se aproximava e pediu isso também ("na porta 3005 ela
+ * continua vindo de trás ainda"). Perguntado se o pin devia ficar sem a
+ * viagem, escolheu tirar os dois.
+ *
+ * COMO ELAS DEIXARAM DE SER: perderam a classe `estacao`, e mais nada. Essa
+ * classe não tem regra de CSS nenhuma — é só o gancho do seletor `PAINEIS`
+ * em components/layout/Estacoes.tsx. O `.estacao-palco` continua na marcação
+ * das quatro, porque ele carrega `position: relative` e os degraus de zoom
+ * para telas baixas. Devolver a classe devolve a estação inteira.
+ *
+ * A página encurtou ~9 telas com isso: cada pin cobrava 2,2 telas de rolagem
+ * pelo espaçador, e saíram quatro.
+ *
+ * O Repertório nunca foi estação — mais uma cobraria duas telas de rolagem
+ * por um argumento só (ver Repertorio.tsx). Ele ficava ENTRE duas presas e
+ * era o respiro daquele trecho; hoje as vizinhas também rolam normal, então
+ * esse papel dele deixou de ser especial.
  */
 export default function Home() {
   return (

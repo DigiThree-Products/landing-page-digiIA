@@ -5,9 +5,13 @@ const D = LANDING.dna
 /**
  * "DNA Estratégico" — a estação que responde por que não sai com cara de IA.
  *
- * Estação: sem `Reveal` próprio, como Credibility e ApproachSection. Quem
- * revela é a chegada — dois relógios para o mesmo conteúdo brigam entre si,
- * porque o do `Reveal` roda por tempo e o da estação roda por rolagem.
+ * NÃO É MAIS ESTAÇÃO desde 28/08/2026: perdeu a classe `estacao` quando o
+ * dono pediu que estas seções parassem de vir de trás. Sem pin e sem
+ * viagem — e junto foi embora a chegada por PROFUNDIDADE que era só desta
+ * seção, com perspectiva e desfoque, registrada em styles/estacao.css no
+ * lugar de onde saiu. Ver o mapa em app/page.tsx.
+ *
+ * Continua sem `Reveal` próprio, e agora sem revelação nenhuma.
  *
  * A COMPOSIÇÃO É ARGUMENTO À ESQUERDA, OBJETO À DIREITA, e isso é o que
  * conserta a versão anterior. Antes eram quatro blocos de peso parecido
@@ -33,7 +37,7 @@ export function DnaEstrategico() {
   const { ficha } = D
 
   return (
-    <section id="dna" className="estacao" aria-labelledby="dna-titulo">
+    <section id="dna" aria-labelledby="dna-titulo">
       <div className="estacao-palco">
         <div className="dna">
           {/* Coluna de leitura: só texto, nenhuma caixa. */}
