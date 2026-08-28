@@ -227,35 +227,34 @@
   --dur: 0.0967;
 }
 
+/* SÓ O APPROACH SOBROU AQUI, e ele é hoje a única estação da página com
+   cascata por elemento. As outras saíram, em três levas, e nenhuma volta
+   sozinha: AS DUAS LISTAS ANDAM JUNTAS — os seletores daqui e as janelas
+   `--de`/`--dur` lá embaixo. Quem devolver uma sem a outra fica com metade
+   que não faz nada, e a metade que não faz nada não dá erro.
+
+   #recursos, em 21/08: aquela seção chega como corpo único. Ver "O QUE ELA
+   FAZ — a chegada sem cascata", mais abaixo.
+
+   #como-funciona, em 28/08, a pedido do dono: "não quero que eles apareçam
+   e nem venham em cascata". Seis seletores.
+
+   #dna, .credibility-section e #faq, em 28/08, quando o mesmo pedido foi
+   estendido: "retira as animações de revelação de conteudo nessa seção e
+   nas proximas abaixo dela". Seis, seis e três seletores. O #dna levou
+   junto o bloco inteiro da chegada por profundidade — aquilo era máquina
+   própria dele, não janela; ver a nota no lugar dele.
+
+   O CTA (`#oferta`) e o rodapé NUNCA estiveram nesta lista e não devem
+   entrar: a revelação deles é outra máquina, o `Reveal` por
+   IntersectionObserver, e são peças fechadas por decisão do dono.
+
+   Se um dia o approach sair também, este grupo morre inteiro e com ele
+   `--u`, `--t`, `--sobe`, `--vem-x` e `--encolhe`. */
 .page .approach-kicker,
 .page .approach-title,
 .page .approach-description,
-.page .approach-media,
-/* O #recursos SAIU desta lista em 21/08 e não deve voltar: aquela seção
-   chega como corpo único, sem cascata. Ver "O QUE ELA FAZ — a chegada sem
-   cascata", mais abaixo.
-
-   A #como-funciona SAIU em 28/08, pelo mesmo desenho e a pedido do dono:
-   "não quero que eles apareçam e nem venham em cascata". Foram seis
-   seletores — rótulo, título, subtítulo, retrato, blocos e fecho — e as
-   seis janelas `--de`/`--dur` correspondentes saíram na mesma leva, lá
-   embaixo. AS DUAS LISTAS ANDAM JUNTAS: quem devolver uma sem a outra
-   fica com metade que não faz nada. Ver a nota no lugar das janelas. */
-.page #dna .dna-head .tag,
-.page #dna .dna-head h2,
-.page #dna .dna-head__sub,
-.page #dna .dna-ficha,
-.page #dna .dna-pilares li,
-.page #dna .dna-fecho,
-.page .credibility-section .cred-head .tag,
-.page .credibility-section .cred-copy h2,
-.page .credibility-section .cred-manifesto,
-.page .credibility-section .stat b,
-.page .credibility-section .stat i,
-.page .credibility-section .cred-trilho li,
-.page #faq .sec-head .tag,
-.page #faq .sec-head h2,
-.page #faq details {
+.page .approach-media {
   /* Amplitude do gesto, em variáveis para os corpos mais pesados só
      trocarem dois números em vez de reescrever o transform inteiro.
 
@@ -263,11 +262,13 @@
      O padrão é 0: quase todo bloco de texto sobe, que é o sentido dos
      grãos da poeira.
 
-     HOJE SÓ O DNA usa o eixo horizontal, e lá ele é convergência para o
-     ponto de fuga. Os quadrados do #recursos usavam — chegavam em leque,
-     as pontas derivando para fora — e deixaram de usar quando a seção
-     perdeu a cascata. Se este comentário voltar a citar o #recursos,
-     alguém reintroduziu lá algo que a seção não tem mais. */
+     NINGUÉM USA O EIXO HORIZONTAL HOJE. Dois usaram, e os dois saíram
+     pela mesma porta: os quadrados do #recursos, que chegavam em leque com
+     as pontas derivando para fora, e o #dna, onde ele era convergência
+     para o ponto de fuga. Sobraram os quatro blocos do approach, e todos
+     sobem. `--vem-x` continua aqui porque é onde o eixo lateral nasce se
+     alguém precisar dele de novo — mas hoje é dial ligado a nada, e vale
+     saber disso antes de passar meia hora procurando o que ele move. */
   --sobe: 32px;
   --vem-x: 0px;
   --encolhe: 0.08;
@@ -323,7 +324,11 @@
 }
 
 /* ------------------------------------------------------------
-   DNA ESTRATÉGICO — a chegada por profundidade
+   DNA ESTRATÉGICO — a chegada por profundidade, REMOVIDA EM 28/08/2026
+
+   NADA AQUI ESTÁ EM VIGOR. O que segue é o registro do que existia e do
+   argumento que o sustentava; a remoção, o inventário do que saiu e o
+   motivo de ter saído inteiro estão no FIM deste bloco.
 
    As outras estações encolhem o bloco por interpolação linear
    (`scale(1 - (1-t) * --encolhe)`). Isso produz um bloco que CRESCE, e
@@ -367,79 +372,47 @@
    Escala invariante: `--lente` e `--longe` vivem no espaço local do palco,
    que o GSAP escala por fora. Como os dois escalam juntos, a razão entre
    eles não muda — o gesto é o mesmo com a estação a 0,16 e a 1,0.
+   ------------------------------------------------------------
+
+   ESTE BLOCO FOI REMOVIDO INTEIRO em 28/08/2026, quando o dono estendeu o
+   pedido às seções abaixo da Como funciona: "retira as animações de
+   revelação de conteudo nessa seção e nas proximas abaixo dela".
+
+   Ele não era uma lista de janelas como as outras — era MÁQUINA PRÓPRIA, e
+   por isso saiu por inteiro em vez de perder linhas:
+
+     `.page #dna .dna`                    --fuga, o dial de amplitude
+     os seis blocos de leitura            --lente 620px, --longe -1180px,
+                                          --borrao 5px, --sobe/--vem-x
+                                          derivados de --fuga, mais um
+                                          `transform: perspective(--lente)
+                                          translate3d(...)` e um
+                                          `filter: blur(...)`, os dois
+                                          pendurados em (1 - --t)
+     `.dna-ficha`                         mais fundo e mais borrado:
+                                          --longe -1980px, --borrao 9px
+     `@media (max-width: 1023px)`         zerava --vem-x, porque no celular
+                                          a composição é uma coluna só e
+                                          não sobra convergência lateral
+
+   As quatro variáveis morreram com ele: `--fuga`, `--lente`, `--longe` e
+   `--borrao` não aparecem em mais nenhuma folha — conferido por busca em
+   styles/ inteiro antes de remover.
+
+   POR QUE INTEIRO E NÃO SÓ OS SELETORES: o `transform` e o `filter` liam
+   `--t`, que vem do grupo grande lá em cima, de onde o #dna também saiu.
+   Deixar as declarações de pé faria o `var(--t)` não resolver, e as duas
+   propriedades cairiam para o valor inicial POR ACIDENTE. Funcionaria, e
+   funcionaria pelo motivo errado — que é a espécie de coisa que sobrevive
+   até alguém devolver `--t` e a seção voltar a se mexer sem explicação.
+
+   O argumento original, se um dia isto voltar: as outras estações encolhem
+   o bloco por interpolação linear, e crescer não é a mesma coisa que se
+   aproximar — o tamanho aparente é 1/distância. `perspective()` resolvia
+   isso sem `calc`, com a escala de partida em `--lente / (--lente -
+   --longe)`. O borrão era o que separava "longe" de "pequeno": sem ele um
+   bloco distante é só uma miniatura nítida.
    ------------------------------------------------------------ */
-.page #dna .dna {
-  /* Um dial só para a amplitude lateral e vertical da seção inteira. */
-  --fuga: clamp(40px, 3.6vw, 72px);
-}
-
-.page #dna .dna-head .tag,
-.page #dna .dna-head h2,
-.page #dna .dna-head__sub,
-.page #dna .dna-pilares li,
-.page #dna .dna-fecho,
-.page #dna .dna-ficha {
-  --lente: 620px;
-  --longe: -1180px;
-  --borrao: 5px;
-  --sobe: calc(var(--fuga) * 1.1);
-  /* A coluna de leitura parte deslocada para a DIREITA, ou seja, para
-     dentro — em direção ao centro da composição, que é de onde um ponto de
-     fuga cospe as coisas. O cartão parte da esquerda pelo mesmo motivo, e
-     por isso o sinal dele é o contrário. Os dois convergem para o mesmo
-     ponto no fundo, e é a convergência que diz "vieram do mesmo lugar".
-
-     Isto INVERTIA a convenção dos quadrados do #recursos, que chegavam em
-     leque apontando para fora do centro. Aquele leque saiu junto com a
-     cascata daquela seção, então hoje esta é a única convenção lateral que
-     existe na página: o que vem do fundo entra pelo meio. */
-  --vem-x: calc(var(--fuga) * 0.55);
-  transform: perspective(var(--lente))
-    translate3d(
-      calc((1 - var(--t)) * var(--vem-x)),
-      calc((1 - var(--t)) * var(--sobe)),
-      calc((1 - var(--t)) * var(--longe))
-    );
-  filter: blur(calc((1 - var(--t)) * var(--borrao)));
-}
-
-/* O cartão: mais fundo, mais borrado e vindo do outro lado. Ele é o corpo
-   pesado que FECHA a viagem, e a distância extra é o que dá a ele uma
-   chegada de peso diferente sem precisar de mais tempo de rolagem.
-
-   Sobe menos que o texto porque já nasce na altura em que assenta: a coluna
-   dele é centrada na linha do grid, então o centro do cartão é quase o
-   centro da composição, e um ponto de fuga não empurra para cima nem para
-   baixo o que já está na sua altura. */
-.page #dna .dna-ficha {
-  --longe: -1980px;
-  --borrao: 9px;
-  --sobe: calc(var(--fuga) * 0.4);
-  --vem-x: calc(var(--fuga) * -1.1);
-}
-
-/* No celular a composição é UMA COLUNA (ver dna.css): o cartão fica embaixo
-   do texto, e não ao lado. Sem as duas colunas não sobra convergência
-   lateral para expressar — o deslocamento em X deixa de significar coisa
-   alguma e passa a ser só risco.
-
-   Risco de verdade, e medido: aqui os blocos perdem o `max-width` e ocupam a
-   largura inteira, e nem `#dna` nem o palco recortam — os dois são
-   `overflow: visible`. O comentário dos quadrados, mais abaixo, diz que "a
-   seção é `overflow: hidden`"; aquilo vale para o `#recursos`, não para esta.
-
-   A profundidade continua fazendo o trabalho sozinha, que é o gesto que
-   importa. */
-@media (max-width: 1023px) {
-  .page #dna .dna-head .tag,
-  .page #dna .dna-head h2,
-  .page #dna .dna-head__sub,
-  .page #dna .dna-pilares li,
-  .page #dna .dna-fecho,
-  .page #dna .dna-ficha {
-    --vem-x: 0px;
-  }
-}
 
 /* ------------------------------------------------------------
    O QUE ELA FAZ — a chegada sem cascata
@@ -1077,14 +1050,13 @@
        Termina em 0,75 da chegada (era 0,66). A seção continua com a maior
        folga de leitura das cinco — ver a tabela na nota de CHEGOU em
        Estacoes.tsx: 0,25 da chegada já montada, mais os 0,40 da travada. --- */
-.page .credibility-section .cred-head .tag { --de: 0; --dur: 0.12; }
-.page .credibility-section .cred-copy h2 { --de: 0.10; --dur: 0.16; }
-.page .credibility-section .cred-manifesto { --de: 0.24; --dur: 0.16; }
-.page .credibility-section .stat b { --de: 0.38; --dur: 0.20; }
-.page .credibility-section .stat i { --de: 0.50; --dur: 0.10; }
-.page .credibility-section .cred-trilho li:nth-child(1) { --de: 0.52; --dur: 0.12; }
-.page .credibility-section .cred-trilho li:nth-child(2) { --de: 0.58; --dur: 0.12; }
-.page .credibility-section .cred-trilho li:nth-child(3) { --de: 0.63; --dur: 0.12; }
+/* --- SEM CASCATA desde 28/08/2026, no mesmo pedido que esvaziou o #dna e
+       o #faq. As oito janelas que moravam aqui: rótulo 0/0,12 · título
+       0,10/0,16 · manifesto 0,24/0,16 · número 0,38/0,20 · legenda
+       0,50/0,10 · e as três do trilho em 0,52 / 0,58 / 0,63, todas 0,12.
+
+       Os seletores saíram junto do grupo que define `--u` e `--t`, lá em
+       cima. Devolver só estas linhas não faz nada. --- */
 
 /* ------------------------------------------------------------
    DNA ESTRATÉGICO — oito chegadas, uma de cada vez
@@ -1144,33 +1116,29 @@
    espera no preto, que é a queixa antiga anotada em `.approach-kicker`.
 
    SE TRAVESSIA OU CHEGOU MUDAREM, todos os oito pares reescalam e as telas
-   acima deixam de valer. As proporções entre eles é que são o desenho. */
-.page #dna .dna-head .tag { --de: 0.0000; --dur: 0.0241; }
-/* pausa de 0,095 tela */
-.page #dna .dna-head h2 { --de: 0.0535; --dur: 0.0893; }
-/* pausa de 0,085 tela — a menor das quebras, porque título e subtítulo são
-   pergunta e resposta, uma unidade só. */
-.page #dna .dna-head__sub { --de: 0.1867; --dur: 0.1196; }
-/* pausa de 0,105 tela — muda o registro: sai o argumento, entra o apoio. */
-.page #dna .dna-pilares li:nth-child(1) { --de: 0.3860; --dur: 0.1134; }
-/* 0,055 tela entre as três: um tempo triplo, não três eventos. */
-.page #dna .dna-pilares li:nth-child(2) { --de: 0.5298; --dur: 0.1126; }
-.page #dna .dna-pilares li:nth-child(3) { --de: 0.6714; --dur: 0.1032; }
-/* pausa de 0,105 tela — o fecho é de outra espécie (ver dna.css). */
-.page #dna .dna-fecho { --de: 0.8428; --dur: 0.0854; }
-/* O corpo pesado, que fecha a chegada. `--de + --dur` = 1 exato. */
-.page #dna .dna-ficha { --de: 0.9520; --dur: 0.0480; }
+   acima deixam de valer. As proporções entre eles é que são o desenho.
 
-/* --- Perguntas — 8 degraus. As seis perguntas entram uma a uma; ver a
-       ressalva sobre clique em components/sections/Faq.tsx. --- */
-.page #faq .sec-head .tag { --de: 0; --dur: 0.12; }
-.page #faq .sec-head h2 { --de: 0.08; --dur: 0.16; }
-.page #faq details:nth-of-type(1) { --de: 0.26; --dur: 0.14; }
-.page #faq details:nth-of-type(2) { --de: 0.35; --dur: 0.14; }
-.page #faq details:nth-of-type(3) { --de: 0.44; --dur: 0.14; }
-.page #faq details:nth-of-type(4) { --de: 0.53; --dur: 0.14; }
-.page #faq details:nth-of-type(5) { --de: 0.62; --dur: 0.14; }
-.page #faq details:nth-of-type(6) { --de: 0.71; --dur: 0.14; }
+   REMOVIDAS EM 28/08/2026. Os oito pares que a tabela acima descreve, para
+   quem precisar reconstituir:
+
+     tag      0,0000 / 0,0241      pilar 2  0,5298 / 0,1126
+     h2       0,0535 / 0,0893      pilar 3  0,6714 / 0,1032
+     sub      0,1867 / 0,1196      fecho    0,8428 / 0,0854
+     pilar 1  0,3860 / 0,1134      cartão   0,9520 / 0,0480
+
+   A tabela de telas e as pausas desiguais continuam acima porque descrevem
+   um desenho, não um estado — mas nenhum daqueles números está em vigor. */
+
+/* --- Perguntas — SEM CASCATA desde 28/08/2026. As oito janelas eram:
+       rótulo 0/0,12 · título 0,08/0,16 · e as seis perguntas em 0,26 /
+       0,35 / 0,44 / 0,53 / 0,62 / 0,71, todas com 0,14.
+
+       ISTO RESOLVEU UMA TENSÃO, e não só tirou uma animação: as perguntas
+       são clicáveis, e enquanto a cascata rodava havia um trecho em que
+       uma pergunta já tinha aparecido mas ainda estava chegando, e abrir
+       uma ali era possível. A ressalva estava anotada em
+       components/sections/Faq.tsx como "ponto a revisitar". Sem cascata o
+       trecho não existe mais: as seis nascem prontas e clicáveis. --- */
 
 @media (prefers-reduced-motion: reduce) {
   .page .approach-kicker,
@@ -1190,32 +1158,21 @@
   .page #recursos .quad .verb,
   .page #recursos .quad h3,
   .page #recursos .quad__lede,
-  .page #recursos .quad__saida > *,
-  /* A #como-funciona não entra mais aqui, desde 28/08: sem cascata não há
-     o que desligar, e os seis seletores dela eram exatamente isso. Se um
-     dia a revelação voltar, estas seis linhas voltam JUNTO — senão quem
-     pede menos movimento fica sem o conteúdo em vez de sem a animação,
-     que é o alerta escrito quatro linhas acima para o #recursos. */
-  .page .credibility-section .cred-head .tag,
-  .page .credibility-section .cred-copy h2,
-  .page .credibility-section .cred-manifesto,
-  .page .credibility-section .stat b,
-  .page .credibility-section .stat i,
-  .page .credibility-section .cred-trilho li,
-  .page #dna .dna-head .tag,
-  .page #dna .dna-head h2,
-  .page #dna .dna-head__sub,
-  .page #dna .dna-pilares li,
-  .page #dna .dna-fecho,
-  .page #dna .dna-ficha,
-  .page #faq .sec-head .tag,
-  .page #faq .sec-head h2,
-  .page #faq details {
+  /* QUATRO SEÇÕES SAÍRAM DESTA LISTA EM 28/08, junto com as cascatas
+     delas: a #como-funciona (6 seletores), a credibilidade (6), o #dna (6)
+     e o #faq (3). Sem revelação não há o que desligar, e era só isso que
+     as linhas delas faziam.
+
+     SE ALGUMA VOLTAR A TER REVELAÇÃO, as linhas dela voltam JUNTO — senão
+     quem pede menos movimento fica sem o CONTEÚDO em vez de sem a
+     animação, que é o alerta escrito seis linhas acima para o #recursos.
+
+     O `filter` era do #dna, o único que borrava. Fica mesmo assim: se um
+     dia outra seção ganhar `filter`, ela já entra coberta em vez de chegar
+     desfocada para quem pediu menos movimento. */
+  .page #recursos .quad__saida > * {
     opacity: 1;
     transform: none;
-    /* O DNA é o único que borra, mas zerar aqui vale para todos: se um dia
-       outra seção ganhar `filter`, ela já entra coberta em vez de chegar
-       desfocada para quem pediu menos movimento. */
     filter: none;
   }
 }

@@ -10,13 +10,16 @@ function PlusIcon() {
  * Estação: sem `Reveal` próprio, pelo mesmo motivo das outras — ver
  * ApproachSection.tsx.
  *
- * Cada `<details>` é um bloco da cascata e nasce na sua vez. Vale saber de
- * uma tensão que isto cria e que as outras estações não têm: as perguntas
- * são CLICÁVEIS. Enquanto a viagem não termina, existe um trecho em que
- * uma pergunta já apareceu mas ainda está chegando, e abrir uma ali é
- * possível. Não há bloqueio de clique de propósito — travar a interação
- * seria pior que a estranheza —, mas é o ponto desta seção a revisitar se
- * a leitura incomodar.
+ * SEM CASCATA desde 28/08/2026, a pedido do dono: as seis perguntas nascem
+ * prontas junto com a seção, em vez de cada uma na sua vez.
+ *
+ * ISSO FECHOU UMA TENSÃO que estava anotada aqui como ponto a revisitar, e
+ * vale registrar porque foi ganho e não só perda. As perguntas são
+ * CLICÁVEIS, e enquanto a cascata rodava havia um trecho em que uma
+ * pergunta já tinha aparecido mas ainda estava chegando — dava para abrir
+ * uma ali, no meio do gesto dela. Nunca houve bloqueio de clique, de
+ * propósito, porque travar a interação seria pior que a estranheza. Sem
+ * cascata o trecho não existe: nada aparece no meio do caminho.
  */
 export function Faq() {
   return (

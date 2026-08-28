@@ -16,8 +16,11 @@ import { LANDING } from '@/content/landing'
  * três formam o trilho. A divisão mora aqui, e não no conteúdo, porque é
  * decisão de apresentação: o conteúdo só declara quatro números em ordem.
  *
- * Os seis blocos recebem janelas próprias de chegada em styles/estacao.css e
- * nascem em cascata ao longo da viagem.
+ * SEM CASCATA desde 28/08/2026, a pedido do dono. Os seis blocos tinham
+ * janelas próprias de chegada em styles/estacao.css e nasciam um a um ao
+ * longo da viagem; hoje a seção chega inteira, e quem revela é só a
+ * aproximação do palco. As janelas antigas ficaram registradas lá, no lugar
+ * de onde saíram.
  */
 export function Credibility() {
   const { credibility } = LANDING
