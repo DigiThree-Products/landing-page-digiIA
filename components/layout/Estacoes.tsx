@@ -760,7 +760,26 @@ export function Estacoes() {
 
              O termo da PASSAGEM sobrevive de propósito: ele é da partida, não
              da chegada, e nesta estação nem chega a rodar (`partiu: 1` zera
-             `passagem`). Fica porque a conta é a mesma para as seis. */
+             `passagem`). Fica porque a conta é a mesma para as seis.
+
+             ---- ARMADILHA AO MEDIR ISTO NO NAVEGADOR ----
+
+             `--chegada` saturar em 1 NÃO significa que a estação está em
+             repouso, e quem medir opacidade sozinha vai concluir errado. Nas
+             cinco com partida, a viagem satura em 1 e a partida já começou a
+             correr no relógio dela; medido na #video, a 1536×695:
+
+               scrollY 3000   --chegada 1   opacidade 1       scale(1)
+               scrollY 3200   --chegada 1   opacidade 0,934   scale(1,0396)
+               scrollY 3400   --chegada 1   opacidade 0,001   scale(1,5992)
+
+             Ou seja, o 1 delas é um PICO instantâneo, não um patamar — quem
+             amostrar em 3200 lê 0,934 e reporta isso como teto. O que
+             desmente é o transform ao lado, nunca a opacidade sozinha.
+
+             No #recursos é diferente e o número é estável: com `partiu: 1`
+             ela nunca entra nessa fase, então o 1 dela é patamar. Duas coisas
+             diferentes lendo o mesmo número. */
           const opacidade = limita(opacidadeLonge + (1 - opacidadeLonge) * perto - passagem)
           /* Ida e volta por caminhos diferentes — a única coisa na seção
              que depende do sentido do scroll.
