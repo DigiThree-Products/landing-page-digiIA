@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { duracaoDoSalto, suavizaSalto } from '@/lib/ancora'
+import { rolagem } from '@/lib/rolagem'
 
 /**
  * Todo salto de âncora da página, com prazo.
@@ -21,6 +22,22 @@ import { duracaoDoSalto, suavizaSalto } from '@/lib/ancora'
  * comportamento, e lento é melhor que seco. Ele só é neutralizado enquanto
  * este componente está animando, porque os dois brigariam — cada `scrollTo`
  * de quadro viraria uma animação nativa própria.
+ *
+ * ---- DOIS MOTORES, UM CÁLCULO ----
+ *
+ * Desde que `RolagemSuave` existe, o salto tem dois caminhos: com o Lenis
+ * no ar quem anima é ele, e sem Lenis (movimento reduzido, ou o efeito
+ * ainda não montou) continua o laço de `requestAnimationFrame` daqui.
+ *
+ * O QUE NÃO SE DUPLICA é a conta do alvo. Tudo que está abaixo — a
+ * `scroll-margin-top`, a medição pelo `.pin-spacer`, o teto do documento —
+ * vale nos dois casos e é a parte difícil. `lenis.scrollTo(elemento)`
+ * pareceria substituir este arquivo inteiro e reintroduziria o bug do
+ * y=2340 no primeiro clique depois de visitar uma estação, porque mediria
+ * o rect da seção presa. Passamos a ele o NÚMERO, não o elemento.
+ *
+ * O foco, o `pushState` e as guardas de link também não têm equivalente em
+ * biblioteca de rolagem: são de navegação e de teclado, não de animação.
  */
 export function AncoraSuave() {
   useEffect(() => {
@@ -34,7 +51,19 @@ export function AncoraSuave() {
        o valor de hoje. */
     const devolveOSmooth = () => raiz.style.removeProperty('scroll-behavior')
 
+    /* Como interromper um salto que NÃO é nosso. Com o Lenis vivo quem
+       anima é ele, então cancelar é pedir que pare onde está — `immediate`
+       porque o gesto do usuário já está em curso e um freio animado se
+       somaria a ele. Fica `null` quando não há salto em voo, e é isso que
+       impede `cancela` de brigar com a rolagem normal a cada quadro de
+       roda. */
+    let paraOLenis: (() => void) | null = null
+
     const cancela = () => {
+      if (paraOLenis) {
+        paraOLenis()
+        paraOLenis = null
+      }
       if (!animacao) return
       cancelAnimationFrame(animacao)
       animacao = 0
@@ -107,6 +136,38 @@ export function AncoraSuave() {
       }
 
       const duracao = duracaoDoSalto(distancia)
+
+      /* COM O LENIS, ele anima e nós só dizemos para onde.
+
+         O alvo continua sendo calculado aqui, e é esse o ponto: passar o
+         ELEMENTO para `lenis.scrollTo` faria o Lenis medir o rect do
+         destino — que mente em seção presa, pelo translateY do pin, e é
+         exatamente o bug do y=2340 descrito acima. O número já resolvido
+         pelo `.pin-spacer` não tem esse problema.
+
+         `duration` do Lenis é em SEGUNDOS; `duracaoDoSalto` devolve ms. E
+         `suavizaSalto` já é uma curva t→progresso clampada nas duas pontas,
+         então entra como `easing` sem adaptação nenhuma — o salto tem a
+         mesma cara de antes, com outro motor por baixo.
+
+         `scroll-behavior` NÃO é tocado neste caminho, e não precisa ser: a
+         regra `html.lenis` de `styles/base.css` já o cala enquanto o Lenis
+         existe, com `!important`, justamente para não depender de quem
+         escreveu por último. Mexer aqui só reintroduziria a disputa. */
+      const suave = rolagem()
+      if (suave) {
+        paraOLenis = () => suave.scrollTo(suave.animatedScroll, { immediate: true })
+        suave.scrollTo(fim, {
+          duration: duracao / 1000,
+          easing: suavizaSalto,
+          onComplete: () => {
+            paraOLenis = null
+            encerra()
+          },
+        })
+        return
+      }
+
       const partiu = performance.now()
       raiz.style.scrollBehavior = 'auto'
 

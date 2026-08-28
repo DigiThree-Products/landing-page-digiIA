@@ -7,6 +7,28 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* COM O LENIS VIVO, o smooth acima tem de calar — senão cada posição que
+     o Lenis escreve vira, ela própria, uma animação nativa por cima, e a
+     página fica com duas suavizações em série.
+
+     A classe é do próprio Lenis: ele põe `lenis` no `html` ao nascer e a
+     tira ao morrer. Então esta regra vale exatamente enquanto ele existe,
+     e some sozinha sob `prefers-reduced-motion`, em que a instância nunca
+     é criada.
+
+     O `!important` NÃO É PREGUIÇA, é o ponto. Quem reescreve `smooth` no
+     estilo INLINE é o ScrollTrigger: `Observer.js` memoriza UMA VEZ se o
+     html tinha smooth (`func.smooth = ... === "smooth"`), e
+     `ScrollTrigger.js:549` o restaura ao fim de cada rolagem programática.
+     Essa memória é gravada quando os gatilhos nascem — dentro de
+     `{children}`, antes de `RolagemSuave` montar, porque os efeitos do
+     React correm de dentro para fora. Silenciar por JavaScript perde essa
+     corrida por construção. Declaração `!important` de folha vence estilo
+     inline normal, então esta regra vence sem depender de ordem. */
+  html.lenis {
+    scroll-behavior: auto !important;
+  }
+
   body {
     margin: 0;
     background: var(--ink);
