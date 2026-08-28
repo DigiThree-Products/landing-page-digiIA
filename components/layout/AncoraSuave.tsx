@@ -150,9 +150,10 @@ export function AncoraSuave() {
          então entra como `easing` sem adaptação nenhuma — o salto tem a
          mesma cara de antes, com outro motor por baixo.
 
-         `scroll-behavior` NÃO é tocado neste caminho: `RolagemSuave` já o
-         silenciou enquanto o Lenis existe, e mexer aqui desfaria isso para
-         a página inteira. */
+         `scroll-behavior` NÃO é tocado neste caminho, e não precisa ser: a
+         regra `html.lenis` de `styles/base.css` já o cala enquanto o Lenis
+         existe, com `!important`, justamente para não depender de quem
+         escreveu por último. Mexer aqui só reintroduziria a disputa. */
       const suave = rolagem()
       if (suave) {
         paraOLenis = () => suave.scrollTo(suave.animatedScroll, { immediate: true })

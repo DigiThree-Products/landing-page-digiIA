@@ -51,22 +51,25 @@ import { guardaRolagem } from '@/lib/rolagem'
  * real (mudar a configuração do sistema com o site aberto) não paga um
  * observador.
  *
- * ---- O `scroll-behavior: smooth` DO CSS TEM DE CALAR ----
+ * ---- O `scroll-behavior: smooth` CALA POR CSS, E NÃO DAQUI ----
  *
- * `styles/base.css` declara `scroll-behavior: smooth` no `html`, e a nota
- * de `AncoraSuave` explica por que ele fica: sem JavaScript, ele É o
- * comportamento. Com o Lenis vivo os dois brigam — cada posição que o
- * Lenis escreve viraria, ela própria, uma animação nativa por cima. Então
- * ele é silenciado inline enquanto esta instância existe e devolvido na
- * limpeza com `removeProperty`, para a regra da folha voltar a valer com o
- * valor que ela tiver no futuro, e não congelada no de hoje.
+ * `styles/base.css` declara `scroll-behavior: smooth` no `html`, e ele fica
+ * porque sem JavaScript é ele o comportamento. Com o Lenis vivo os dois
+ * brigam, mas o silenciamento NÃO mora aqui — mora na regra `html.lenis`
+ * daquela folha, pendurada na classe que o próprio Lenis põe e tira.
+ *
+ * A primeira versão silenciava daqui, com `raiz.style.scrollBehavior`, e
+ * PERDIA: medido na 3005, o inline voltava a `smooth` depois da primeira
+ * rolagem. O ScrollTrigger memoriza uma vez se o html tinha smooth
+ * (`Observer.js`) e o restaura ao fim de cada rolagem programática
+ * (`ScrollTrigger.js:549`) — e ele memoriza quando os gatilhos nascem,
+ * dentro de `{children}`, antes deste componente montar. É uma corrida
+ * impossível de ganhar por ordem de efeito, então não se disputa por
+ * JavaScript.
  */
 export function RolagemSuave() {
   useEffect(() => {
     if (prefersReducedMotion()) return
-
-    const raiz = document.documentElement
-    raiz.style.scrollBehavior = 'auto'
 
     const lenis = new Lenis({ autoRaf: false })
     guardaRolagem(lenis)
@@ -84,7 +87,6 @@ export function RolagemSuave() {
       lenis.off('scroll', atualiza)
       lenis.destroy()
       guardaRolagem(null)
-      raiz.style.removeProperty('scroll-behavior')
     }
   }, [])
 
