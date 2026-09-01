@@ -42,9 +42,15 @@ import { useEffect, useRef } from 'react'
  *
  *   (Este parágrafo dizia 55 poses até 28/08/2026. O atlas tem 3600×2305 numa
  *   grade de 10×5, ou seja 50 células de 360×461 — conferido no arquivo, e é
- *   o que COLUNAS × LINHAS abaixo sempre disse. Os cinco últimos quadros,
- *   #45 a #49, são quase idênticos: ela já chegou ao perfil por volta do #45.
- *   São 10% do atlas e da memória num trecho onde nada acontece.)
+ *   o que COLUNAS × LINHAS abaixo sempre disse.)
+ *
+ *   E dizia também, até 01/09, que os cinco últimos quadros eram "quase
+ *   idênticos", 10% de atlas desperdiçado num trecho onde nada acontece.
+ *   MEDIDO, É O CONTRÁRIO: os passos de #44 a #49 valem 6,3 · 7,0 · 7,4 ·
+ *   8,1 · 8,1, contra 4,67 de mediana do percurso — estão entre os MAIORES
+ *   do atlas. Quem quase não muda é o começo: os onze primeiros quadros
+ *   somam 10% da mudança visual do percurso inteiro. Cortar as poses finais
+ *   teria tirado justamente onde há mais movimento por byte. Ver PERCURSO.
  *
  *   VERTICAL vem do CSS, porque nesta tomada não há pose de olhar para cima ou
  *   para baixo que preste. Mesmo que houvesse, ela só serviria no eixo puro:
@@ -83,55 +89,75 @@ const LINHAS = 5
 const N_POSES = 50
 
 /**
- * ELA SÓ VIRA PARA UM LADO NESTA TOMADA: a varredura inteira gira para a
- * esquerda da imagem. O lado direito é a mesma escada espelhada. (De novo:
- * é fato sobre a gravação de julho. A de 27/08 vira para os dois.)
+ * O ESPELHO SAIU EM 01/09/2026, e com ele a histerese, o véu e a dissolução
+ * da troca. Queixa do dono: "a inversão de um lado para o outro está
+ * completamente desnatural".
  *
- * E O ESPELHO TEM UM PREÇO, medido em 28/08/2026 depois de o dono relatar que
- * a troca "está quebrando a visualização". Distância visual entre imagens,
- * mesma métrica dos números acima:
+ * Ele estava certo, e não era caso de ajustar parâmetro. Esta tomada só vira
+ * para um lado, então o outro lado era a mesma escada espelhada — e espelhar
+ * troca o cabelo de lado de uma vez só. Medido no atlas, com a mesma métrica
+ * de distância visual que o resto do arquivo usa:
  *
- *   passo entre poses vizinhas, mediana .........  6,4
- *   pior passo normal do percurso ............... 12,3
- *   A TROCA DO ESPELHO .......................... 30,1
+ *   passo mediano entre poses vizinhas ..........  4,67
+ *   custo de espelhar, no quadro frontal ........ 28,98
+ *   custo de espelhar, quadros #1 a #11 ......... 27,6 a 31,1
  *
- * Ou seja a maior descontinuidade do percurso inteiro, e no centro, que é
- * onde o cursor mais passa. NÃO é descentramento: varrendo o recorte de −24
- * a +24px, o resíduo de simetria é mínimo exatamente em zero. O corte já está
- * no ótimo e o que salta é a assimetria real — cabelo e brilhos de um lado.
+ * Seis vezes um passo normal, e PLANO ao longo dos quadros: não existe pose
+ * barata onde virar, então adiantar ou atrasar a troca não ajudava. Sob a
+ * máscara fica PIOR (36,1), porque a assimetria não mora nas bordas —
+ * varrendo o quadro em seis faixas verticais, a diferença é 4,4 no fundo
+ * vazio e 37 a 46 na faixa do rosto. E não é enquadramento: varrendo o
+ * recorte de -72 a +72px, o mínimo cai em zero (43,42 contra 43,47 em zero),
+ * ou seja o corte já estava no ótimo, como o comentário antigo dizia.
  *
- * Por isso existe agora uma dissolução POR TEMPO no instante da troca. Ver
- * DISSOLVE_S, que explica por que ela não é a dissolução rejeitada aqui em
- * baixo.
+ * As três tentativas anteriores — dissolver por posição, cortar seco,
+ * dissolver por tempo — eram todas maneiras de VESTIR esses 29. Nenhuma
+ * podia funcionar, porque o defeito é a troca existir.
  *
- * A TROCA DE ESPELHO É UM CORTE SECO, e isso foi decidido medindo.
+ * O QUE ENTROU NO LUGAR: o repouso deixa de ser o frontal. A varredura
+ * inteira é esticada pela largura da tela, então a cabeça sempre gira na
+ * direção do cursor e não há troca nenhuma a disfarçar. O preço, escolhido
+ * pelo dono entre as alternativas: com o cursor na altura do retrato ela
+ * fica em três-quartos, e só chega ao frontal num dos extremos.
  *
- * A primeira versão dissolvia entre os dois espelhos numa faixa em volta do
- * centro, pela mesma lógica que funciona entre degraus vizinhos. Deu fantasma
- * visível: no meio da tela apareciam dois rostos sobrepostos. A causa não era
- * a assimetria do rosto — era ENQUADRAMENTO. A cabeça estava 18px fora do eixo
- * do recorte, então o espelho a jogava 36px para o outro lado e a mistura
- * somava duas cabeças deslocadas. O recorte do atlas foi corrigido — buscando
- * o deslocamento que minimiza a distância do quadro frontal ao próprio
- * espelho, 18px, que baixou essa distância de 8,1 para 5,8 — e a dissolução
- * saiu.
- *
- * Com a cabeça centrada, o corte troca só detalhe fino — a mecha do cabelo
- * muda de lado —, e acontece exatamente onde a pose está mais frontal, que é
- * onde os dois lados mais se parecem. Uma dissolução ali seria pior: fantasma
- * permanente em vez de um pisca de um quadro.
+ * O CONSERTO DE VERDADE continua sendo filmagem nova — uma tomada contínua
+ * cobrindo o giro dos DOIS lados, de olhos abertos, com ~460px por pose.
+ * Com ela o espelho não precisa existir e o vertical pode virar fotografia
+ * também, em vez do disfarce em CSS que é hoje.
  */
-const ESPELHA_QUANDO_POSITIVO = true
+const REPOUSO_VISUAL = 0.3
 
 /**
- * Zona morta em torno do centro, para o espelho não tremer.
+ * O PERCURSO NÃO É UNIFORME, e é só por isso que esta tabela existe.
  *
- * Sem ela, um cursor parado bem no meio com um tremor de um pixel viraria a
- * imagem do avesso várias vezes por segundo. Aqui o espelho só muda quando o
- * cursor passa do centro POR ESTA MARGEM, e mantém o lado anterior enquanto
- * não passar.
+ * Quadro de atlas não é ângulo. Medida a distância visual entre poses
+ * vizinhas, o passo vai de 1,13 perto do frontal a 9,12 lá pelo #33: os ONZE
+ * PRIMEIROS QUADROS valem 10% da mudança visual do percurso inteiro, e a
+ * faixa do #30 ao #40 vale quase o triplo disso por passo.
+ *
+ * Com um mapa linear, então, o primeiro quinto do curso do cursor quase não
+ * mexe a cabeça e depois ela dispara. Era isso que o `Math.pow(mag, 0.85)`
+ * compensava às cegas — e compensava mal, porque a derivada dele é infinita
+ * em zero: os primeiros pixels em volta do centro eram duas vezes mais
+ * sensíveis que os das bordas, justamente onde o espelho virava.
+ *
+ * Cada entrada aqui é a fração do COMPRIMENTO VISUAL do percurso já andada
+ * ao chegar naquele quadro. Invertida em `quadroEm`, ela faz movimento igual
+ * do cursor dar mudança igual na tela.
+ *
+ * COMO REFAZER, se o atlas mudar: para cada par de quadros vizinhos, a média
+ * da diferença absoluta por canal numa redução para 64x82; soma acumulada,
+ * dividida pelo total. A tabela é medida DESTE arquivo de imagem — trocar o
+ * atlas sem refazê-la transforma ela numa mentira silenciosa, porque nada
+ * quebra, o movimento só volta a ser irregular.
  */
-const HISTERESE = 0.02
+const PERCURSO = [
+  0.0000, 0.0051, 0.0094, 0.0147, 0.0216, 0.0284, 0.0372, 0.0475, 0.0593, 0.0730,
+  0.0879, 0.1037, 0.1199, 0.1373, 0.1541, 0.1714, 0.1877, 0.2052, 0.2225, 0.2409,
+  0.2614, 0.2851, 0.3020, 0.3287, 0.3467, 0.3736, 0.3905, 0.4180, 0.4341, 0.4632,
+  0.4774, 0.5091, 0.5436, 0.5781, 0.6131, 0.6473, 0.6811, 0.7140, 0.7447, 0.7725,
+  0.7964, 0.8143, 0.8220, 0.8373, 0.8588, 0.8828, 0.9095, 0.9381, 0.9690, 1.0000,
+]
 
 /**
  * Constante de tempo da perseguição, em segundos.
@@ -163,53 +189,15 @@ const SEGUE_S = 0.1
 const PARADO = 0.0004
 
 /**
- * Quantas camadas convivem: os dois degraus vizinhos da pose, mais uma em
- * cima que segura a imagem ANTERIOR enquanto o espelho troca de lado.
+ * Quantas camadas convivem: os dois degraus vizinhos da pose, e mais nada.
  *
- * A terceira nasceu em 28/08/2026, e o número que a justifica está logo
- * abaixo, em DISSOLVE_S.
+ * Foram três entre 28/08 e 01/09/2026. A terceira era um véu que congelava a
+ * imagem anterior para dissolver a troca do espelho — saiu junto com o
+ * espelho, porque sem troca não há o que dissolver. Ver o cabeçalho de
+ * REPOUSO_VISUAL, que também explica por que aquela dissolução, e as duas
+ * tentadas antes dela, não podiam ter funcionado.
  */
-const N_CAMADAS = 3
-
-/**
- * Quanto tempo a imagem anterior leva para apagar quando o espelho vira.
- *
- * ---- POR QUE UMA DISSOLUÇÃO EXISTE AQUI, SE ELA JÁ FOI REJEITADA ----
- *
- * O comentário de ESPELHA_QUANDO_POSITIVO conta que uma dissolução foi
- * tentada e descartada por dar fantasma. Aquela era POR POSIÇÃO DO CURSOR:
- * misturava os dois espelhos numa FAIXA em volta do centro, então bastava
- * parar o cursor ali para ver dois rostos sobrepostos, permanentemente. A
- * rejeição estava certa.
- *
- * Esta é POR TEMPO, e é outra coisa: dispara no instante da troca e some
- * sozinha. Em repouso nunca há imagem dupla, em posição nenhuma — o que
- * havia de errado na anterior não se aplica a esta.
- *
- * ---- E POR QUE ELA PASSOU A SER NECESSÁRIA ----
- *
- * O dono relatou que a troca "está quebrando a visualização". Medido no
- * atlas, com a mesma métrica de distância visual que o cabeçalho usa:
- *
- *   passo entre poses vizinhas, mediana ........  6,4
- *   pior passo normal do percurso .............. 12,3
- *   A TROCA DO ESPELHO ......................... 30,1
- *
- * Ou seja 4,7× o passo mediano e 2,4× o pior passo normal — a MAIOR
- * descontinuidade do percurso horizontal inteiro, e bem no centro, que é
- * onde o cursor mais passa.
- *
- * NÃO É DESCENTRAMENTO, e isso foi verificado antes de culpar o recorte:
- * varrendo o deslocamento horizontal do recorte de −24px a +24px, o resíduo
- * de simetria é MÍNIMO em zero (30,1) e cresce para os dois lados. O corte
- * do atlas já está no ótimo. O que salta é a assimetria real — o cabelo cai
- * de um lado, os brilhos ficam de um lado, e isso inverte de uma vez.
- *
- * 120ms é curto o bastante para não parecer que a cabeça hesita, e longo o
- * bastante para o salto deixar de ser um quadro só. Se ainda aparecer,
- * suba; se a troca parecer preguiçosa, desça.
- */
-const DISSOLVE_S = 0.12
+const N_CAMADAS = 2
 
 /**
  * Piso do alcance vertical, em fração da altura da janela.
@@ -234,31 +222,65 @@ function posicao(indice: number): string {
   return `${(coluna / (COLUNAS - 1)) * 100}% ${(linha / (LINHAS - 1)) * 100}%`
 }
 
-type Camada = { indice: number; espelha: boolean; opacidade: number }
+type Camada = { indice: number; opacidade: number }
+
+/**
+ * Inverte a tabela PERCURSO: dado quanto do percurso VISUAL já se andou,
+ * devolve o quadro fracionário correspondente.
+ *
+ * Fracionário de propósito — a parte quebrada vira a mistura entre os dois
+ * degraus vizinhos, que é o que tira a escada do movimento. Devolver inteiro
+ * aqui jogaria fora metade do trabalho da tabela.
+ */
+function quadroEm(visual: number): number {
+  const v = Math.max(0, Math.min(1, visual))
+  /* Busca linear em 50 entradas, uma vez por quadro de tela. Uma binária
+     economizaria 45 comparações num laço que já faz leitura de layout e
+     escrita de estilo — não vale a ilegibilidade. */
+  let k = 1
+  while (k < N_POSES - 1 && PERCURSO[k] < v) k++
+  const de = PERCURSO[k - 1]
+  const ate = PERCURSO[k]
+  const fatia = ate - de
+  return k - 1 + (fatia > 0 ? (v - de) / fatia : 0)
+}
 
 /**
  * A POSE DEPENDE SÓ DO EIXO HORIZONTAL, e é isso que garante continuidade.
  *
- * A versão anterior escolhia por SETOR e RAIO: o ângulo do cursor decidia qual
+ * A versão de julho escolhia por SETOR e RAIO: o ângulo do cursor decidia qual
  * das cinco escadas usar, a distância decidia o degrau. Com cinco escadas e
  * oito setores havia oito fronteiras onde a pose trocava de escada, e era
- * exatamente nelas que o movimento quebrava. Aqui não há fronteira nenhuma: o
- * cursor anda de um lado ao outro e o índice anda junto, monotônico.
+ * exatamente nelas que o movimento quebrava.
  *
- * O expoente 0,85 adianta um pouco a virada — com resposta linear o rosto só
- * chegava ao perfil na borda da tela, e a maior parte do movimento útil ficava
- * espremida no fim do percurso.
+ * A de agosto tirou as fronteiras mas criou uma: o espelho, no centro. Esta
+ * não tem nenhuma — o cursor anda de um lado ao outro e a pose anda junto,
+ * monotônica, do frontal num extremo ao perfil no outro.
+ *
+ * A CONVENÇÃO DE SENTIDO VEM DA VERSÃO ANTERIOR e não foi redescoberta: lá,
+ * cursor à esquerda dava quadro alto SEM espelhar, e a direção lia certo. Ela
+ * é preservada aqui — `hx` negativo continua puxando para o fim do percurso.
+ *
+ * O REPOUSO NÃO É O ZERO DO PERCURSO, e é isso que dá os dois lados: com o
+ * cursor na altura do retrato ela fica em REPOUSO_VISUAL, e daí vai para o
+ * frontal de um lado e para o perfil do outro. Os dois trechos são esticados
+ * cada um pela sua metade da tela, então o ganho é diferente entre eles — e
+ * pode ser, porque não há emenda no meio: a função é contínua em hx = 0 por
+ * construção, já que os dois ramos valem REPOUSO_VISUAL ali.
  */
-function camadas(hx: number, paraPositivo: boolean): Camada[] {
-  const mag = Math.min(1, Math.abs(hx))
-  const passo = Math.pow(mag, 0.85) * (N_POSES - 1)
+function camadas(hx: number): Camada[] {
+  const x = Math.max(-1, Math.min(1, hx))
+  const visual =
+    x <= 0
+      ? REPOUSO_VISUAL + -x * (1 - REPOUSO_VISUAL)
+      : REPOUSO_VISUAL * (1 - x)
+  const passo = quadroEm(visual)
   const chao = Math.floor(passo)
   const fr = passo - chao
-  const espelha = paraPositivo === ESPELHA_QUANDO_POSITIVO
 
-  const cantos: Camada[] = [{ indice: chao, espelha, opacidade: 1 - fr }]
+  const cantos: Camada[] = [{ indice: chao, opacidade: 1 - fr }]
   if (fr > 0.001) {
-    cantos.push({ indice: Math.min(N_POSES - 1, chao + 1), espelha, opacidade: fr })
+    cantos.push({ indice: Math.min(N_POSES - 1, chao + 1), opacidade: fr })
   }
   return cantos
 }
@@ -285,13 +307,13 @@ function empilha(cantos: Camada[]): Camada[] {
  * estado provocaria uma re-renderização por movimento do mouse, e mousemove é
  * o evento mais frequente que existe numa página.
  *
- * AS CAMADAS DE MISTURA MAIS O VÉU, sempre montadas, nunca criadas nem
- * destruídas. As sobrando ficam com opacidade zero. Criar e remover nós a
- * cada movimento seria muito mais caro que manter elementos parados.
+ * AS CAMADAS DE MISTURA, sempre montadas, nunca criadas nem destruídas. As
+ * sobrando ficam com opacidade zero. Criar e remover nós a cada movimento
+ * seria muito mais caro que manter elementos parados.
  *
- * (Dizia "QUATRO CAMADAS" e o código montava duas; hoje monta três. O número
- * escrito por extenso envelheceu duas vezes, então saiu — quem manda é
- * N_CAMADAS.)
+ * (Este parágrafo já disse "quatro camadas" com o código montando duas, e
+ * depois falou de um véu que hoje não existe. O número por extenso envelheceu
+ * três vezes — quem manda é N_CAMADAS, e só ele.)
  *
  * O CENTRO DO ELEMENTO É MEDIDO FORA DO mousemove. getBoundingClientRect()
  * força cálculo de layout, e chamá-lo a cada movimento faz o navegador
@@ -357,10 +379,6 @@ export function RetratoQueOlha() {
     }
     medir()
 
-    /* De que lado o espelho está agora. Guardado entre um movimento e outro
-       porque a troca tem histerese — ver HISTERESE lá em cima. */
-    let paraPositivo = false
-
     /* ---- O DESENHO SAIU DO EVENTO DE MOUSE, EM 28/08/2026 ----
 
        Pedido do dono: "preciso que o movimento fique o mais fluido possível".
@@ -412,9 +430,6 @@ export function RetratoQueOlha() {
     let precisaMedir = false
     let escritoX = ''
     let escritoY = ''
-    /* Instante em que o espelho virou, e 0 quando não há dissolução em
-       curso. Também é o que segura o laço aceso enquanto ela apaga. */
-    let trocaMs = 0
 
     const acorda = () => {
       if (quadro) return
@@ -567,20 +582,20 @@ export function RetratoQueOlha() {
         atualY = alvoY
       }
 
-      desenha(agora)
+      desenha()
 
-      /* `trocaMs` é lido DEPOIS de desenhar, e de propósito: é o próprio
-         `desenha` que o acende ao detectar a virada do espelho. A pose pode
-         já ter chegado e a dissolução ainda estar apagando — nesse caso o
-         laço tem de continuar, senão a camada de cima congela no meio do
-         caminho e fica um rosto fantasma parado na tela. */
-      if (!chegou || trocaMs) quadro = requestAnimationFrame(passo)
+      /* A CONDIÇÃO É SÓ A CHEGADA. Até 01/09 havia um `|| trocaMs` aqui, que
+         segurava o laço aceso enquanto o véu da troca do espelho apagava —
+         sem ele a camada de cima congelava no meio do caminho e ficava um
+         rosto fantasma parado na tela. Sem espelho não há véu, e sem véu não
+         há nada a esperar depois de a pose chegar. */
+      if (!chegou) quadro = requestAnimationFrame(passo)
     }
 
     /* TUDO O QUE VAI PARA A TELA SAI DAQUI, e sai do mesmo par de valores
        amortecidos. É esta função única que garante que o quadro do sprite, a
        mistura das camadas e a inclinação não possam discordar entre si. */
-    function desenha(agora: number) {
+    function desenha() {
       const sx = atualX.toFixed(3)
       const sy = atualY.toFixed(3)
       /* Reescrever a mesma string é trabalho de estilo por nada, e no fim de
@@ -594,28 +609,12 @@ export function RetratoQueOlha() {
         escritoY = sy
       }
 
-      /* A HISTERESE LÊ O VALOR AMORTECIDO, não o do cursor. Quem não pode
-         piscar é a imagem, e a imagem está no valor amortecido — decidir o
-         espelho pelo cursor cru voltaria a trocar o lado antes de a cabeça
-         ter passado do centro. */
-      const ladoAntes = paraPositivo
-      if (atualX > HISTERESE) paraPositivo = true
-      else if (atualX < -HISTERESE) paraPositivo = false
-
-      /* O ESPELHO ACABOU DE VIRAR: congela na camada de cima o que ainda
-         está na tela, ANTES de as camadas de baixo receberem a pose nova.
-         `nos[0]` ainda carrega o quadro do desenho anterior — é justamente
-         essa defasagem de um quadro que dá o material da dissolução, sem
-         precisar guardar índice nenhum. */
-      const veu = nos[2]
-      if (paraPositivo !== ladoAntes && trocaMs === 0) {
-        veu.style.backgroundPosition = nos[0].style.backgroundPosition
-        veu.style.transform = nos[0].style.transform
-        trocaMs = agora
-      }
-
-      const pilha = empilha(camadas(atualX, paraPositivo))
-      for (let i = 0; i < 2; i++) {
+      /* Nenhuma camada escreve `transform`: até 01/09 era aqui que o espelho
+         virava, com `scaleX(-1)`, e o segundo degrau tinha de espelhar junto
+         com o primeiro. Hoje as duas camadas são o mesmo desenho em dois
+         degraus vizinhos, e a única coisa que as separa é a opacidade. */
+      const pilha = empilha(camadas(atualX))
+      for (let i = 0; i < N_CAMADAS; i++) {
         const no = nos[i]
         const c = pilha[i]
         if (!c) {
@@ -624,20 +623,6 @@ export function RetratoQueOlha() {
         }
         no.style.opacity = c.opacidade.toFixed(3)
         no.style.backgroundPosition = posicao(c.indice)
-        no.style.transform = c.espelha ? 'scaleX(-1)' : 'none'
-      }
-
-      /* A camada de cima apaga por cima da pose nova. Opaca no instante da
-         troca, transparente em DISSOLVE_S — uma dissolução cruzada comum,
-         só que disparada por um EVENTO e não por uma faixa de posição. */
-      if (trocaMs) {
-        const t = (agora - trocaMs) / (DISSOLVE_S * 1000)
-        if (t >= 1) {
-          trocaMs = 0
-          veu.style.opacity = '0'
-        } else {
-          veu.style.opacity = (1 - t).toFixed(3)
-        }
       }
     }
 
