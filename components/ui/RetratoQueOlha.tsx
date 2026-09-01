@@ -211,6 +211,22 @@ const N_CAMADAS = 3
  */
 const DISSOLVE_S = 0.12
 
+/**
+ * Piso do alcance vertical, em fração da altura da janela.
+ *
+ * O alcance normal é a distância do retrato até a borda mais próxima da
+ * janela, para que a inclinação chegue ao extremo tanto subindo quanto
+ * descendo — ver a conta em `calculaAlvo`. Este número só existe para o
+ * caso em que o retrato está a caminho de sair da tela: ali a distância
+ * até a borda tende a zero e, sem piso, o eixo saturaria ao primeiro pixel
+ * de movimento do mouse.
+ *
+ * Medido a 1920×1080: a posição de leitura pede 430px de alcance e este
+ * piso vale 302px, então ele não morde enquanto a seção está sendo lida.
+ * Ele só entra quando o retrato já está entrando ou saindo da tela.
+ */
+const PISO_ALCANCE_Y = 0.28
+
 /** Posição do quadro dentro da grade, em porcentagem de background. */
 function posicao(indice: number): string {
   const coluna = indice % COLUNAS
@@ -281,9 +297,13 @@ function empilha(cantos: Camada[]): Camada[] {
  * força cálculo de layout, e chamá-lo a cada movimento faz o navegador
  * remontar a página dezenas de vezes por segundo. A medida sai uma vez e é
  * refeita só quando pode ter mudado — rolagem e redimensionamento. Precisa da
- * rolagem porque esta seção é uma estação presa: o Estacoes.tsx escala e
- * translada o palco enquanto ela chega, então o retrato anda na tela mesmo com
- * a página parada.
+ * rolagem porque o alvo depende de ONDE O RETRATO ESTÁ NA JANELA, e rolar
+ * muda isso com o cursor parado.
+ *
+ * (Dizia que a rolagem importava por esta seção ser "uma estação presa", que
+ * escalava e transladava o palco. Ela deixou de ser estação em 28/08/2026 —
+ * perdeu a classe `estacao`, ver app/page.tsx. A medida na rolagem continua
+ * necessária, só que pela razão comum: a página rola e o retrato sobe.)
  *
  * SEM CURSOR NÃO HÁ EFEITO: em tela de toque e com prefers-reduced-motion ele
  * fica na pose frontal, parado, sem ouvinte nenhum pendurado.
@@ -319,9 +339,15 @@ export function RetratoQueOlha() {
        componente lia -0,106 — o centro estava uns 51px fora, e o erro variava
        junto com a inclinação.
 
-       O pai (a célula .cf-anim) não tem inclinação própria, mas herda o
-       transform da estação — que é justamente o que deve entrar na conta,
-       porque ele move o retrato na tela de verdade. */
+       O pai (a célula .cf-anim) não carrega inclinação nenhuma, então o
+       retângulo dele é o lugar de verdade do retrato na tela — que é
+       justamente o que deve entrar na conta.
+
+       Ele carrega, sim, o que os ANCESTRAIS aplicam: o `.estacao-palco`
+       leva `zoom` nas telas baixas (0,84 a 1536×760, 1 a 1920×1080), e
+       `getBoundingClientRect` já vem com o zoom dentro. Como `clientX` e
+       `clientY` também são pixels de tela, os dois lados da subtração
+       falam a mesma unidade e não há nada a corrigir. */
     const referencia = el.parentElement ?? el
     let ultimaMedida = 0
     const medir = () => {
@@ -408,9 +434,10 @@ export function RetratoQueOlha() {
 
     /* O ALVO É RECALCULADO NO LAÇO, e não aqui, porque ele depende de ONDE O
        RETRATO ESTÁ e não só de onde o cursor está. Com a página rolando sob
-       um cursor imóvel, a estação move o retrato na tela e a pose tem de
-       acompanhar. Guardar o alvo já resolvido no `mousemove` congelaria a
-       pose até o próximo movimento do mouse. */
+       um cursor imóvel, o retrato anda na tela e a pose tem de acompanhar —
+       e desde 01/09 isso vale em dobro, porque o ALCANCE vertical também sai
+       da posição dele. Guardar o alvo já resolvido no `mousemove` congelaria
+       a pose até o próximo movimento do mouse. */
     function calculaAlvo() {
       const vx = cursorX - centroX
       const vy = cursorY - centroY
@@ -443,30 +470,48 @@ export function RetratoQueOlha() {
          1,43× mais rápido que subir a mesma distância — o eixo tinha uma
          "marcha" a mais num sentido que no outro.
 
-         O ALCANCE É METADE DA JANELA, FIXO — e não a distância até a borda
-         mais próxima, que foi a primeira tentativa e estava errada.
+         O ALCANCE É A BORDA MAIS PRÓXIMA, COM PISO — e isto mudou em
+         01/09/2026, a pedido do dono: "tanto quando o cursor for movimentado
+         acima da altura do componente como embaixo preciso que o componente
+         acompanhe".
 
-         Usar `min(acima, abaixo)` iguala o ganho, mas amarra o ganho à
-         POSIÇÃO do retrato na tela. E a posição muda: durante a chegada o
-         palco sobe 36vh (SOBE_CHEGADA, em Estacoes.tsx), então o retrato
-         passa perto da borda de baixo. Ali aquele mínimo colapsa para
-         algumas dezenas de pixels e o eixo satura em ±1 ao primeiro
-         movimento. Medido: com a estação a meio caminho, `--olha-y` ficava
-         travado em -1 para QUALQUER posição do cursor — o eixo inteiro
-         morria durante a chegada.
+         O QUE ESTAVA ERRADO. O alcance era metade da janela, fixo. Só que o
+         retrato NÃO mora no meio da janela: mora cerca de 110px abaixo dela,
+         e isso não depende do tamanho da tela — medido 111px a 1536×760 e
+         110px a 1920×1080. Meia janela cabe inteira para cima e não cabe
+         para baixo:
 
-         Metade da janela é uma referência que não depende de onde o retrato
-         está, então o ganho em graus por pixel é o mesmo nas duas direções E
-         o mesmo em qualquer ponto da viagem. O preço é que, quando o retrato
-         está descentrado, um dos lados satura antes de o cursor alcançar a
-         borda — e isso é barato, porque ali ele já está no extremo da
-         inclinação de qualquer forma.
+           1536×760 ..... para cima satura em -1,00 · para baixo só +0,71
+           1920×1080 .... para cima satura em -1,00 · para baixo só +0,80
+
+         Ou seja: ela inclinava os 9 graus cheios para cima antes de o cursor
+         chegar ao topo, e NUNCA completava para baixo — parava em 6,4 graus.
+         Era exatamente esse o "não acompanha embaixo".
+
+         A BORDA MAIS PRÓXIMA CONSERTA OS DOIS LADOS DE UMA VEZ. O ganho em
+         graus por pixel continua igual nas duas direções, que era o que a
+         versão de meia janela protegia, e agora ±1 é alcançável nas duas.
+         Medido em repouso a 1920×1080: o alcance vira 430px, então -1 cai em
+         y=220 e +1 exatamente na borda de baixo.
+
+         O PISO É O QUE FALTAVA NA PRIMEIRA TENTATIVA, e é por não ter piso
+         que ela foi descartada. Sem ele, `min(acima, abaixo)` colapsa quando
+         o retrato se aproxima de uma borda e o eixo satura ao primeiro
+         movimento. O comentário antigo culpava a viagem da estação — mas a
+         estação morreu em 28/08 e o problema não morreu junto: varrendo a
+         rolagem da seção inteira a 1920×1080, o centro do retrato passeia de
+         -110 a 1170, então o mínimo cru chega a ser NEGATIVO. É a rolagem
+         normal que faz isso, não a estação.
 
          Ver também a nota do eixo vertical em styles/institutional.css: a
          amplitude em graus foi reduzida na mesma leva, pelo mesmo motivo de
          fundo — este eixo não tem fotografia por trás, ele é um disfarce, e
          disfarce só funciona enquanto não chama atenção para si. */
-      const alcanceY = window.innerHeight / 2 || 1
+      const alcanceY =
+        Math.max(
+          window.innerHeight * PISO_ALCANCE_Y,
+          Math.min(centroY, window.innerHeight - centroY),
+        ) || 1
       const hy = Math.max(-1, Math.min(1, vy / alcanceY))
 
       alvoX = hx

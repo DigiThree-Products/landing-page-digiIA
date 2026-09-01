@@ -3,9 +3,13 @@
 import { gsap, prefersReducedMotion, ScrollTrigger, useGSAP } from '@/lib/motion'
 
 /**
- * Toda seção marcada como estação. Começou com "Veja funcionando" sozinha
- * e hoje são cinco: ela, "O que ela faz", "Como funciona", "+15 anos" e
- * "Perguntas".
+ * Toda seção marcada como estação. Começou com "Veja funcionando" sozinha e
+ * hoje são DUAS: ela e "O que ela faz".
+ *
+ * (Este parágrafo listava cinco até 01/09/2026, e já estava errado por dois
+ * motivos: em 28/08 "Como funciona", o DNA, "+15 anos" e "Perguntas"
+ * perderam a classe a pedido do dono — e antes disso a lista de cinco já
+ * esquecia o DNA. Quem tem a contagem certa e o porquê é app/page.tsx.)
  *
  * O contrato é de DUAS partes, e as duas são obrigatórias:
  *   1. a seção leva a classe `estacao` — é ela que o ScrollTrigger mede e
