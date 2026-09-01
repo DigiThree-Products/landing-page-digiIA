@@ -1506,14 +1506,17 @@ body::after {
      resultado seria dupla exposição. Então a inclinação vertical é contínua e
      vem daqui.
 
-     O PONTO DE GIRO FICA NA LINHA DOS OLHOS (origin em 50% 44%), e chegar nele
-     custou duas tentativas. Com o eixo na BASE do quadro, girar para trás
-     afasta a cabeça inteira da câmera: verificado no Playwright, com o cursor
-     no topo da tela o rosto encolhia visivelmente, e o efeito lia como
-     afasta/aproxima, não como olhar para cima. Girando em torno da própria
-     linha dos olhos o tamanho aparente fica estável e o que muda é o
-     escorço — a testa some quando ela olha para cima, a coroa aparece quando
-     olha para baixo. Isso é um aceno.
+     O PONTO DE GIRO NÃO PODE FICAR NA BASE DO QUADRO, e isso custou uma
+     tentativa: com o eixo lá, girar para trás afasta a cabeça inteira da
+     câmera — verificado no Playwright, com o cursor no topo da tela o rosto
+     encolhia visivelmente, e o efeito lia como afasta/aproxima, não como
+     olhar para cima. O que se quer é ESCORÇO: a testa some quando ela olha
+     para cima, a coroa aparece quando olha para baixo. Isso é um aceno.
+
+     (Este parágrafo dizia, até 01/09/2026, que o eixo ficava na LINHA DOS
+     OLHOS, em 44%, e que era esse o lugar certo. Ele desceu para 64% — o
+     porquê, com as medidas, está no bloco logo antes da regra. O erro do
+     pivô na base era o EXTREMO, não a direção.)
 
      O rotateY é pequeno de propósito — 3 graus. Quem vira a cabeça é o sprite;
      isto aqui só acrescenta paralaxe entre um quadro e o seguinte.
@@ -1544,11 +1547,16 @@ body::after {
         translação, que não keystona nada. 19deg → 9deg, e o passeio
         vertical de 9px → 14px.
 
+        (O ângulo voltou a 13deg em 01/09, junto com o pivô descendo para
+        64%. Não é desfazer isto: o que estava errado em 19deg era o
+        keystone de ~8%, e 13deg com 1100px dá ~5,2%. Quem foi buscar o
+        aceno que faltava foi o PIVÔ, que não custa keystone nenhum.)
+
      2. PERSPECTIVA MAIS LONGE. 820px → 1100px. A lente mais longa achata
         o keystone que sobra sem tirar a sensação de volume.
 
         Juntas, as duas levam a diferença entre as bordas de ~8% para
-        ~2,8% — quase três vezes menos.
+        ~2,8% — quase três vezes menos. (Com os 13deg de 01/09, ~5,2%.)
 
      E A MÁSCARA ABAIXO É O QUE FECHA O CONSERTO. Enquanto as bordas do
      quadro forem retas e opacas, qualquer inclinação é vista como um
@@ -1560,10 +1568,48 @@ body::after {
      já diz no cabeçalho: filmagem nova, com o olhar percorrendo também a
      vertical, de olhos abertos. Enquanto não houver, isto é um disfarce —
      e o trabalho aqui foi deixá-lo honesto. */
-  transform-origin: 50% 44%;
+  /* ---- O PIVÔ DESCEU PARA O PESCOÇO EM 01/09/2026 ----
+
+     Queixa do dono, depois de o eixo vertical passar a alcançar os extremos:
+     "a cabeça ainda não olha para cima". Ele estava certo, e o alcance não
+     era o problema — a AMPLITUDE era. Medido com sondas nos quatro cantos, o
+     gesto completo de antes encurtava a cabeça em 0,8% e subia a coroa 2,6px.
+     Um por cento de escorço não é olhar para cima; é deslizar para cima.
+
+     O QUE SE DESCOBRIU MEDINDO: o keystone depende SÓ DO ÂNGULO, não do
+     pivô — 3,6% a 9 graus com o pivô em 44%, e os mesmos 3,6% com ele em
+     70%. Mas o escorço depende MUITO do pivô, porque é o braço de alavanca:
+
+       pivô 44% (antes) ...... encurta 0,8% · coroa 2,6px
+       pivô 64% .............. encurta 2,2% · coroa 4,8px
+       pivô 70% .............. encurta 2,6% · coroa 5,5px
+
+     Ou seja havia três vezes mais aceno disponível de graça, e o motivo é
+     anatômico: cabeça não gira em torno dos olhos, gira no encaixe do
+     crânio no pescoço, que fica abaixo e atrás das orelhas.
+
+     E ISTO NÃO É VOLTAR AO PIVÔ REJEITADO. O que foi tentado e descartado
+     era a BASE DO QUADRO (100%), e o defeito de lá era o tamanho aparente:
+     girar para trás afastava a cabeça inteira e ela encolhia visivelmente.
+     Medida a largura média aqui, a variação é de 0,5% a 64% e 1,0% a 70% —
+     não há encolhimento a ver. O pivô ruim era o extremo, não a direção.
+
+     O ÂNGULO SOBE DE 9 PARA 13 GRAUS na mesma leva, e o teto está medido:
+     a versão rejeitada em 28/08 ficava em ~8% de keystone (19 graus com
+     perspectiva de 820px). A 13 graus com 1100px dá ~5,2%, ainda abaixo
+     dela. Somando pivô e ângulo, o escorço vai de 0,8% para ~4% — cinco
+     vezes mais aceno por 1,4x de keystone.
+
+     O TETO CONTINUA BAIXO, e é honesto dizer: isto é disfarce, não pose. O
+     atlas é uma varredura horizontal de um lado só, sem nenhum quadro dela
+     olhando para cima. Escorçar uma foto frontal nunca vai mostrar o que um
+     olhar para cima mostra — o queixo subindo, a narina virando, o olho
+     mudando de forma. Ver o cabeçalho de RetratoQueOlha.tsx: o que resolve
+     é filmagem, não CSS. */
+  transform-origin: 50% 64%;
   transform:
     perspective(1100px)
-    rotateX(calc(var(--olha-y) * -9deg))
+    rotateX(calc(var(--olha-y) * -13deg))
     rotateY(calc(var(--olha-x) * 3deg))
     translate3d(calc(var(--olha-x) * 6px), calc(var(--olha-y) * 14px), 0);
   will-change: transform;
